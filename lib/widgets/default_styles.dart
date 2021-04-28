@@ -65,6 +65,9 @@ class DefaultStyles {
     this.sizeSmall,
     this.sizeLarge,
     this.sizeHuge,
+    this.customizeCheckbox = false,
+    this.checkedCheckbox,
+    this.unCheckedCheckbox
   });
 
   final DefaultTextBlockStyle? h1;
@@ -87,6 +90,11 @@ class DefaultStyles {
   final DefaultTextBlockStyle? indent;
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
+
+  final bool customizeCheckbox;
+  final Widget? checkedCheckbox;
+  final Widget? unCheckedCheckbox;
+
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);

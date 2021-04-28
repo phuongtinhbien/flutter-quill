@@ -161,12 +161,24 @@ class EditableTextBlock extends StatelessWidget {
 
     if (attrs[Attribute.list.key] == Attribute.checked) {
       return _Checkbox(
-          style: defaultStyles!.leading!.style, width: 32, isChecked: true);
+        style: defaultStyles!.leading!.style,
+        width: 32,
+        isChecked: true,
+        customizeCheckbox: defaultStyles.customizeCheckbox,
+        checkedCheckbox: defaultStyles.checkedCheckbox,
+        unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
+      );
     }
 
     if (attrs[Attribute.list.key] == Attribute.unchecked) {
       return _Checkbox(
-          style: defaultStyles!.leading!.style, width: 32, isChecked: false);
+        style: defaultStyles!.leading!.style,
+        width: 32,
+        isChecked: false,
+        customizeCheckbox: defaultStyles.customizeCheckbox,
+        checkedCheckbox: defaultStyles.checkedCheckbox,
+        unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
+      );
     }
 
     if (attrs.containsKey(Attribute.codeBlock.key)) {
@@ -686,12 +698,22 @@ class _BulletPoint extends StatelessWidget {
 }
 
 class _Checkbox extends StatefulWidget {
-  const _Checkbox({Key? key, this.style, this.width, this.isChecked})
+  const _Checkbox(
+      {Key? key,
+      this.style,
+      this.width,
+      this.isChecked,
+      this.customizeCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox})
       : super(key: key);
 
   final TextStyle? style;
   final double? width;
   final bool? isChecked;
+  final bool customizeCheckbox;
+  final Widget? checkedCheckbox;
+  final Widget? unCheckedCheckbox;
 
   @override
   __CheckboxState createState() => __CheckboxState();
@@ -718,6 +740,20 @@ class __CheckboxState extends State<_Checkbox> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.customizeCheckbox &&
+        widget.checkedCheckbox != null &&
+        widget.unCheckedCheckbox != null) {
+      return Container(
+        alignment: AlignmentDirectional.topEnd,
+        width: widget.width,
+        padding: const EdgeInsetsDirectional.only(end: 13, start: 13),
+        child: IconButton(
+            icon: isChecked!
+                ? widget.checkedCheckbox!
+                : widget.unCheckedCheckbox!,
+            onPressed: () => _onCheckboxClicked(!isChecked!)),
+      );
+    }
     return Container(
       alignment: AlignmentDirectional.topEnd,
       width: widget.width,
