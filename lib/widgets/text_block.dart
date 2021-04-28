@@ -748,8 +748,8 @@ class __CheckboxState extends State<_Checkbox> {
         width: widget.width,
         padding: const EdgeInsetsDirectional.only(end: 13,),
         child: InkWell(
-            onTap: () => _onCheckboxClicked(!isChecked!),
-            child: isChecked!
+            onTap: () => _onCheckboxClicked(!widget.isChecked!),
+            child: widget.isChecked!
                 ? widget.checkedCheckbox!
                 : widget.unCheckedCheckbox!,)
       );
