@@ -746,12 +746,12 @@ class __CheckboxState extends State<_Checkbox> {
       return Container(
         alignment: AlignmentDirectional.topEnd,
         width: widget.width,
-        padding: const EdgeInsetsDirectional.only(end: 13, start: 13),
-        child: IconButton(
-            icon: isChecked!
+        padding: const EdgeInsetsDirectional.only(end: 13,),
+        child: InkWell(
+            onTap: () => _onCheckboxClicked(!isChecked!),
+            child: isChecked!
                 ? widget.checkedCheckbox!
-                : widget.unCheckedCheckbox!,
-            onPressed: () => _onCheckboxClicked(!isChecked!)),
+                : widget.unCheckedCheckbox!,)
       );
     }
     return Container(
