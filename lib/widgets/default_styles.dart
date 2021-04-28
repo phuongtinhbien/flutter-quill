@@ -44,31 +44,30 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles({
-    this.h1,
-    this.h2,
-    this.h3,
-    this.paragraph,
-    this.bold,
-    this.italic,
-    this.underline,
-    this.strikeThrough,
-    this.link,
-    this.color,
-    this.placeHolder,
-    this.lists,
-    this.quote,
-    this.code,
-    this.indent,
-    this.align,
-    this.leading,
-    this.sizeSmall,
-    this.sizeLarge,
-    this.sizeHuge,
-    this.customizeCheckbox = false,
-    this.checkedCheckbox,
-    this.unCheckedCheckbox
-  });
+  DefaultStyles(
+      {this.h1,
+      this.h2,
+      this.h3,
+      this.paragraph,
+      this.bold,
+      this.italic,
+      this.underline,
+      this.strikeThrough,
+      this.link,
+      this.color,
+      this.placeHolder,
+      this.lists,
+      this.quote,
+      this.code,
+      this.indent,
+      this.align,
+      this.leading,
+      this.sizeSmall,
+      this.sizeLarge,
+      this.sizeHuge,
+      this.customizeCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox});
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -94,7 +93,6 @@ class DefaultStyles {
   final bool customizeCheckbox;
   final Widget? checkedCheckbox;
   final Widget? unCheckedCheckbox;
-
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);
@@ -226,6 +224,9 @@ class DefaultStyles {
         leading: other.leading ?? leading,
         sizeSmall: other.sizeSmall ?? sizeSmall,
         sizeLarge: other.sizeLarge ?? sizeLarge,
-        sizeHuge: other.sizeHuge ?? sizeHuge);
+        sizeHuge: other.sizeHuge ?? sizeHuge,
+        customizeCheckbox: other.customizeCheckbox,
+        checkedCheckbox: other.checkedCheckbox ?? checkedCheckbox,
+        unCheckedCheckbox: other.unCheckedCheckbox ?? unCheckedCheckbox);
   }
 }
