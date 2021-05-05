@@ -632,7 +632,7 @@ class RawEditorState extends EditorState
         widget.enableInteractiveSelection,
         _hasFocus,
         MediaQuery.of(context).devicePixelRatio,
-        _cursorCont);
+        _cursorCont, null);
     return editableTextLine;
   }
 

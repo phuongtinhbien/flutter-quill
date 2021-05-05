@@ -926,6 +926,9 @@ class _TextLineElement extends RenderObjectElement {
       case TextLineSlot.BODY:
         renderObject.setBody(child as RenderContentProxyBox?);
         break;
+      case TextLineSlot.TAILING:
+        renderObject.setTailing(child);
+        break;
       default:
         throw UnimplementedError();
     }
