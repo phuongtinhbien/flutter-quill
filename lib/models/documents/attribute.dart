@@ -37,6 +37,7 @@ class Attribute<T> {
     Attribute.height.key: Attribute.height,
     Attribute.style.key: Attribute.style,
     Attribute.token.key: Attribute.token,
+    Attribute.tags.key: Attribute.tag,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -79,6 +80,8 @@ class Attribute<T> {
 
   static final TokenAttribute token = TokenAttribute('');
 
+  static final TagAttribute tags = TagAttribute(null);
+
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
     Attribute.italic.key,
@@ -97,6 +100,7 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.tags.key,
   });
 
   static final Set<String> blockKeysExceptHeader = LinkedHashSet.of({
