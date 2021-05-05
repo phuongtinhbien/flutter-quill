@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/widgets/keyboard_listener.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -140,7 +141,7 @@ class QuillEditor extends StatefulWidget {
       this.onSingleLongTapStart,
       this.onSingleLongTapMoveUpdate,
       this.onSingleLongTapEnd,
-      this.embedBuilder = _defaultEmbedBuilder});
+      this.embedBuilder = _defaultEmbedBuilder, this.onOtherKeyCallback});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -176,6 +177,7 @@ class QuillEditor extends StatefulWidget {
   final Brightness keyboardAppearance;
   final ScrollPhysics? scrollPhysics;
   final ValueChanged<String>? onLaunchUrl;
+  final OnOtherKeyCallback? onOtherKeyCallback;
   // Returns whether gesture is handled
   final bool Function(
       TapDownDetails details, TextPosition Function(Offset offset))? onTapDown;

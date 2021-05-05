@@ -54,7 +54,7 @@ class RawEditor extends StatefulWidget {
     this.keyboardAppearance,
     this.enableInteractiveSelection,
     this.scrollPhysics,
-    this.embedBuilder,
+    this.embedBuilder, {this.onOtherKeyCallback}
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -87,6 +87,7 @@ class RawEditor extends StatefulWidget {
   final bool enableInteractiveSelection;
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
+  final OnOtherKeyCallback? onOtherKeyCallback;
 
   @override
   State<StatefulWidget> createState() {
@@ -692,6 +693,7 @@ class RawEditorState extends EditorState
       handleCursorMovement,
       handleShortcut,
       handleDelete,
+      onElse: widget.onOtherKeyCallback
     );
 
     if (defaultTargetPlatform == TargetPlatform.windows ||

@@ -7,13 +7,16 @@ typedef CursorMoveCallback = void Function(
     LogicalKeyboardKey key, bool wordModifier, bool lineModifier, bool shift);
 typedef InputShortcutCallback = void Function(InputShortcut? shortcut);
 typedef OnDeleteCallback = void Function(bool forward);
+typedef OnOtherKeyCallback = void Function(RawKeyEvent event);
 
 class KeyboardListener {
-  KeyboardListener(this.onCursorMove, this.onShortcut, this.onDelete);
+  KeyboardListener(this.onCursorMove, this.onShortcut, this.onDelete,
+      {this.onElse});
 
   final CursorMoveCallback onCursorMove;
   final InputShortcutCallback onShortcut;
   final OnDeleteCallback onDelete;
+  final OnOtherKeyCallback? onElse;
 
   static final Set<LogicalKeyboardKey> _moveKeys = <LogicalKeyboardKey>{
     LogicalKeyboardKey.arrowRight,
@@ -99,6 +102,10 @@ class KeyboardListener {
       onDelete(true);
     } else if (key == LogicalKeyboardKey.backspace) {
       onDelete(false);
+    } else {
+      if (onElse != null) {
+        onElse!(event);
+      }
     }
     return false;
   }
