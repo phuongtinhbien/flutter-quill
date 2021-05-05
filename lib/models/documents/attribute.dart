@@ -105,6 +105,7 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.tags.key,
   });
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
@@ -145,6 +146,9 @@ class Attribute<T> {
 
   // "attributes":{"indent":3"}
   static Attribute<int?> get indentL3 => IndentAttribute(level: 3);
+
+  // "attributes":{"tag":['tag1', 'tag2']"}
+  static Attribute<String?> get tag => TagAttribute(null);
 
   static Attribute<int?> getIndentLevel(int? level) {
     if (level == 1) {
@@ -289,4 +293,8 @@ class StyleAttribute extends Attribute<String?> {
 
 class TokenAttribute extends Attribute<String> {
   TokenAttribute(String val) : super('token', AttributeScope.IGNORE, val);
+}
+
+class TagAttribute extends Attribute<String?> {
+  TagAttribute(String? val) : super('tag', AttributeScope.BLOCK, val);
 }

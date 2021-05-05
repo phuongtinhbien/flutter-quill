@@ -43,6 +43,7 @@ class _HomePageState extends State<HomePage> {
             document: doc, selection: const TextSelection.collapsed(offset: 0));
       });
     } catch (error) {
+      print (error);
       final doc = Document()..insert(0, 'Empty asset');
       setState(() {
         _controller = QuillController(
@@ -217,18 +218,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<String?> _pickImageWeb(OnImagePickCallback onImagePickCallback) async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null) {
-      return null;
-    }
-
-    // Take first, because we don't allow picking multiple files.
-    final fileName = result.files.first.name!;
-    final file = File(fileName);
-
-    return onImagePickCallback(file);
-  }
 
   void _readOnly() {
     Navigator.push(

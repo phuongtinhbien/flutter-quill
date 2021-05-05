@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:tuple/tuple.dart';
 
 import '../models/documents/attribute.dart';
+import '../models/documents/attribute.dart';
 import '../models/documents/nodes/container.dart' as container;
 import '../models/documents/nodes/leaf.dart' as leaf;
 import '../models/documents/nodes/leaf.dart';
@@ -90,6 +91,10 @@ class TextLine extends StatelessWidget {
       textStyle = defaultStyles.placeHolder!.style;
       return TextSpan(children: children, style: textStyle);
     }
+    if (line.style.containsKey(Attribute.tags.key)) {
+      textStyle = defaultStyles.tag!.style;
+      return TextSpan(children: children, style: textStyle);
+    }
 
     final header = line.style.attributes[Attribute.header.key];
     final m = <Attribute, TextStyle>{
@@ -101,6 +106,7 @@ class TextLine extends StatelessWidget {
     textStyle = textStyle.merge(m[header] ?? defaultStyles.paragraph!.style);
 
     final block = line.style.getBlockExceptHeader();
+    print(block);
     TextStyle? toMerge;
     if (block == Attribute.blockQuote) {
       toMerge = defaultStyles.quote!.style;
@@ -216,10 +222,12 @@ class EditableTextLine extends RenderObjectWidget {
     this.hasFocus,
     this.devicePixelRatio,
     this.cursorCont,
+    this.tailing,
   );
 
   final Line line;
   final Widget? leading;
+  final Widget? tailing;
   final Widget body;
   final double indentWidth;
   final Tuple2 verticalSpacing;
@@ -273,7 +281,7 @@ class EditableTextLine extends RenderObjectWidget {
   }
 }
 
-enum TextLineSlot { LEADING, BODY }
+enum TextLineSlot { LEADING, BODY, TAILING }
 
 class RenderEditableTextLine extends RenderEditableBox {
   RenderEditableTextLine(
@@ -289,6 +297,7 @@ class RenderEditableTextLine extends RenderEditableBox {
   );
 
   RenderBox? _leading;
+  RenderBox? _tailing;
   RenderContentProxyBox? _body;
   Line line;
   TextDirection textDirection;
@@ -311,6 +320,9 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
     if (_body != null) {
       yield _body!;
+    }
+    if (_tailing != null) {
+      yield _tailing!;
     }
   }
 
@@ -404,6 +416,10 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   void setLeading(RenderBox? l) {
     _leading = _updateChild(_leading, l, TextLineSlot.LEADING);
+  }
+
+  void setTailing(RenderBox? l) {
+    _tailing = _updateChild(_tailing, l, TextLineSlot.TAILING);
   }
 
   void setBody(RenderContentProxyBox? b) {
@@ -612,6 +628,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     add(_leading, 'leading');
     add(_body, 'body');
+    add(_tailing, 'tailing');
     return value;
   }
 
@@ -630,7 +647,11 @@ class RenderEditableTextLine extends RenderEditableBox {
         ? 0
         : _body!.getMinIntrinsicWidth(math.max(0, height - verticalPadding))
             as int;
-    return horizontalPadding + leadingWidth + bodyWidth;
+    final tailingWidth = _tailing == null
+        ? 0
+        : _tailing!.getMinIntrinsicWidth(math.max(0, height - verticalPadding))
+            as int;
+    return horizontalPadding + leadingWidth + bodyWidth + tailingWidth;
   }
 
   @override
@@ -645,7 +666,11 @@ class RenderEditableTextLine extends RenderEditableBox {
         ? 0
         : _body!.getMaxIntrinsicWidth(math.max(0, height - verticalPadding))
             as int;
-    return horizontalPadding + leadingWidth + bodyWidth;
+    final tailingWidth = _tailing == null
+        ? 0
+        : _tailing!.getMinIntrinsicWidth(math.max(0, 300))
+    as int;
+    return horizontalPadding + leadingWidth + bodyWidth + tailingWidth;
   }
 
   @override
@@ -695,6 +720,12 @@ class RenderEditableTextLine extends RenderEditableBox {
         _resolvedPadding!.top + _resolvedPadding!.bottom,
       ));
       return;
+    }  if (_body == null && _tailing == null) {
+      size = constraints.constrain(Size(
+        _resolvedPadding!.left + _resolvedPadding!.right,
+        _resolvedPadding!.top + _resolvedPadding!.bottom,
+      ));
+      return;
     }
     final innerConstraints = constraints.deflate(_resolvedPadding!);
 
@@ -703,6 +734,7 @@ class RenderEditableTextLine extends RenderEditableBox {
         : _resolvedPadding!.right;
 
     _body!.layout(innerConstraints, parentUsesSize: true);
+
     (_body!.parentData as BoxParentData).offset =
         Offset(_resolvedPadding!.left, _resolvedPadding!.top);
 
@@ -716,8 +748,18 @@ class RenderEditableTextLine extends RenderEditableBox {
           Offset(0, _resolvedPadding!.top);
     }
 
+    if (_tailing != null) {
+      final tailingConstraints = innerConstraints.copyWith(
+          minWidth: indentWidth,
+          maxWidth: constraints.maxWidth -  indentWidth,
+          maxHeight: _body!.size.height);
+      _tailing!.layout(tailingConstraints, parentUsesSize: true);
+      (_tailing!.parentData as BoxParentData).offset =
+          Offset(constraints.maxWidth - 200, _resolvedPadding!.top);
+    }
+
     size = constraints.constrain(Size(
-      _resolvedPadding!.left + _body!.size.width + _resolvedPadding!.right,
+      _resolvedPadding!.left + _body!.size.width - 200 + _resolvedPadding!.right,
       _resolvedPadding!.top + _body!.size.height + _resolvedPadding!.bottom,
     ));
 
@@ -742,6 +784,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     if (_body != null) {
       final parentData = _body!.parentData as BoxParentData;
+      Offset tailingOffset =   _tailing != null ? Offset(300, 0):Offset(0, 0);
       final effectiveOffset = offset + parentData.offset;
       if (enableInteractiveSelection &&
           line.documentOffset <= textSelection.end &&
@@ -769,6 +812,13 @@ class RenderEditableTextLine extends RenderEditableBox {
         _paintCursor(context, effectiveOffset);
       }
     }
+
+    if (_tailing != null) {
+      final parentData = _tailing!.parentData as BoxParentData;
+      final effectiveOffset = offset + parentData.offset;
+      context.paintChild(_tailing!, effectiveOffset);
+    }
+
   }
 
   void _paintSelection(PaintingContext context, Offset effectiveOffset) {
@@ -824,6 +874,7 @@ class _TextLineElement extends RenderObjectElement {
     super.mount(parent, newSlot);
     _mountChild(widget.leading, TextLineSlot.LEADING);
     _mountChild(widget.body, TextLineSlot.BODY);
+    _mountChild(widget.tailing, TextLineSlot.TAILING);
   }
 
   @override
@@ -832,6 +883,7 @@ class _TextLineElement extends RenderObjectElement {
     assert(widget == newWidget);
     _updateChild(widget.leading, TextLineSlot.LEADING);
     _updateChild(widget.body, TextLineSlot.BODY);
+    _updateChild(widget.tailing, TextLineSlot.TAILING);
   }
 
   @override
