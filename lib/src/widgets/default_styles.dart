@@ -44,28 +44,32 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles({
-    this.h1,
-    this.h2,
-    this.h3,
-    this.paragraph,
-    this.bold,
-    this.italic,
-    this.underline,
-    this.strikeThrough,
-    this.link,
-    this.color,
-    this.placeHolder,
-    this.lists,
-    this.quote,
-    this.code,
-    this.indent,
-    this.align,
-    this.leading,
-    this.sizeSmall,
-    this.sizeLarge,
-    this.sizeHuge,
-  });
+  DefaultStyles(
+      {this.h1,
+      this.h2,
+      this.h3,
+      this.paragraph,
+      this.bold,
+      this.italic,
+      this.underline,
+      this.strikeThrough,
+      this.link,
+      this.color,
+      this.placeHolder,
+      this.lists,
+      this.quote,
+      this.code,
+      this.indent,
+      this.align,
+      this.leading,
+      this.sizeSmall,
+      this.sizeLarge,
+      this.sizeHuge,
+      this.customizeCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox,
+      this.tag,
+      this.tagBuilder});
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -87,6 +91,12 @@ class DefaultStyles {
   final DefaultTextBlockStyle? indent;
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
+  final DefaultTextBlockStyle? tag;
+
+  final bool customizeCheckbox;
+  final Widget? checkedCheckbox;
+  final Widget? unCheckedCheckbox;
+  final Widget Function(List<String>)? tagBuilder;
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);
@@ -134,6 +144,16 @@ class DefaultStyles {
             const Tuple2(0, 0),
             null),
         h3: DefaultTextBlockStyle(
+            defaultTextStyle.style.copyWith(
+              fontSize: 20,
+              color: defaultTextStyle.style.color!.withOpacity(0.70),
+              height: 1.25,
+              fontWeight: FontWeight.w500,
+            ),
+            const Tuple2(8, 0),
+            const Tuple2(0, 0),
+            null),
+        tag: DefaultTextBlockStyle(
             defaultTextStyle.style.copyWith(
               fontSize: 20,
               color: defaultTextStyle.style.color!.withOpacity(0.70),
@@ -194,7 +214,39 @@ class DefaultStyles {
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         sizeSmall: const TextStyle(fontSize: 10),
         sizeLarge: const TextStyle(fontSize: 18),
-        sizeHuge: const TextStyle(fontSize: 22));
+        sizeHuge: const TextStyle(fontSize: 22),
+        tagBuilder: (tags) {
+          return Row(
+            children: [
+              Expanded(
+                child: Wrap(
+                  runSpacing: 10,
+                  spacing: 10,
+                  children: tags.map((e) => IntrinsicWidth(
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        height: 19,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color:Colors.amber,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.amber)),
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 14, color: Colors.black),
+                        )),
+                  )).toList(),
+                ),
+              ),
+              InkWell(
+                  onTap: () {},
+                  child: const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.amber,
+                  ))
+            ],
+          );
+        });
   }
 
   DefaultStyles merge(DefaultStyles other) {
@@ -218,6 +270,11 @@ class DefaultStyles {
         leading: other.leading ?? leading,
         sizeSmall: other.sizeSmall ?? sizeSmall,
         sizeLarge: other.sizeLarge ?? sizeLarge,
-        sizeHuge: other.sizeHuge ?? sizeHuge);
+        sizeHuge: other.sizeHuge ?? sizeHuge,
+        customizeCheckbox: other.customizeCheckbox,
+        checkedCheckbox: other.checkedCheckbox ?? checkedCheckbox,
+        unCheckedCheckbox: other.unCheckedCheckbox ?? unCheckedCheckbox,
+        tag: other.tag ?? tag,
+        tagBuilder: other.tagBuilder ?? tagBuilder);
   }
 }

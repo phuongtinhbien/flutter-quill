@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -565,16 +564,16 @@ class _ImageButtonState extends State<ImageButton> {
   }
 
   Future<String?> _pickImageWeb() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null) {
-      return null;
-    }
-
-    // Take first, because we don't allow picking multiple files.
-    final fileName = result.files.first.name!;
-    final file = File(fileName);
-
-    return widget.onImagePickCallback!(file);
+    // final result = await FilePicker.platform.pickFiles();
+    // if (result == null) {
+    //   return null;
+    // }
+    //
+    // // Take first, because we don't allow picking multiple files.
+    // final fileName = result.files.first.name!;
+    // final file = File(fileName);
+    //
+    // return widget.onImagePickCallback!(file);
   }
 
   Future<String?> _pickImage(ImageSource source) async {
