@@ -106,7 +106,6 @@ class TextLine extends StatelessWidget {
     textStyle = textStyle.merge(m[header] ?? defaultStyles.paragraph!.style);
 
     final block = line.style.getBlockExceptHeader();
-    print(block);
     TextStyle? toMerge;
     if (block == Attribute.blockQuote) {
       toMerge = defaultStyles.quote!.style;
