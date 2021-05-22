@@ -705,17 +705,17 @@ class _BulletPoint extends StatelessWidget {
 }
 
 class _Checkbox extends StatelessWidget {
-  const _Checkbox({
-    Key? key,
-    this.style,
-    this.width,
-    this.isChecked = false,
-    this.offset,
-    this.onTap,
-    this.customizeCheckbox = false,
-    this.checkedCheckbox,
-    this.unCheckedCheckbox
-  }) : super(key: key);
+  const _Checkbox(
+      {Key? key,
+      this.style,
+      this.width,
+      this.isChecked = false,
+      this.offset,
+      this.onTap,
+      this.customizeCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox})
+      : super(key: key);
   final TextStyle? style;
   final double? width;
   final bool isChecked;
@@ -743,9 +743,8 @@ class _Checkbox extends StatelessWidget {
             end: 13,
           ),
           child: GestureDetector(
-            child: isChecked
-                ? checkedCheckbox!
-                : unCheckedCheckbox!,
+            onTap: () => _onCheckboxClicked(!isChecked),
+            child: isChecked ? checkedCheckbox! : unCheckedCheckbox!,
           ));
     }
     return Container(
