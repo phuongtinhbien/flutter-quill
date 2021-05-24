@@ -672,7 +672,7 @@ class RawEditorState extends EditorState
   @override
   void userUpdateTextEditingValue(
       TextEditingValue value, SelectionChangedCause cause) {
-    // TODO: implement userUpdateTextEditingValue
+    textEditingValue = value;
   }
 }
 
