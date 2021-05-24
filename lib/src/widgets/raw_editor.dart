@@ -122,6 +122,7 @@ class RawEditorState extends EditorState
   // Focus
   bool _didAutoFocus = false;
   FocusAttachment? _focusAttachment;
+
   bool get _hasFocus => widget.focusNode.hasFocus;
 
   DefaultStyles? _styles;
@@ -673,6 +674,7 @@ class RawEditorState extends EditorState
   void userUpdateTextEditingValue(
       TextEditingValue value, SelectionChangedCause cause) {
     textEditingValue = value;
+    hideToolbar();
   }
 }
 
