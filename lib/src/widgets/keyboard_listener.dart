@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -62,14 +63,14 @@ class KeyboardListener {
     LogicalKeyboardKey.keyA: InputShortcut.SELECT_ALL,
   };
 
-  bool handleRawKeyEvent(RawKeyEvent event) {
+  KeyEventResult handleRawKeyEvent(RawKeyEvent event) {
     if (kIsWeb) {
       // On web platform, we ignore the key because it's already processed.
-      return false;
+      return KeyEventResult.ignored;
     }
 
     if (event is! RawKeyDownEvent) {
-      return false;
+      return KeyEventResult.ignored;
     }
 
     final keysPressed =
@@ -82,7 +83,7 @@ class KeyboardListener {
                 .length >
             1 ||
         keysPressed.difference(_interestingKeys).isNotEmpty) {
-      return false;
+      return KeyEventResult.ignored;
     }
 
     if (_moveKeys.contains(key)) {
@@ -100,6 +101,6 @@ class KeyboardListener {
     } else if (key == LogicalKeyboardKey.backspace) {
       onDelete(false);
     }
-    return false;
+    return KeyEventResult.ignored;
   }
 }
