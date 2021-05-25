@@ -343,6 +343,47 @@ class AutoFormatLinksRule extends InsertRule {
   }
 }
 
+class AutoFormatMentionRule extends InsertRule {
+  const AutoFormatMentionRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null || prev.data is! String || prev.data == ' ') {
+      return null;
+    }
+
+    try {
+      final cand = (prev.data as String).split('\n').last.split(' ').last;
+
+      print(cand);
+      if (!cand.startsWith(RegExp(r'[@,#][a-zA-Z0-9]+'))) {
+        return null;
+      }
+      final attributes = prev.attributes ?? <String, dynamic>{};
+
+      if (attributes.containsKey(Attribute.mention.key)) {
+        return null;
+      }
+      // print(cand);
+      attributes.addAll(MentionAttribute(cand.replaceAll("@", "")).toJson());
+      return Delta()
+        ..retain(index + (len ?? 0) - cand.length)
+        ..retain(cand.length, attributes)
+        ..insert(data, prev.attributes);
+      // print (delta.toString());
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
 class PreserveInlineStylesRule extends InsertRule {
   const PreserveInlineStylesRule();
 
@@ -360,7 +401,6 @@ class PreserveInlineStylesRule extends InsertRule {
         (prev.data as String).contains('\n')) {
       return null;
     }
-
     final attributes = prev.attributes;
     final text = data;
     if (attributes == null || !attributes.containsKey(Attribute.link.key)) {
@@ -380,6 +420,52 @@ class PreserveInlineStylesRule extends InsertRule {
       return delta;
     }
     if (attributes[Attribute.link.key] == nextAttributes[Attribute.link.key]) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    return delta;
+  }
+}
+
+class PreserveInlineMentionStylesRule extends InsertRule {
+  const PreserveInlineMentionStylesRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+
+    if (data is! String || data.contains('\n')) {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null ||
+        prev.data is! String ||
+        (prev.data as String).contains('\n')) {
+      return null;
+    }
+    final attributes = prev.attributes;
+    final text = data;
+    if (attributes == null || !attributes.containsKey(Attribute.mention.key)) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+
+    attributes.remove(Attribute.mention.key);
+    final delta = Delta()
+      ..retain(index + (len ?? 0))
+      ..insert(text, attributes.isEmpty ? null : attributes);
+    final next = itr.next();
+
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+    if (!nextAttributes.containsKey(Attribute.mention.key)) {
+      return delta;
+    }
+    if (attributes[Attribute.mention.key] ==
+        nextAttributes[Attribute.mention.key]) {
       return Delta()
         ..retain(index + (len ?? 0))
         ..insert(text, attributes);

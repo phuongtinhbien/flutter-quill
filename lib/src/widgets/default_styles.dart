@@ -44,32 +44,34 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles(
-      {this.h1,
-      this.h2,
-      this.h3,
-      this.paragraph,
-      this.bold,
-      this.italic,
-      this.underline,
-      this.strikeThrough,
-      this.link,
-      this.color,
-      this.placeHolder,
-      this.lists,
-      this.quote,
-      this.code,
-      this.indent,
-      this.align,
-      this.leading,
-      this.sizeSmall,
-      this.sizeLarge,
-      this.sizeHuge,
-      this.customizeCheckbox = false,
-      this.checkedCheckbox,
-      this.unCheckedCheckbox,
-      this.tag,
-      this.tagBuilder});
+  DefaultStyles({
+    this.h1,
+    this.h2,
+    this.h3,
+    this.paragraph,
+    this.bold,
+    this.italic,
+    this.underline,
+    this.strikeThrough,
+    this.link,
+    this.color,
+    this.placeHolder,
+    this.lists,
+    this.quote,
+    this.code,
+    this.indent,
+    this.align,
+    this.leading,
+    this.sizeSmall,
+    this.sizeLarge,
+    this.sizeHuge,
+    this.customizeCheckbox = false,
+    this.checkedCheckbox,
+    this.unCheckedCheckbox,
+    this.tag,
+    this.tagBuilder,
+    this.mentionStyle,
+  });
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -92,6 +94,7 @@ class DefaultStyles {
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
+  final TextStyle? mentionStyle;
 
   final bool customizeCheckbox;
   final Widget? checkedCheckbox;
@@ -166,6 +169,8 @@ class DefaultStyles {
         paragraph: DefaultTextBlockStyle(
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         bold: const TextStyle(fontWeight: FontWeight.bold),
+        mentionStyle:
+            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
         italic: const TextStyle(fontStyle: FontStyle.italic),
         underline: const TextStyle(decoration: TextDecoration.underline),
         strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
@@ -222,20 +227,24 @@ class DefaultStyles {
                 child: Wrap(
                   runSpacing: 10,
                   spacing: 10,
-                  children: tags.map((e) => IntrinsicWidth(
-                    child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        height: 19,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            color:Colors.amber,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.amber)),
-                        child: Text(
-                          e,
-                          style: const TextStyle(fontSize: 14, color: Colors.black),
-                        )),
-                  )).toList(),
+                  children: tags
+                      .map((e) => IntrinsicWidth(
+                            child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                height: 19,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: Colors.amber,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.amber)),
+                                child: Text(
+                                  e,
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black),
+                                )),
+                          ))
+                      .toList(),
                 ),
               ),
               InkWell(
@@ -275,6 +284,7 @@ class DefaultStyles {
         checkedCheckbox: other.checkedCheckbox ?? checkedCheckbox,
         unCheckedCheckbox: other.unCheckedCheckbox ?? unCheckedCheckbox,
         tag: other.tag ?? tag,
-        tagBuilder: other.tagBuilder ?? tagBuilder);
+        tagBuilder: other.tagBuilder ?? tagBuilder,
+        mentionStyle: other.mentionStyle ?? mentionStyle);
   }
 }

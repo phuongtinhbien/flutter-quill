@@ -516,16 +516,13 @@
     "insert": "-patch"
   },
   {
-    "insert": "\n"
-  },
-  {
-    "insert": "this is tag"
-  },
-  {
     "attributes": {
-      "header": 3,
-      "tag": "tag1,tag2"
+      "mention": "abc"
     },
+    "insert": " @abc"
+  },
+  {
     "insert": "\n"
   }
+
 ]

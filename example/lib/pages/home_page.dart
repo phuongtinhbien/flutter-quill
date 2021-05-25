@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
             document: doc, selection: const TextSelection.collapsed(offset: 0));
       });
     } catch (error) {
-      print (error);
+      print(error);
       final doc = Document()..insert(0, 'Empty asset');
       setState(() {
         _controller = QuillController(
@@ -99,33 +99,16 @@ class _HomePageState extends State<HomePage> {
         autoFocus: false,
         readOnly: false,
         placeholder: 'Add content',
+        onMentionTap: (val){
+          print("onMentionTap: $val");
+        },
+        onLaunchUrl: (val){
+          print("onLaunchUrl: $val");
+
+        },
         expands: false,
         padding: EdgeInsets.zero,
         customStyles: DefaultStyles(
-          h1: DefaultTextBlockStyle(
-              const TextStyle(
-                fontSize: 32,
-                color: Colors.black,
-                height: 1.15,
-                fontWeight: FontWeight.w300,
-              ),
-              const Tuple2(16, 0),
-              const Tuple2(0, 0),
-              null),
-          sizeSmall: const TextStyle(fontSize: 9),
-        ));
-    if (kIsWeb) {
-      quillEditor = QuillEditor(
-          controller: _controller!,
-          scrollController: ScrollController(),
-          scrollable: true,
-          focusNode: _focusNode,
-          autoFocus: false,
-          readOnly: false,
-          placeholder: 'Add content',
-          expands: false,
-          padding: EdgeInsets.zero,
-          customStyles: DefaultStyles(
             h1: DefaultTextBlockStyle(
                 const TextStyle(
                   fontSize: 32,
@@ -137,7 +120,42 @@ class _HomePageState extends State<HomePage> {
                 const Tuple2(0, 0),
                 null),
             sizeSmall: const TextStyle(fontSize: 9),
-          ),
+            mentionStyle: const TextStyle(
+                fontSize: 15, color: Colors.red, fontWeight: FontWeight.bold)));
+    if (kIsWeb) {
+      quillEditor = QuillEditor(
+          controller: _controller!,
+          scrollController: ScrollController(),
+          scrollable: true,
+          focusNode: _focusNode,
+          autoFocus: false,
+          readOnly: false,
+          placeholder: 'Add content',
+          expands: false,
+          onMentionTap: (val){
+            print("onMentionTap: $val");
+          },
+          onLaunchUrl: (val){
+            print("onLaunchUrl: $val");
+
+          },
+          padding: EdgeInsets.zero,
+          customStyles: DefaultStyles(
+              h1: DefaultTextBlockStyle(
+                  const TextStyle(
+                    fontSize: 32,
+                    color: Colors.black,
+                    height: 1.15,
+                    fontWeight: FontWeight.w300,
+                  ),
+                  const Tuple2(16, 0),
+                  const Tuple2(0, 0),
+                  null),
+              sizeSmall: const TextStyle(fontSize: 9),
+              mentionStyle: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold)),
           embedBuilder: defaultEmbedBuilderWeb);
     }
     return SafeArea(
@@ -213,7 +231,6 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
 
   void _readOnly() {
     Navigator.push(

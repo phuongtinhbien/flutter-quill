@@ -63,14 +63,16 @@ class KeyboardListener {
     LogicalKeyboardKey.keyA: InputShortcut.SELECT_ALL,
   };
 
-  KeyEventResult handleRawKeyEvent(RawKeyEvent event) {
+  bool handleRawKeyEvent(RawKeyEvent event) {
+    print('keysPressed: ${event.toString()}');
+
     if (kIsWeb) {
       // On web platform, we ignore the key because it's already processed.
-      return KeyEventResult.ignored;
+      return false;
     }
 
     if (event is! RawKeyDownEvent) {
-      return KeyEventResult.ignored;
+      return false;
     }
 
     final keysPressed =
@@ -86,7 +88,7 @@ class KeyboardListener {
                 .length >
             1 ||
         keysPressed.difference(_interestingKeys).isNotEmpty) {
-      return KeyEventResult.ignored;
+      return false;
     }
 
     if (_moveKeys.contains(key)) {
@@ -104,6 +106,6 @@ class KeyboardListener {
     } else if (key == LogicalKeyboardKey.backspace) {
       onDelete(false);
     }
-    return KeyEventResult.ignored;
+    return false;
   }
 }
