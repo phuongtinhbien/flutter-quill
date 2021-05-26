@@ -361,21 +361,23 @@ class AutoFormatMentionRule extends InsertRule {
 
     try {
       final cand = (prev.data as String).split('\n').last.split(' ').last;
-
-      print(cand);
-      if (!cand.startsWith(RegExp(r'[@,#][a-zA-Z0-9]+'))) {
+      final exp = RegExp(r'(@|#)[a-zA-Z0-9]+');
+      final allMatches = exp.allMatches(cand).toList();
+      var tag = '';
+      if (allMatches.isEmpty) {
         return null;
+      } else {
+        tag = allMatches.first.group(0)!;
       }
-      final attributes = prev.attributes ?? <String, dynamic>{};
 
+      final attributes = prev.attributes ?? <String, dynamic>{};
       if (attributes.containsKey(Attribute.mention.key)) {
         return null;
       }
-      // print(cand);
-      attributes.addAll(MentionAttribute(cand.replaceAll("@", "")).toJson());
+      attributes.addAll(MentionAttribute(tag.replaceAll('@', '')).toJson());
       return Delta()
         ..retain(index + (len ?? 0) - cand.length)
-        ..retain(cand.length, attributes)
+        ..retain(tag.length, attributes)
         ..insert(data, prev.attributes);
       // print (delta.toString());
     } on FormatException {
@@ -434,7 +436,6 @@ class PreserveInlineMentionStylesRule extends InsertRule {
   @override
   Delta? applyRule(Delta document, int index,
       {int? len, Object? data, Attribute? attribute}) {
-
     if (data is! String || data.contains('\n')) {
       return null;
     }
@@ -453,7 +454,6 @@ class PreserveInlineMentionStylesRule extends InsertRule {
         ..retain(index + (len ?? 0))
         ..insert(text, attributes);
     }
-
     attributes.remove(Attribute.mention.key);
     final delta = Delta()
       ..retain(index + (len ?? 0))
@@ -461,6 +461,7 @@ class PreserveInlineMentionStylesRule extends InsertRule {
     final next = itr.next();
 
     final nextAttributes = next.attributes ?? const <String, dynamic>{};
+
     if (!nextAttributes.containsKey(Attribute.mention.key)) {
       return delta;
     }
