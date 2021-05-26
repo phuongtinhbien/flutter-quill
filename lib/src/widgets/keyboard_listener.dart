@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -63,6 +64,8 @@ class KeyboardListener {
   };
 
   bool handleRawKeyEvent(RawKeyEvent event) {
+    print('keysPressed: ${event.toString()}');
+
     if (kIsWeb) {
       // On web platform, we ignore the key because it's already processed.
       return false;
@@ -74,7 +77,10 @@ class KeyboardListener {
 
     final keysPressed =
         LogicalKeyboardKey.collapseSynonyms(RawKeyboard.instance.keysPressed);
+    print('keysPressed: ${keysPressed.toString()}');
     final key = event.logicalKey;
+    print('key: ${key.toString()}');
+
     final isMacOS = event.data is RawKeyEventDataMacOs;
     if (!_nonModifierKeys.contains(key) ||
         keysPressed

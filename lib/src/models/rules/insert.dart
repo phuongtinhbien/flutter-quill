@@ -401,7 +401,6 @@ class PreserveInlineStylesRule extends InsertRule {
         (prev.data as String).contains('\n')) {
       return null;
     }
-
     final attributes = prev.attributes;
     final text = data;
     if (attributes == null || !attributes.containsKey(Attribute.link.key)) {

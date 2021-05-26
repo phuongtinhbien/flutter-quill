@@ -169,6 +169,9 @@ class EditableTextBlock extends StatelessWidget {
         isChecked: true,
         offset: block.offset + line.offset,
         onTap: onCheckboxTap,
+        customizeCheckbox: defaultStyles.customizeCheckbox,
+        checkedCheckbox: defaultStyles.checkedCheckbox,
+        unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
       );
     }
 
@@ -179,6 +182,9 @@ class EditableTextBlock extends StatelessWidget {
         width: 32,
         offset: block.offset + line.offset,
         onTap: onCheckboxTap,
+        customizeCheckbox: defaultStyles.customizeCheckbox,
+        checkedCheckbox: defaultStyles.checkedCheckbox,
+        unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
       );
     }
 
@@ -700,19 +706,25 @@ class _BulletPoint extends StatelessWidget {
 }
 
 class _Checkbox extends StatelessWidget {
-  const _Checkbox({
-    Key? key,
-    this.style,
-    this.width,
-    this.isChecked = false,
-    this.offset,
-    this.onTap,
-  }) : super(key: key);
+  const _Checkbox(
+      {Key? key,
+      this.style,
+      this.width,
+      this.isChecked = false,
+      this.offset,
+      this.onTap,
+      this.customizeCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox})
+      : super(key: key);
   final TextStyle? style;
   final double? width;
   final bool isChecked;
   final int? offset;
   final Function(int, bool)? onTap;
+  final bool customizeCheckbox;
+  final Widget? checkedCheckbox;
+  final Widget? unCheckedCheckbox;
 
   void _onCheckboxClicked(bool? newValue) {
     if (onTap != null && newValue != null && offset != null) {
@@ -722,6 +734,20 @@ class _Checkbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (customizeCheckbox &&
+        checkedCheckbox != null &&
+        unCheckedCheckbox != null) {
+      return Container(
+          alignment: AlignmentDirectional.topEnd,
+          width: width,
+          padding: const EdgeInsetsDirectional.only(
+            end: 13,
+          ),
+          child: GestureDetector(
+            onTap: () => _onCheckboxClicked(!isChecked),
+            child: isChecked ? checkedCheckbox! : unCheckedCheckbox!,
+          ));
+    }
     return Container(
       alignment: AlignmentDirectional.topEnd,
       width: width,

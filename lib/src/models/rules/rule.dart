@@ -28,7 +28,9 @@ abstract class Rule {
 class Rules {
   Rules(this._rules);
 
-  List<Rule> _customRules = [];
+  List<Rule> _customRules = [
+
+  ];
 
   final List<Rule> _rules;
   static final Rules _instance = Rules([
@@ -50,7 +52,12 @@ class Rules {
     const CatchAllInsertRule(),
     const EnsureEmbedLineRule(),
     const PreserveLineStyleOnMergeRule(),
+
     const CatchAllDeleteRule(),
+
+
+
+
   ]);
 
   static Rules getInstance() => _instance;

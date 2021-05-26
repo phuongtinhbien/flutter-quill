@@ -40,7 +40,8 @@ const linkPrefixes = [
   'skype:',
   'sip:', // Lync
   'whatsapp:',
-  'http'
+  'http',
+  'https'
 ];
 
 abstract class EditorState extends State<RawEditor> {
@@ -421,7 +422,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         link = link.trim();
         if (!linkPrefixes
             .any((linkPrefix) => link!.toLowerCase().startsWith(linkPrefix))) {
-          link = 'https://$link';
+          link = 'http://$link';
         }
         launchUrl(link);
       }

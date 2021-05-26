@@ -38,6 +38,12 @@ class _ReadOnlyPageState extends State<ReadOnlyPage> {
       readOnly: !_edit,
       expands: false,
       padding: EdgeInsets.zero,
+      customStyles: DefaultStyles(
+          sizeSmall: const TextStyle(fontSize: 9),
+          mentionStyle: const TextStyle(
+              fontSize: 15,
+              color: Colors.red,
+              fontWeight: FontWeight.bold)),
     );
     if (kIsWeb) {
       quillEditor = QuillEditor(
@@ -49,6 +55,12 @@ class _ReadOnlyPageState extends State<ReadOnlyPage> {
           readOnly: !_edit,
           expands: false,
           padding: EdgeInsets.zero,
+          customStyles: DefaultStyles(
+              sizeSmall: const TextStyle(fontSize: 9),
+              mentionStyle: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold)),
           embedBuilder: defaultEmbedBuilderWeb);
     }
     return Padding(
