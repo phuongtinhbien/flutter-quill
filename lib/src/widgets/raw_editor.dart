@@ -56,7 +56,7 @@ class RawEditor extends StatefulWidget {
     this.keyboardAppearance,
     this.enableInteractiveSelection,
     this.scrollPhysics,
-    this.embedBuilder,
+    this.embedBuilder, this.onMentionTap,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -73,6 +73,7 @@ class RawEditor extends StatefulWidget {
   final bool readOnly;
   final String? placeholder;
   final ValueChanged<String>? onLaunchUrl;
+  final ValueChanged<String>? onMentionTap;
   final ToolbarOptions toolbarOptions;
   final bool showSelectionHandles;
   final bool showCursor;
@@ -122,6 +123,7 @@ class RawEditorState extends EditorState
   // Focus
   bool _didAutoFocus = false;
   FocusAttachment? _focusAttachment;
+
   bool get _hasFocus => widget.focusNode.hasFocus;
 
   DefaultStyles? _styles;

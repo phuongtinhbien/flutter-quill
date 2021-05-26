@@ -140,7 +140,10 @@ class QuillEditor extends StatefulWidget {
       this.onSingleLongTapStart,
       this.onSingleLongTapMoveUpdate,
       this.onSingleLongTapEnd,
-      this.embedBuilder = _defaultEmbedBuilder});
+      this.embedBuilder = _defaultEmbedBuilder,
+      this.mentionKeys,
+      this.mentionStrings,
+      this.onMentionTap});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -176,6 +179,12 @@ class QuillEditor extends StatefulWidget {
   final Brightness keyboardAppearance;
   final ScrollPhysics? scrollPhysics;
   final ValueChanged<String>? onLaunchUrl;
+  final ValueChanged<String>? onMentionTap;
+
+  ///Mentions
+  final List<String>? mentionKeys;
+  final List<String>? mentionStrings;
+
   // Returns whether gesture is handled
   final bool Function(
       TapDownDetails details, TextPosition Function(Offset offset))? onTapDown;
@@ -192,6 +201,7 @@ class QuillEditor extends StatefulWidget {
   // Returns whether gesture is handled
   final bool Function(LongPressMoveUpdateDetails details,
       TextPosition Function(Offset offset))? onSingleLongTapMoveUpdate;
+
   // Returns whether gesture is handled
   final bool Function(
           LongPressEndDetails details, TextPosition Function(Offset offset))?
@@ -301,7 +311,8 @@ class _QuillEditorState extends State<QuillEditor>
           widget.keyboardAppearance,
           widget.enableInteractiveSelection,
           widget.scrollPhysics,
-          widget.embedBuilder),
+          widget.embedBuilder,
+          widget.onMentionTap),
     );
   }
 
@@ -401,6 +412,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
       return false;
     }
     final segment = segmentResult.node as leaf.Leaf;
+
     if (segment.style.containsKey(Attribute.link.key)) {
       var launchUrl = getEditor()!.widget.onLaunchUrl;
       launchUrl ??= _launchUrl;
@@ -414,8 +426,18 @@ class _QuillEditorSelectionGestureDetectorBuilder
         launchUrl(link);
       }
       return false;
-    }
-    if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
+    } else if (segment.style.containsKey(Attribute.mention.key)) {
+      final launchUrl = getEditor()!.widget.onMentionTap;
+      String? link = segment.style.attributes[Attribute.mention.key]!.value;
+      if (getEditor()!.widget.readOnly && link !=
+          null) {
+        link = link.trim();
+        if (launchUrl != null) {
+          launchUrl(link);
+        }
+      }
+      return false;
+    } else if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
       final blockEmbed = segment.value as BlockEmbed;
       if (blockEmbed.type == 'image') {
         final imageUrl = _standardizeImageUrl(blockEmbed.data);
