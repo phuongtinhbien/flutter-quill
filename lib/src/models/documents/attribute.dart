@@ -15,6 +15,7 @@ class Attribute<T> {
   final String key;
   final AttributeScope scope;
   final T value;
+  int createdDate = DateTime.now().millisecondsSinceEpoch;
 
   static final Map<String, Attribute> _registry = LinkedHashMap.of({
     Attribute.bold.key: Attribute.bold,

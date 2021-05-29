@@ -66,6 +66,7 @@ class DefaultStyles {
     this.sizeLarge,
     this.sizeHuge,
     this.customizeCheckbox = false,
+    this.showDateCheckbox = false,
     this.checkedCheckbox,
     this.unCheckedCheckbox,
     this.tag,
@@ -97,6 +98,7 @@ class DefaultStyles {
   final TextStyle? mentionStyle;
 
   final bool customizeCheckbox;
+  final bool showDateCheckbox;
   final Widget? checkedCheckbox;
   final Widget? unCheckedCheckbox;
   final Widget Function(List<String>)? tagBuilder;

@@ -43,7 +43,7 @@ class Rules {
     const PreserveLineStyleOnSplitRule(),
     const ResetLineFormatOnNewLineRule(),
     const AutoFormatLinksRule(),
-    const AutoFormatMentionRule(),
+    const AutoFormatMentionRule({}),
     const PreserveInlineMentionStylesRule(),
     const PreserveInlineStylesRule(),
     const CatchAllInsertRule(),
