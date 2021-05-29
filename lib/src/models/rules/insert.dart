@@ -347,7 +347,7 @@ class AutoFormatMentionRule extends InsertRule {
   final Map<String, String> mentions;
 
   // ignore: sort_constructors_first
-  const AutoFormatMentionRule(this.mentions) : super();
+  const AutoFormatMentionRule(this.mentions);
 
   @override
   Delta? applyRule(Delta document, int index,
@@ -378,13 +378,15 @@ class AutoFormatMentionRule extends InsertRule {
         return null;
       }
       var value = '';
-      tag = tag.replaceAll('@', '');
-      if (mentions.containsKey(tag)) {
-        value = mentions[tag]!;
+      var temp = tag.replaceAll('@', '');
+      print (tag);
+      if (mentions.containsKey(temp)) {
+        value = mentions[temp]!;
       } else {
         return null;
       }
 
+      print(value);
       attributes.addAll(MentionAttribute(value).toJson());
       return Delta()
         ..retain(index + (len ?? 0) - cand.length)

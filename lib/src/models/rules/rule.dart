@@ -28,7 +28,11 @@ abstract class Rule {
 class Rules {
   Rules(this._rules);
 
-  List<Rule> _customRules = [];
+  List<Rule> _customRules = [
+    const AutoFormatMentionRule({
+      'abc':'123'
+    }),
+  ];
 
   final List<Rule> _rules;
   static final Rules _instance = Rules([
@@ -43,7 +47,7 @@ class Rules {
     const PreserveLineStyleOnSplitRule(),
     const ResetLineFormatOnNewLineRule(),
     const AutoFormatLinksRule(),
-    const AutoFormatMentionRule({}),
+
     const PreserveInlineMentionStylesRule(),
     const PreserveInlineStylesRule(),
     const CatchAllInsertRule(),
