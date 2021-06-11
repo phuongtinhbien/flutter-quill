@@ -678,12 +678,6 @@ class RawEditorState extends EditorState
 
   @override
   bool get wantKeepAlive => widget.focusNode.hasFocus;
-
-  @override
-  void userUpdateTextEditingValue(
-      TextEditingValue value, SelectionChangedCause cause) {
-    updateEditingValue(value);
-  }
 }
 
 class _Editor extends MultiChildRenderObjectWidget {
