@@ -10,12 +10,12 @@ enum AttributeScope {
 }
 
 class Attribute<T> {
-  Attribute(this.key, this.scope, this.value, {this.createdDate});
+  Attribute(this.key, this.scope, this.value,);
 
   final String key;
   final AttributeScope scope;
   final T value;
-  int? createdDate = DateTime.now().millisecondsSinceEpoch;
+  // int? createdDate = DateTime.now().millisecondsSinceEpoch;
 
   static final Map<String, Attribute> _registry = LinkedHashMap.of({
     Attribute.bold.key: Attribute.bold,
@@ -169,7 +169,7 @@ class Attribute<T> {
   bool get isBlockExceptHeader => blockKeysExceptHeader.contains(key);
 
   Map<String, dynamic> toJson() =>
-      <String, dynamic>{key: value, 'createdDate': createdDate};
+      <String, dynamic>{key: value};
 
   static Attribute fromKeyValue(String key, dynamic value) {
     if (!_registry.containsKey(key)) {
