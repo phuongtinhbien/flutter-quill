@@ -33,6 +33,9 @@ export 'toolbar/toggle_style_button.dart';
 
 typedef OnImagePickCallback = Future<String> Function(File file);
 typedef ImagePickImpl = Future<String?> Function(ImageSource source);
+typedef FilePickImpl = Future<String?> Function(BuildContext context);
+typedef WebImagePickImpl = Future<String?> Function(
+    OnImagePickCallback onImagePickCallback);
 
 // The default size of the icon of a button.
 const double kDefaultIconSize = 18;
@@ -45,6 +48,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     required this.children,
     this.toolBarHeight = 36,
     this.color,
+    this.filePickImpl,
+    this.multiRowsDisplay,
     Key? key,
   }) : super(key: key);
 
@@ -68,7 +73,10 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     bool showLink = true,
     bool showHistory = true,
     bool showHorizontalRule = false,
+    bool multiRowsDisplay = true,
     OnImagePickCallback? onImagePickCallback,
+    FilePickImpl? filePickImpl,
+    WebImagePickImpl? webImagePickImpl,
     Key? key,
   }) {
     final isButtonGroupShown = [
@@ -90,6 +98,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     return QuillToolbar(
       key: key,
       toolBarHeight: toolbarIconSize * 2,
+      multiRowsDisplay: multiRowsDisplay,
       children: [
         if (showHistory)
           HistoryButton(
@@ -160,6 +169,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             controller: controller,
             imageSource: ImageSource.gallery,
             onImagePickCallback: onImagePickCallback,
+            filePickImpl: filePickImpl,
+            webImagePickImpl: webImagePickImpl,
           ),
         if (onImagePickCallback != null)
           ImageButton(
@@ -168,6 +179,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             controller: controller,
             imageSource: ImageSource.camera,
             onImagePickCallback: onImagePickCallback,
+            filePickImpl: filePickImpl,
+            webImagePickImpl: webImagePickImpl,
           ),
         if (isButtonGroupShown[0] &&
             (isButtonGroupShown[1] ||
@@ -272,6 +285,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
 
   final List<Widget> children;
   final double toolBarHeight;
+  final bool? multiRowsDisplay;
 
   /// The color of the toolbar.
   ///
@@ -279,11 +293,21 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
   /// is given.
   final Color? color;
 
+  final FilePickImpl? filePickImpl;
+
   @override
   Size get preferredSize => Size.fromHeight(toolBarHeight);
 
   @override
   Widget build(BuildContext context) {
+    if (multiRowsDisplay ?? true) {
+      return Wrap(
+        alignment: WrapAlignment.center,
+        runSpacing: 4,
+        spacing: 4,
+        children: children,
+      );
+    }
     return Container(
       constraints: BoxConstraints.tightFor(height: preferredSize.height),
       color: color ?? Theme.of(context).canvasColor,
