@@ -269,6 +269,7 @@ class RawEditorState extends EditorState
     final editableTextLine = EditableTextLine(
         node,
         null,
+        null,
         textLine,
         0,
         _getVerticalSpacingForLine(node, _styles),

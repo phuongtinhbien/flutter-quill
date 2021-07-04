@@ -44,35 +44,35 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles({
-    this.h1,
-    this.h2,
-    this.h3,
-    this.paragraph,
-    this.bold,
-    this.italic,
-    this.underline,
-    this.strikeThrough,
-    this.link,
-    this.color,
-    this.placeHolder,
-    this.lists,
-    this.quote,
-    this.code,
-    this.indent,
-    this.align,
-    this.leading,
-    this.sizeSmall,
-    this.sizeLarge,
-    this.sizeHuge,
-    this.customizeCheckbox = false,
-    this.showDateCheckbox = false,
-    this.checkedCheckbox,
-    this.unCheckedCheckbox,
-    this.tag,
-    this.tagBuilder,
-    this.mentionStyle,
-  });
+  DefaultStyles(
+      {this.h1,
+      this.h2,
+      this.h3,
+      this.paragraph,
+      this.bold,
+      this.italic,
+      this.underline,
+      this.strikeThrough,
+      this.link,
+      this.color,
+      this.placeHolder,
+      this.lists,
+      this.quote,
+      this.code,
+      this.indent,
+      this.align,
+      this.leading,
+      this.sizeSmall,
+      this.sizeLarge,
+      this.sizeHuge,
+      this.customizeCheckbox = false,
+      this.showDateCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox,
+      this.tag,
+      this.tagBuilder,
+      this.mentionStyle,
+      this.dateBuilder});
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -102,6 +102,7 @@ class DefaultStyles {
   final Widget? checkedCheckbox;
   final Widget? unCheckedCheckbox;
   final Widget Function(List<String>)? tagBuilder;
+  final Widget Function(BuildContext, int)? dateBuilder;
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);
@@ -257,6 +258,13 @@ class DefaultStyles {
                   ))
             ],
           );
+        },
+        dateBuilder: (_, date) {
+          return SizedBox(
+            width: 80,
+            child: Text(
+                DateTime.fromMillisecondsSinceEpoch(date).toString()),
+          );
         });
   }
 
@@ -287,6 +295,7 @@ class DefaultStyles {
         unCheckedCheckbox: other.unCheckedCheckbox ?? unCheckedCheckbox,
         tag: other.tag ?? tag,
         tagBuilder: other.tagBuilder ?? tagBuilder,
+        dateBuilder: other.dateBuilder ?? dateBuilder,
         mentionStyle: other.mentionStyle ?? mentionStyle);
   }
 }

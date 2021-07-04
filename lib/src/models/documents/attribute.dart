@@ -39,6 +39,7 @@ class Attribute<T> {
     Attribute.style.key: Attribute.style,
     Attribute.token.key: Attribute.token,
     Attribute.mention.key: Attribute.mention,
+    Attribute.date.key: Attribute.date,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -82,6 +83,7 @@ class Attribute<T> {
   static final TokenAttribute token = TokenAttribute('');
 
   static final MentionAttribute mention = MentionAttribute(null);
+  static final DateAttribute date = DateAttribute(null);
 
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
@@ -299,4 +301,8 @@ class TokenAttribute extends Attribute<String> {
 
 class MentionAttribute extends Attribute<String?> {
   MentionAttribute(String? val) : super('mention', AttributeScope.INLINE, val);
+}
+
+class DateAttribute extends Attribute<String?> {
+  DateAttribute(String? val) : super('date', AttributeScope.INLINE, val);
 }

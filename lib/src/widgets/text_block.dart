@@ -117,6 +117,7 @@ class EditableTextBlock extends StatelessWidget {
       final editableTextLine = EditableTextLine(
           line,
           _buildLeading(context, line, index, indentLevelCounts, count),
+          _buildTrailing(context, line, index, indentLevelCounts, count),
           TextLine(
             line: line,
             textDirection: textDirection,
@@ -201,6 +202,33 @@ class EditableTextBlock extends StatelessWidget {
         withDot: false,
       );
     }
+    return null;
+  }
+
+  Widget? _buildTrailing(BuildContext context, Line line, int index,
+      Map<int, int> indentLevelCounts, int count) {
+    final defaultStyles = QuillStyles.getStyles(context, false);
+    final attrs = line.style.attributes;
+    if (attrs.containsKey(Attribute.date.key)) {
+      var text = int.tryParse(attrs[Attribute.date.key]!.value.toString()) ??
+          DateTime.now().millisecondsSinceEpoch;
+      if (attrs[Attribute.list.key] == Attribute.checked) {
+        return _DateTrailing(
+          date: text,
+          builder: defaultStyles!.dateBuilder,
+          key: UniqueKey(),
+        );
+      }
+
+      if (attrs[Attribute.list.key] == Attribute.unchecked) {
+        return _DateTrailing(
+          date: text,
+          builder: defaultStyles!.dateBuilder,
+          key: UniqueKey(),
+        );
+      }
+    }
+
     return null;
   }
 
@@ -753,11 +781,42 @@ class _Checkbox extends StatelessWidget {
       width: width,
       padding: const EdgeInsetsDirectional.only(end: 13),
       child: GestureDetector(
-        onLongPress: () => _onCheckboxClicked(!isChecked),
+        onTap: () => _onCheckboxClicked(!isChecked),
         child: Checkbox(
           value: isChecked,
           onChanged: _onCheckboxClicked,
         ),
+      ),
+    );
+  }
+}
+
+class _DateTrailing extends StatelessWidget {
+  const _DateTrailing({
+    Key? key,
+    this.style,
+    this.width,
+    this.offset,
+    required this.date,
+    this.builder,
+  }) : super(key: key);
+  final TextStyle? style;
+  final double? width;
+  final int date;
+  final int? offset;
+  final Widget Function(BuildContext, int)? builder;
+
+  @override
+  Widget build(BuildContext context) {
+    if (builder != null) {
+      return builder!(context, date);
+    }
+    return Container(
+      alignment: AlignmentDirectional.topEnd,
+      width: width,
+      padding: const EdgeInsetsDirectional.only(end: 13),
+      child: Text(
+        DateTime.fromMillisecondsSinceEpoch(date).toString(),
       ),
     );
   }

@@ -211,6 +211,7 @@ class EditableTextLine extends RenderObjectWidget {
   const EditableTextLine(
     this.line,
     this.leading,
+    this.trailing,
     this.body,
     this.indentWidth,
     this.verticalSpacing,
@@ -225,6 +226,7 @@ class EditableTextLine extends RenderObjectWidget {
 
   final Line line;
   final Widget? leading;
+  final Widget? trailing;
   final Widget body;
   final double indentWidth;
   final Tuple2 verticalSpacing;
@@ -278,7 +280,7 @@ class EditableTextLine extends RenderObjectWidget {
   }
 }
 
-enum TextLineSlot { LEADING, BODY }
+enum TextLineSlot { LEADING, BODY, TRAILING }
 
 class RenderEditableTextLine extends RenderEditableBox {
   RenderEditableTextLine(
@@ -294,6 +296,7 @@ class RenderEditableTextLine extends RenderEditableBox {
   );
 
   RenderBox? _leading;
+  RenderBox? _trailing;
   RenderContentProxyBox? _body;
   Line line;
   TextDirection textDirection;
@@ -316,6 +319,9 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
     if (_body != null) {
       yield _body!;
+    }
+    if (_trailing != null) {
+      yield _trailing!;
     }
   }
 
@@ -413,6 +419,10 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   void setBody(RenderContentProxyBox? b) {
     _body = _updateChild(_body, b, TextLineSlot.BODY) as RenderContentProxyBox?;
+  }
+
+  void setTrailing(RenderBox? l) {
+    _trailing = _updateChild(_trailing, l, TextLineSlot.TRAILING);
   }
 
   bool containsTextSelection() {
@@ -617,6 +627,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     add(_leading, 'leading');
     add(_body, 'body');
+    add(_trailing, 'trailing');
     return value;
   }
 
@@ -636,7 +647,11 @@ class RenderEditableTextLine extends RenderEditableBox {
         : _body!
             .getMinIntrinsicWidth(math.max(0, height - verticalPadding))
             .ceil();
-    return horizontalPadding + leadingWidth + bodyWidth;
+
+    final trailingWidth = _trailing == null
+        ? 0
+        : _trailing!.getMinIntrinsicWidth(height - verticalPadding).ceil();
+    return horizontalPadding + leadingWidth + bodyWidth + trailingWidth;
   }
 
   @override
@@ -652,7 +667,11 @@ class RenderEditableTextLine extends RenderEditableBox {
         : _body!
             .getMaxIntrinsicWidth(math.max(0, height - verticalPadding))
             .ceil();
-    return horizontalPadding + leadingWidth + bodyWidth;
+    final trailingWidth = _trailing == null
+        ? 0
+        : _trailing!.getMaxIntrinsicWidth(height - verticalPadding).ceil();
+
+    return horizontalPadding + leadingWidth + bodyWidth + trailingWidth;
   }
 
   @override
@@ -695,8 +714,12 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     _resolvePadding();
     assert(_resolvedPadding != null);
-
-    if (_body == null && _leading == null) {
+    if (_body == null && _leading == null && _trailing == null) {
+      size = constraints.constrain(Size(
+        _resolvedPadding!.left + _resolvedPadding!.right,
+        _resolvedPadding!.top + _resolvedPadding!.bottom,
+      ));
+    } else if (_body == null && _leading == null) {
       size = constraints.constrain(Size(
         _resolvedPadding!.left + _resolvedPadding!.right,
         _resolvedPadding!.top + _resolvedPadding!.bottom,
@@ -721,6 +744,16 @@ class RenderEditableTextLine extends RenderEditableBox {
       _leading!.layout(leadingConstraints, parentUsesSize: true);
       (_leading!.parentData as BoxParentData).offset =
           Offset(0, _resolvedPadding!.top);
+    }
+
+    if (_trailing != null) {
+      final trailingConstraints = innerConstraints.copyWith(
+          minWidth: indentWidth,
+          maxWidth: innerConstraints.maxWidth,
+          maxHeight: _body!.size.height);
+      _trailing!.layout(trailingConstraints, parentUsesSize: true);
+      (_trailing!.parentData as BoxParentData).offset =
+          Offset(_resolvedPadding!.left, _resolvedPadding!.top);
     }
 
     size = constraints.constrain(Size(
@@ -775,6 +808,14 @@ class RenderEditableTextLine extends RenderEditableBox {
           cursorCont.style.paintAboveText) {
         _paintCursor(context, effectiveOffset);
       }
+    }
+    if (_trailing != null) {
+      final parentData = _trailing!.parentData as BoxParentData;
+      final startTrailingOffset =
+          context.estimatedBounds.width - _trailing!.size.width - 20;
+      final effectiveOffset =
+          offset + parentData.offset + Offset(startTrailingOffset, 0);
+      context.paintChild(_trailing!, effectiveOffset);
     }
   }
 
@@ -831,6 +872,7 @@ class _TextLineElement extends RenderObjectElement {
     super.mount(parent, newSlot);
     _mountChild(widget.leading, TextLineSlot.LEADING);
     _mountChild(widget.body, TextLineSlot.BODY);
+    _mountChild(widget.trailing, TextLineSlot.TRAILING);
   }
 
   @override
@@ -839,6 +881,7 @@ class _TextLineElement extends RenderObjectElement {
     assert(widget == newWidget);
     _updateChild(widget.leading, TextLineSlot.LEADING);
     _updateChild(widget.body, TextLineSlot.BODY);
+    _updateChild(widget.trailing, TextLineSlot.TRAILING);
   }
 
   @override
@@ -880,6 +923,9 @@ class _TextLineElement extends RenderObjectElement {
         break;
       case TextLineSlot.BODY:
         renderObject.setBody(child as RenderContentProxyBox?);
+        break;
+      case TextLineSlot.TRAILING:
+        renderObject.setTrailing(child);
         break;
       default:
         throw UnimplementedError();
