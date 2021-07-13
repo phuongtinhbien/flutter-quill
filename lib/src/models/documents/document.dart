@@ -119,9 +119,17 @@ class Document {
     return delta;
   }
 
+  /// Only attributes applied to all characters within this range are
+  /// included in the result.
   Style collectStyle(int index, int len) {
     final res = queryChild(index);
     return (res.node as Line).collectStyle(res.offset, len);
+  }
+
+  /// Returns all styles for any character within the specified text range.
+  List<Style> collectAllStyles(int index, int len) {
+    final res = queryChild(index);
+    return (res.node as Line).collectAllStyles(res.offset, len);
   }
 
   ChildQuery queryChild(int offset) {
