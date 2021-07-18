@@ -77,7 +77,6 @@ class EditorSuggestionsTextSelectionOverlay {
       return;
     }
     _handles![0].remove();
-    _handles![1].remove();
     _handles = null;
   }
 
@@ -191,6 +190,7 @@ class EditorSuggestionsTextSelectionOverlay {
       endpoints[0].point.dy - baseLineHeight,
     );
 
+    print (value.toString());
     return FadeTransition(
       opacity: _toolbarOpacity,
       child: CompositedTransformFollower(
@@ -221,7 +221,7 @@ class EditorSuggestionsTextSelectionOverlay {
   void hide() {
     if (_handles != null) {
       _handles![0].remove();
-      _handles![1].remove();
+      // _handles![1].remove();
       _handles = null;
     }
     if (toolbar != null) {
