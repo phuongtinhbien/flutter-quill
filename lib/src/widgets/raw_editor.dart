@@ -60,7 +60,7 @@ class RawEditor extends StatefulWidget {
     this.showSuggestions,
     this.embedBuilder,
     this.onMentionTap,
-      this.suggestionWidget,
+    this.suggestionWidget,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -96,7 +96,6 @@ class RawEditor extends StatefulWidget {
   final EmbedBuilder embedBuilder;
   final bool showSuggestions;
   final Widget? suggestionWidget;
-
 
   @override
   State<StatefulWidget> createState() => RawEditorState();
@@ -429,6 +428,7 @@ class RawEditorState extends EditorState
 
     if (widget.controller.selection != oldWidget.controller.selection) {
       _selectionOverlay?.update(textEditingValue);
+      _suggestionOverlay?.update(textEditingValue);
     }
 
     _selectionOverlay?.handlesVisible = _shouldShowSelectionHandles();
@@ -448,7 +448,7 @@ class RawEditorState extends EditorState
   }
 
   bool _shouldShowSuggestionHandles() {
-
+    print(widget.showSuggestions);
     return widget.showSuggestions && !_shouldShowSelectionHandles();
   }
 
@@ -476,6 +476,7 @@ class RawEditorState extends EditorState
   void _updateSelectionOverlayForScroll() {
     _selectionOverlay?.markNeedsBuild();
   }
+
   void _updateSuggestionOverlayForScroll() {
     _suggestionOverlay?.markNeedsBuild();
   }
@@ -520,6 +521,7 @@ class RawEditorState extends EditorState
       if (!mounted) {
         return;
       }
+      // print('_onChangeTextEditingValue');
       _updateOrDisposeSelectionOverlayIfNeeded();
     });
     if (mounted) {
@@ -531,19 +533,26 @@ class RawEditorState extends EditorState
   }
 
   void _updateOrDisposeSelectionOverlayIfNeeded() {
-    if (_selectionOverlay != null) {
-      if (_hasFocus) {
-        _selectionOverlay!.update(textEditingValue);
-      } else {
-        _selectionOverlay!.dispose();
-        _selectionOverlay = null;
+    // print('_updateOrDisposeSelectionOverlayIfNeeded');
+    final update = _selectionOverlay != null || _suggestionOverlay != null;
+    if (update) {
+      if (_selectionOverlay != null || _suggestionOverlay != null) {
+        if (_hasFocus) {
+          _selectionOverlay!.update(textEditingValue);
+        } else {
+          _selectionOverlay!.dispose();
+          _selectionOverlay = null;
+        }
+        // print('_updateOrDisposeSelectionOverlayIfNeeded - _selectionOverlay');
       }
-    } else if (_suggestionOverlay != null) {
-      if (_hasFocus) {
-        _suggestionOverlay!.update(textEditingValue);
-      } else {
-        _suggestionOverlay!.dispose();
-        _suggestionOverlay = null;
+      if (_suggestionOverlay != null) {
+        if (_hasFocus) {
+          _suggestionOverlay!.update(textEditingValue);
+        } else {
+          _suggestionOverlay!.dispose();
+          _suggestionOverlay = null;
+        }
+        // print('_updateOrDisposeSelectionOverlayIfNeeded - _suggestionOverlay');
       }
     } else if (_hasFocus) {
       _selectionOverlay?.hide();
@@ -569,23 +578,22 @@ class RawEditorState extends EditorState
       );
 
       _suggestionOverlay = EditorSuggestionsTextSelectionOverlay(
-        textEditingValue,
-        false,
-        context,
-        widget,
-        _suggestionLayerLink,
-        _startHandleLayerLink,
-        _endHandleLayerLink,
-        getRenderEditor(),
-        widget.selectionCtrls,
-        this,
-        DragStartBehavior.start,
-        null,
-        _clipboardStatus,
-        maxWidth: _styles!.suggestionWidth,
-        maxHeight: _styles!.suggestionHeight,
-        suggestionWidget: widget.suggestionWidget
-      );
+          textEditingValue,
+          false,
+          context,
+          widget,
+          _suggestionLayerLink,
+          _startHandleLayerLink,
+          _endHandleLayerLink,
+          getRenderEditor(),
+          widget.selectionCtrls,
+          this,
+          DragStartBehavior.start,
+          null,
+          _clipboardStatus,
+          maxWidth: _styles!.suggestionWidth,
+          maxHeight: _styles!.suggestionHeight,
+          suggestionWidget: widget.suggestionWidget);
       _selectionOverlay!.handlesVisible = _shouldShowSelectionHandles();
       _selectionOverlay!.showHandles();
 
@@ -736,7 +744,6 @@ class RawEditorState extends EditorState
 
     _selectionOverlay!.update(textEditingValue);
     _selectionOverlay!.showToolbar();
-
 
     // _suggestionOverlay!.update(textEditingValue);
     // _suggestionOverlay!.showToolbar();

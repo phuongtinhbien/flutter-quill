@@ -114,11 +114,13 @@ class _HomePageState extends State<HomePage> {
         onMentionTap: (val){
           print (val);
         },
-        showSuggestions: true,
+        showSuggestions: showSuggestions,
         suggestionWidget:Material(
           child: ListView.builder(itemBuilder: (_, index){
             return ListTile(title: Text('Suggestion $index'),onTap: (){
-              print(index);
+              setState(() {
+                showSuggestions = !showSuggestions;
+              });
             },);
           }, itemCount: length,),
         ),
