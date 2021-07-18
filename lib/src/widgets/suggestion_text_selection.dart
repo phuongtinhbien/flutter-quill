@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -10,28 +9,29 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_quill/widgets/text_selection.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../models/documents/nodes/node.dart';
 import 'editor.dart';
-
 
 enum _TextSelectionHandlePosition { START, END }
 
 class EditorSuggestionsTextSelectionOverlay {
   EditorSuggestionsTextSelectionOverlay(
-      this.value,
-      this.handlesVisible,
-      this.context,
-      this.debugRequiredFor,
-      this.toolbarLayerLink,
-      this.startHandleLayerLink,
-      this.endHandleLayerLink,
-      this.renderObject,
-      this.selectionCtrls,
-      this.selectionDelegate,
-      this.dragStartBehavior,
-      this.onSelectionHandleTapped,
-      this.clipboardStatus,
-      ) {
+    this.value,
+    this.handlesVisible,
+    this.context,
+    this.debugRequiredFor,
+    this.toolbarLayerLink,
+    this.startHandleLayerLink,
+    this.endHandleLayerLink,
+    this.renderObject,
+    this.selectionCtrls,
+    this.selectionDelegate,
+    this.dragStartBehavior,
+    this.onSelectionHandleTapped,
+    this.clipboardStatus, {
+    this.maxWidth = 200,
+    this.maxHeight = 200,
+    this.suggestionWidget,
+  }) {
     final overlay = Overlay.of(context, rootOverlay: true)!;
 
     _toolbarController = AnimationController(
@@ -51,6 +51,10 @@ class EditorSuggestionsTextSelectionOverlay {
   final DragStartBehavior dragStartBehavior;
   final VoidCallback? onSelectionHandleTapped;
   final ClipboardStatusNotifier clipboardStatus;
+  final double maxWidth;
+  final double maxHeight;
+  final Widget? suggestionWidget;
+
   late AnimationController _toolbarController;
   List<OverlayEntry>? _handles;
   OverlayEntry? toolbar;
@@ -114,6 +118,9 @@ class EditorSuggestionsTextSelectionOverlay {
           selection: _selection,
           selectionControls: selectionCtrls,
           position: position,
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          suggestionWidget: suggestionWidget,
           dragStartBehavior: dragStartBehavior,
         ));
   }
@@ -151,12 +158,12 @@ class EditorSuggestionsTextSelectionOverlay {
 
     final currSelection = newSelection != null
         ? DragTextSelection(
-      baseOffset: newSelection.baseOffset,
-      extentOffset: newSelection.extentOffset,
-      affinity: newSelection.affinity,
-      isDirectional: newSelection.isDirectional,
-      first: position == _TextSelectionHandlePosition.START,
-    )
+            baseOffset: newSelection.baseOffset,
+            extentOffset: newSelection.extentOffset,
+            affinity: newSelection.affinity,
+            isDirectional: newSelection.isDirectional,
+            first: position == _TextSelectionHandlePosition.START,
+          )
         : null;
 
     selectionDelegate
@@ -176,7 +183,7 @@ class EditorSuggestionsTextSelectionOverlay {
 
     final baseLineHeight = renderObject!.preferredLineHeight(_selection.base);
     final extentLineHeight =
-    renderObject!.preferredLineHeight(_selection.extent);
+        renderObject!.preferredLineHeight(_selection.extent);
     final smallestLineHeight = math.min(baseLineHeight, extentLineHeight);
     final isMultiline = endpoints.last.point.dy - endpoints.first.point.dy >
         smallestLineHeight / 2;
@@ -190,14 +197,18 @@ class EditorSuggestionsTextSelectionOverlay {
       endpoints[0].point.dy - baseLineHeight,
     );
 
-    print (value.toString());
+    print(value.toString());
     return FadeTransition(
       opacity: _toolbarOpacity,
       child: CompositedTransformFollower(
-        link: toolbarLayerLink,
-        showWhenUnlinked: false,
-        offset: -editingRegion.bottomLeft,
-        child: Container(width: 200, height: 200,color: Colors.red,)),
+          link: toolbarLayerLink,
+          showWhenUnlinked: false,
+          offset: -editingRegion.bottomLeft,
+          child: Container(
+            width: 200,
+            height: 200,
+            color: Colors.red,
+          )),
     );
   }
 
@@ -258,6 +269,9 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
     required this.onSelectionHandleTapped,
     required this.selectionControls,
     this.dragStartBehavior = DragStartBehavior.start,
+    this.maxWidth = 200,
+    this.maxHeight = 200,
+    this.suggestionWidget,
     Key? key,
   }) : super(key: key);
 
@@ -271,6 +285,10 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
   final TextSelectionControls selectionControls;
   final DragStartBehavior dragStartBehavior;
 
+  final double maxWidth;
+  final double maxHeight;
+  final  Widget? suggestionWidget;
+
   @override
   _TextSelectionHandleOverlayState createState() =>
       _TextSelectionHandleOverlayState();
@@ -282,7 +300,7 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
       // case _TextSelectionHandlePosition.END:
       //   return renderObject!.selectionEndInViewport;
       default:
-        return  ValueNotifier(false);
+        return ValueNotifier(false);
     }
   }
 }
@@ -350,9 +368,9 @@ class _TextSelectionHandleOverlayState
       case _TextSelectionHandlePosition.START:
         newSelection = TextSelection(
           baseOffset:
-          isNormalized ? position.offset : widget.selection.baseOffset,
+              isNormalized ? position.offset : widget.selection.baseOffset,
           extentOffset:
-          isNormalized ? widget.selection.extentOffset : position.offset,
+              isNormalized ? widget.selection.extentOffset : position.offset,
         );
         break;
       // case _TextSelectionHandlePosition.END:
@@ -404,7 +422,7 @@ class _TextSelectionHandleOverlayState
         : widget.selection.extent;
     final lineHeight = widget.renderObject!.preferredLineHeight(textPosition);
     final handleAnchor =
-    widget.selectionControls.getHandleAnchor(type!, lineHeight);
+        widget.selectionControls.getHandleAnchor(type!, lineHeight);
     final handleSize = widget.selectionControls.getHandleSize(lineHeight);
     _handleSize = handleSize;
 
@@ -436,7 +454,7 @@ class _TextSelectionHandleOverlayState
           alignment: Alignment.topLeft,
           margin: EdgeInsets.only(
             left: padding.left,
-            top: padding.top+lineHeight+ 10,
+            top: padding.top + lineHeight + 10,
             right: padding.right,
             bottom: padding.bottom,
           ),
@@ -448,9 +466,11 @@ class _TextSelectionHandleOverlayState
             onPanStart: _handleDragStart,
             onPanUpdate: _handleDragUpdate,
             onTap: _handleTap,
-            child: Container( width: 200, height:  200, color: Colors.red,
-
-            ),
+            child: widget.suggestionWidget != null ? Container(
+              width: widget.maxWidth,
+              height: widget.maxHeight,
+              child: widget.suggestionWidget,
+            ): Container(),
           ),
         ),
       ),
@@ -458,10 +478,10 @@ class _TextSelectionHandleOverlayState
   }
 
   TextSelectionHandleType? _chooseType(
-      TextDirection textDirection,
-      TextSelectionHandleType ltrType,
-      TextSelectionHandleType rtlType,
-      ) {
+    TextDirection textDirection,
+    TextSelectionHandleType ltrType,
+    TextSelectionHandleType rtlType,
+  ) {
     if (widget.selection.isCollapsed) return TextSelectionHandleType.collapsed;
 
     switch (textDirection) {
@@ -472,4 +492,3 @@ class _TextSelectionHandleOverlayState
     }
   }
 }
-

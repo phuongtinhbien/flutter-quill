@@ -60,6 +60,7 @@ class RawEditor extends StatefulWidget {
     this.showSuggestions,
     this.embedBuilder,
     this.onMentionTap,
+      this.suggestionWidget,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -94,6 +95,8 @@ class RawEditor extends StatefulWidget {
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
   final bool showSuggestions;
+  final Widget? suggestionWidget;
+
 
   @override
   State<StatefulWidget> createState() => RawEditorState();
@@ -579,6 +582,9 @@ class RawEditorState extends EditorState
         DragStartBehavior.start,
         null,
         _clipboardStatus,
+        maxWidth: _styles!.suggestionWidth,
+        maxHeight: _styles!.suggestionHeight,
+        suggestionWidget: widget.suggestionWidget
       );
       _selectionOverlay!.handlesVisible = _shouldShowSelectionHandles();
       _selectionOverlay!.showHandles();

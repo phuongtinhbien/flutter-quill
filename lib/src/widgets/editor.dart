@@ -148,7 +148,7 @@ class QuillEditor extends StatefulWidget {
       this.embedBuilder = _defaultEmbedBuilder,
       this.mentionKeys,
       this.mentionStrings,
-      this.onMentionTap, this.showSuggestions = true});
+      this.onMentionTap, this.showSuggestions = true, this.suggestionWidget});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -187,6 +187,8 @@ class QuillEditor extends StatefulWidget {
   final ValueChanged<String>? onLaunchUrl;
   final ValueChanged<String>? onMentionTap;
   final bool showSuggestions;
+  final Widget? suggestionWidget;
+
 
   ///Mentions
   final List<String>? mentionKeys;
@@ -320,7 +322,7 @@ class _QuillEditorState extends State<QuillEditor>
           widget.scrollPhysics,
         widget.showSuggestions,
           widget.embedBuilder,
-          widget.onMentionTap, ),
+          widget.onMentionTap, widget.suggestionWidget ),
     );
   }
 
