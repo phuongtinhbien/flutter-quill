@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -52,6 +53,7 @@ abstract class EditorState extends State<RawEditor> {
   RenderEditor? getRenderEditor();
 
   EditorTextSelectionOverlay? getSelectionOverlay();
+  EditorSuggestionsTextSelectionOverlay? getSuggestionSelectionOverlay();
 
   bool showToolbar();
 
@@ -116,6 +118,7 @@ Widget _defaultEmbedBuilder(BuildContext context, leaf.Embed node) {
 }
 
 class QuillEditor extends StatefulWidget {
+
   const QuillEditor(
       {required this.controller,
       required this.focusNode,
@@ -145,7 +148,7 @@ class QuillEditor extends StatefulWidget {
       this.embedBuilder = _defaultEmbedBuilder,
       this.mentionKeys,
       this.mentionStrings,
-      this.onMentionTap});
+      this.onMentionTap, this.showSuggestions = true});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -183,6 +186,7 @@ class QuillEditor extends StatefulWidget {
   final ScrollPhysics? scrollPhysics;
   final ValueChanged<String>? onLaunchUrl;
   final ValueChanged<String>? onMentionTap;
+  final bool showSuggestions;
 
   ///Mentions
   final List<String>? mentionKeys;
@@ -314,8 +318,9 @@ class _QuillEditorState extends State<QuillEditor>
           widget.keyboardAppearance,
           widget.enableInteractiveSelection,
           widget.scrollPhysics,
+        widget.showSuggestions,
           widget.embedBuilder,
-          widget.onMentionTap),
+          widget.onMentionTap, ),
     );
   }
 

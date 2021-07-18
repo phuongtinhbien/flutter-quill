@@ -29,9 +29,9 @@ class Rules {
   Rules(this._rules);
 
   List<Rule> _customRules = [
-    const AutoFormatMentionRule({
-      'abc':'123'
-    }),
+    // const AutoFormatMentionRule({
+    //   'abc':'123'
+    // }),
   ];
 
   final List<Rule> _rules;

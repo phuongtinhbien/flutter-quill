@@ -101,6 +101,17 @@ class _HomePageState extends State<HomePage> {
         placeholder: 'Add content',
         expands: false,
         padding: EdgeInsets.zero,
+
+        onLaunchUrl: (val){
+          print (val);
+        },
+        onMentionTap: (val){
+          print (val);
+        },
+        // onTapDown: (details, position){
+        //   // print(details);
+        //   return true;
+        // },
         customStyles: DefaultStyles(
           h1: DefaultTextBlockStyle(
               const TextStyle(
