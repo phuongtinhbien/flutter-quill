@@ -10,11 +10,16 @@ enum AttributeScope {
 }
 
 class Attribute<T> {
-  Attribute(this.key, this.scope, this.value,);
+  Attribute(
+    this.key,
+    this.scope,
+    this.value,
+  );
 
   final String key;
   final AttributeScope scope;
   final T value;
+
   // int? createdDate = DateTime.now().millisecondsSinceEpoch;
 
   static final Map<String, Attribute> _registry = LinkedHashMap.of({
@@ -39,6 +44,7 @@ class Attribute<T> {
     Attribute.style.key: Attribute.style,
     Attribute.token.key: Attribute.token,
     Attribute.mention.key: Attribute.mention,
+    Attribute.hashtag.key: Attribute.hashtag,
     Attribute.date.key: Attribute.date,
   });
 
@@ -83,6 +89,7 @@ class Attribute<T> {
   static final TokenAttribute token = TokenAttribute('');
 
   static final MentionAttribute mention = MentionAttribute(null);
+  static final HashTagAttribute hashtag = HashTagAttribute(null);
   static final DateAttribute date = DateAttribute(null);
 
   static final Set<String> inlineKeys = {
@@ -95,6 +102,7 @@ class Attribute<T> {
     Attribute.background.key,
     Attribute.placeholder.key,
     Attribute.mention.key,
+    Attribute.hashtag.key,
   };
 
   static final Set<String> blockKeys = LinkedHashSet.of({
@@ -170,8 +178,7 @@ class Attribute<T> {
 
   bool get isBlockExceptHeader => blockKeysExceptHeader.contains(key);
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{key: value};
+  Map<String, dynamic> toJson() => <String, dynamic>{key: value};
 
   static Attribute fromKeyValue(String key, dynamic value) {
     if (!_registry.containsKey(key)) {
@@ -301,6 +308,10 @@ class TokenAttribute extends Attribute<String> {
 
 class MentionAttribute extends Attribute<String?> {
   MentionAttribute(String? val) : super('mention', AttributeScope.INLINE, val);
+}
+
+class HashTagAttribute extends Attribute<String?> {
+  HashTagAttribute(String? val) : super('hashtag', AttributeScope.INLINE, val);
 }
 
 class DateAttribute extends Attribute<String?> {

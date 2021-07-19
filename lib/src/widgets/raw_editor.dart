@@ -60,6 +60,7 @@ class RawEditor extends StatefulWidget {
     this.showSuggestions,
     this.embedBuilder,
     this.onMentionTap,
+    this.onHashtagTap,
     this.suggestionWidget,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
@@ -78,6 +79,7 @@ class RawEditor extends StatefulWidget {
   final String? placeholder;
   final ValueChanged<String>? onLaunchUrl;
   final ValueChanged<String>? onMentionTap;
+  final ValueChanged<String>? onHashtagTap;
   final ToolbarOptions toolbarOptions;
   final bool showSelectionHandles;
   final bool showCursor;

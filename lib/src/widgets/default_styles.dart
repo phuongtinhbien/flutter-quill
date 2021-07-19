@@ -75,6 +75,7 @@ class DefaultStyles {
     this.dateBuilder,
     this.suggestionWidth = 200,
     this.suggestionHeight = 200,
+    this.hashtagStyle
   });
 
   final DefaultTextBlockStyle? h1;
@@ -99,6 +100,7 @@ class DefaultStyles {
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
   final TextStyle? mentionStyle;
+  final TextStyle? hashtagStyle;
 
   final bool customizeCheckbox;
   final bool showDateCheckbox;
@@ -179,6 +181,8 @@ class DefaultStyles {
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         bold: const TextStyle(fontWeight: FontWeight.bold),
         mentionStyle:
+            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+        hashtagStyle:
             const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
         italic: const TextStyle(fontStyle: FontStyle.italic),
         underline: const TextStyle(decoration: TextDecoration.underline),
@@ -302,6 +306,7 @@ class DefaultStyles {
         tagBuilder: other.tagBuilder ?? tagBuilder,
         dateBuilder: other.dateBuilder ?? dateBuilder,
         mentionStyle: other.mentionStyle ?? mentionStyle,
+        hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
         suggestionWidth: other.suggestionWidth);
   }
