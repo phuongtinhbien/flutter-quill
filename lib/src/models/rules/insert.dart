@@ -379,14 +379,14 @@ class AutoFormatMentionRule extends InsertRule {
       }
       var value = '';
       var temp = tag.replaceAll('@', '');
-      print (tag);
+      // print (tag);
       if (mentions.containsKey(temp)) {
         value = mentions[temp]!;
       } else {
         return null;
       }
 
-      print(value);
+      // print(value);
       attributes.addAll(MentionAttribute(value).toJson());
       return Delta()
         ..retain(index + (len ?? 0) - cand.length)

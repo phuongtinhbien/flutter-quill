@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -52,6 +53,8 @@ abstract class EditorState extends State<RawEditor> {
   RenderEditor? getRenderEditor();
 
   EditorTextSelectionOverlay? getSelectionOverlay();
+
+  EditorSuggestionsTextSelectionOverlay? getSuggestionSelectionOverlay();
 
   bool showToolbar();
 
@@ -145,7 +148,10 @@ class QuillEditor extends StatefulWidget {
       this.embedBuilder = _defaultEmbedBuilder,
       this.mentionKeys,
       this.mentionStrings,
-      this.onMentionTap});
+      this.onMentionTap,
+      this.onHashtagTap,
+      this.showSuggestions = true,
+      this.suggestionWidget});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -183,6 +189,9 @@ class QuillEditor extends StatefulWidget {
   final ScrollPhysics? scrollPhysics;
   final ValueChanged<String>? onLaunchUrl;
   final ValueChanged<String>? onMentionTap;
+  final ValueChanged<String>? onHashtagTap;
+  final bool showSuggestions;
+  final Widget? suggestionWidget;
 
   ///Mentions
   final List<String>? mentionKeys;
@@ -314,8 +323,11 @@ class _QuillEditorState extends State<QuillEditor>
           widget.keyboardAppearance,
           widget.enableInteractiveSelection,
           widget.scrollPhysics,
+          widget.showSuggestions,
           widget.embedBuilder,
-          widget.onMentionTap),
+          widget.onMentionTap,
+          widget.onHashtagTap,
+          widget.suggestionWidget),
     );
   }
 
@@ -432,8 +444,17 @@ class _QuillEditorSelectionGestureDetectorBuilder
     } else if (segment.style.containsKey(Attribute.mention.key)) {
       final launchUrl = getEditor()!.widget.onMentionTap;
       String? link = segment.style.attributes[Attribute.mention.key]!.value;
-      if (getEditor()!.widget.readOnly && link !=
-          null) {
+      if (getEditor()!.widget.readOnly && link != null) {
+        link = link.trim();
+        if (launchUrl != null) {
+          launchUrl(link);
+        }
+      }
+      return false;
+    } else if (segment.style.containsKey(Attribute.hashtag.key)) {
+      final launchUrl = getEditor()!.widget.onHashtagTap;
+      String? link = segment.style.attributes[Attribute.hashtag.key]!.value;
+      if (getEditor()!.widget.readOnly && link != null) {
         link = link.trim();
         if (launchUrl != null) {
           launchUrl(link);

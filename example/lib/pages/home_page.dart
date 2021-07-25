@@ -14,6 +14,7 @@ import 'package:tuple/tuple.dart';
 
 import '../universal_ui/universal_ui.dart';
 import 'read_only_page.dart';
+import 'operation_utils.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,11 +24,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   QuillController? _controller;
   final FocusNode _focusNode = FocusNode();
+  bool showSuggestions = false;
+  int length =3;
 
   @override
   void initState() {
     super.initState();
     _loadFromAssets();
+
+
   }
 
   Future<void> _loadFromAssets() async {
@@ -45,6 +50,7 @@ class _HomePageState extends State<HomePage> {
             document: doc, selection: const TextSelection.collapsed(offset: 0));
       });
     }
+    _controller!.addListener(_onSearchChanged);
   }
 
   @override
@@ -101,6 +107,27 @@ class _HomePageState extends State<HomePage> {
         placeholder: 'Add content',
         expands: false,
         padding: EdgeInsets.zero,
+
+        onLaunchUrl: (val){
+          print (val);
+        },
+        onMentionTap: (val){
+          print (val);
+        },
+        showSuggestions: showSuggestions,
+        suggestionWidget:Material(
+          child: ListView.builder(itemBuilder: (_, index){
+            return ListTile(title: Text('Suggestion $index'),onTap: (){
+              setState(() {
+                showSuggestions = !showSuggestions;
+              });
+            },);
+          }, itemCount: length,),
+        ),
+        // onTapDown: (details, position){
+        //   // print(details);
+        //   return true;
+        // },
         customStyles: DefaultStyles(
           h1: DefaultTextBlockStyle(
               const TextStyle(
@@ -254,5 +281,26 @@ class _HomePageState extends State<HomePage> {
         builder: (context) => ReadOnlyPage(),
       ),
     );
+  }
+
+
+  void _onSearchChanged() {
+    final line = _controller!.document
+        .queryChild(_controller!.selection.baseOffset)
+        .node;
+    if (line != null && !line.isHeading) {
+      final cand = line.toPlainText().split(' ').last;
+      final exp = RegExp(r'(@|#)[a-zA-Z0-9]+');
+      final allMatches = exp.allMatches(cand).toList();
+      var tag = '';
+      setState(() {
+        showSuggestions =allMatches.isNotEmpty;
+        length+=3;
+      });
+    } else {
+      setState(() {
+        showSuggestions = false;
+      });
+    }
   }
 }

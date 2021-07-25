@@ -55,6 +55,10 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/
+    - example/lib/widgets/
+    - example/lib/
+    - example/lib/pages/
+    - example/lib/universal_ui/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

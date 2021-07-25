@@ -75,9 +75,9 @@ class KeyboardListener {
 
     final keysPressed =
         LogicalKeyboardKey.collapseSynonyms(RawKeyboard.instance.keysPressed);
-    print('keysPressed: ${keysPressed.toString()}');
+    // print('keysPressed: ${keysPressed.toString()}');
     final key = event.logicalKey;
-    print('key: ${key.toString()}');
+    // print('key: ${key.toString()}');
 
     final isMacOS = event.data is RawKeyEventDataMacOs;
     if (!_nonModifierKeys.contains(key) ||

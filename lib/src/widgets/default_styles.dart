@@ -44,35 +44,39 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles(
-      {this.h1,
-      this.h2,
-      this.h3,
-      this.paragraph,
-      this.bold,
-      this.italic,
-      this.underline,
-      this.strikeThrough,
-      this.link,
-      this.color,
-      this.placeHolder,
-      this.lists,
-      this.quote,
-      this.code,
-      this.indent,
-      this.align,
-      this.leading,
-      this.sizeSmall,
-      this.sizeLarge,
-      this.sizeHuge,
-      this.customizeCheckbox = false,
-      this.showDateCheckbox = false,
-      this.checkedCheckbox,
-      this.unCheckedCheckbox,
-      this.tag,
-      this.tagBuilder,
-      this.mentionStyle,
-      this.dateBuilder});
+  DefaultStyles({
+    this.h1,
+    this.h2,
+    this.h3,
+    this.paragraph,
+    this.bold,
+    this.italic,
+    this.underline,
+    this.strikeThrough,
+    this.link,
+    this.color,
+    this.placeHolder,
+    this.lists,
+    this.quote,
+    this.code,
+    this.indent,
+    this.align,
+    this.leading,
+    this.sizeSmall,
+    this.sizeLarge,
+    this.sizeHuge,
+    this.customizeCheckbox = false,
+    this.showDateCheckbox = false,
+    this.checkedCheckbox,
+    this.unCheckedCheckbox,
+    this.tag,
+    this.tagBuilder,
+    this.mentionStyle,
+    this.dateBuilder,
+    this.suggestionWidth = 200,
+    this.suggestionHeight = 200,
+    this.hashtagStyle
+  });
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -96,6 +100,7 @@ class DefaultStyles {
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
   final TextStyle? mentionStyle;
+  final TextStyle? hashtagStyle;
 
   final bool customizeCheckbox;
   final bool showDateCheckbox;
@@ -103,6 +108,9 @@ class DefaultStyles {
   final Widget? unCheckedCheckbox;
   final Widget Function(List<String>)? tagBuilder;
   final Widget Function(BuildContext, int)? dateBuilder;
+  // final Widget Function(BuildContext, dynamic)? suggestionItemBuilder;
+  final double suggestionWidth;
+  final double suggestionHeight;
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);
@@ -173,6 +181,8 @@ class DefaultStyles {
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         bold: const TextStyle(fontWeight: FontWeight.bold),
         mentionStyle:
+            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+        hashtagStyle:
             const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
         italic: const TextStyle(fontStyle: FontStyle.italic),
         underline: const TextStyle(decoration: TextDecoration.underline),
@@ -262,8 +272,7 @@ class DefaultStyles {
         dateBuilder: (_, date) {
           return SizedBox(
             width: 80,
-            child: Text(
-                DateTime.fromMillisecondsSinceEpoch(date).toString()),
+            child: Text(DateTime.fromMillisecondsSinceEpoch(date).toString()),
           );
         });
   }
@@ -296,6 +305,9 @@ class DefaultStyles {
         tag: other.tag ?? tag,
         tagBuilder: other.tagBuilder ?? tagBuilder,
         dateBuilder: other.dateBuilder ?? dateBuilder,
-        mentionStyle: other.mentionStyle ?? mentionStyle);
+        mentionStyle: other.mentionStyle ?? mentionStyle,
+        hashtagStyle: other.hashtagStyle ?? hashtagStyle,
+        suggestionHeight: other.suggestionHeight,
+        suggestionWidth: other.suggestionWidth);
   }
 }
