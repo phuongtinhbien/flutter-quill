@@ -1,3 +1,12 @@
+## [1.7.2]
+* Fix static analysis error.
+
+## [1.7.1]
+* Support Youtube video.
+
+## [1.7.0]
+* Support video.
+
 ## [1.6.4]
 * Bug fix for clear format button.
 
