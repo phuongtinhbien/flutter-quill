@@ -197,7 +197,7 @@ class EditorSuggestionsTextSelectionOverlay {
       endpoints[0].point.dy - baseLineHeight,
     );
 
-    print(value.toString());
+    // print(value.toString());
     return FadeTransition(
       opacity: _toolbarOpacity,
       child: CompositedTransformFollower(

@@ -450,7 +450,7 @@ class RawEditorState extends EditorState
   }
 
   bool _shouldShowSuggestionHandles() {
-    print(widget.showSuggestions);
+    // print(widget.showSuggestions);
     return widget.showSuggestions && !_shouldShowSelectionHandles();
   }
 
