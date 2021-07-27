@@ -488,6 +488,51 @@ class PreserveInlineMentionStylesRule extends InsertRule {
   }
 }
 
+class PreserveInlineHashStylesRule extends InsertRule {
+  const PreserveInlineHashStylesRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data.contains('\n')) {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null ||
+        prev.data is! String ||
+        (prev.data as String).contains('\n')) {
+      return null;
+    }
+    final attributes = prev.attributes;
+    final text = data;
+    if (attributes == null || !attributes.containsKey(Attribute.hashtag.key)) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    attributes.remove(Attribute.hashtag.key);
+    final delta = Delta()
+      ..retain(index + (len ?? 0))
+      ..insert(text, attributes.isEmpty ? null : attributes);
+    final next = itr.next();
+
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+
+    if (!nextAttributes.containsKey(Attribute.hashtag.key)) {
+      return delta;
+    }
+    if (attributes[Attribute.hashtag.key] ==
+        nextAttributes[Attribute.hashtag.key]) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    return delta;
+  }
+}
+
 class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();
 

@@ -38,6 +38,7 @@ class Rules {
   static final Rules _instance = Rules([
     const FormatLinkAtCaretPositionRule(),
     const FormatMentionAtCaretPositionRule(),
+    const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
     const ResolveInlineFormatRule(),
     const InsertEmbedsRule(),
@@ -49,6 +50,7 @@ class Rules {
     const AutoFormatLinksRule(),
 
     const PreserveInlineMentionStylesRule(),
+    const PreserveInlineHashStylesRule(),
     const PreserveInlineStylesRule(),
     const CatchAllInsertRule(),
     const EnsureEmbedLineRule(),
