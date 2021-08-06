@@ -467,8 +467,10 @@ class _TextSelectionHandleOverlayState
             onPanUpdate: _handleDragUpdate,
             onTap: _handleTap,
             child: widget.suggestionWidget != null ? Container(
-              width: widget.maxWidth,
-              height: widget.maxHeight,
+              constraints: BoxConstraints(
+                maxWidth: widget.maxWidth,
+                maxHeight: widget.maxHeight,
+              ),
               child: widget.suggestionWidget,
             ): Container(),
           ),
