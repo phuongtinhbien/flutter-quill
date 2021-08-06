@@ -287,7 +287,7 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
 
   final double maxWidth;
   final double maxHeight;
-  final  Widget? suggestionWidget;
+  final Widget? suggestionWidget;
 
   @override
   _TextSelectionHandleOverlayState createState() =>
@@ -452,6 +452,10 @@ class _TextSelectionHandleOverlayState
         opacity: _opacity,
         child: Container(
           alignment: Alignment.topLeft,
+          constraints: BoxConstraints(
+            maxWidth: widget.maxWidth,
+            maxHeight: widget.maxHeight,
+          ),
           margin: EdgeInsets.only(
             left: padding.left,
             top: padding.top + lineHeight + 10,
@@ -466,13 +470,7 @@ class _TextSelectionHandleOverlayState
             onPanStart: _handleDragStart,
             onPanUpdate: _handleDragUpdate,
             onTap: _handleTap,
-            child: widget.suggestionWidget != null ? Container(
-              constraints: BoxConstraints(
-                maxWidth: widget.maxWidth,
-                maxHeight: widget.maxHeight,
-              ),
-              child: widget.suggestionWidget,
-            ): Container(),
+            child: widget.suggestionWidget,
           ),
         ),
       ),
