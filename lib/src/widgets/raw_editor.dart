@@ -248,23 +248,23 @@ class RawEditorState extends EditorState
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-          node,
-          _textDirection,
-          widget.scrollBottomInset,
-          _getVerticalSpacingForBlock(node, _styles),
-          widget.controller.selection,
-          widget.selectionColor,
-          _styles,
-          widget.enableInteractiveSelection,
-          _hasFocus,
-          attrs.containsKey(Attribute.codeBlock.key)
-              ? const EdgeInsets.all(16)
-              : null,
-          widget.embedBuilder,
-          _cursorCont,
-          indentLevelCounts,
-          _handleCheckboxTap,
-        );
+            node,
+            _textDirection,
+            widget.scrollBottomInset,
+            _getVerticalSpacingForBlock(node, _styles),
+            widget.controller.selection,
+            widget.selectionColor,
+            _styles,
+            widget.enableInteractiveSelection,
+            _hasFocus,
+            attrs.containsKey(Attribute.codeBlock.key)
+                ? const EdgeInsets.all(16)
+                : null,
+            widget.embedBuilder,
+            _cursorCont,
+            indentLevelCounts,
+            _handleCheckboxTap,
+            widget.readOnly);
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -280,6 +280,7 @@ class RawEditorState extends EditorState
       textDirection: _textDirection,
       embedBuilder: widget.embedBuilder,
       styles: _styles!,
+      readOnly: widget.readOnly,
     );
     final editableTextLine = EditableTextLine(
         node,
@@ -689,12 +690,13 @@ class RawEditorState extends EditorState
     if (value.text == textEditingValue.text) {
       widget.controller.updateSelection(value.selection, ChangeSource.LOCAL);
     } else {
-      __setEditingValue(value);
+      _setEditingValue(value);
     }
   }
 
-  Future<void> __setEditingValue(TextEditingValue value) async {
-    if (await __isItCut(value)) {
+  // set editing value from clipboard for mobile
+  Future<void> _setEditingValue(TextEditingValue value) async {
+    if (await _isItCut(value)) {
       widget.controller.replaceText(
         textEditingValue.selection.start,
         textEditingValue.text.length - value.text.length,
@@ -722,7 +724,7 @@ class RawEditorState extends EditorState
     }
   }
 
-  Future<bool> __isItCut(TextEditingValue value) async {
+  Future<bool> _isItCut(TextEditingValue value) async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     if (data == null) {
       return false;

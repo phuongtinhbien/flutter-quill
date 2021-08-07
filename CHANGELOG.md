@@ -1,3 +1,30 @@
+## [1.9.0]
+* Support inline image.
+
+## [1.8.3]
+* Updated quill_delta.
+
+## [1.8.2]
+* Support mobile image alignment.
+
+## [1.8.1]
+* Support mobile custom size image.
+
+## [1.8.0]
+* Support entering link for image/video.
+
+## [1.7.3]
+* Bumps photo_view version.
+
+## [1.7.2]
+* Fix static analysis error.
+
+## [1.7.1]
+* Support Youtube video.
+
+## [1.7.0]
+* Support video.
+
 ## [1.6.4]
 * Bug fix for clear format button.
 
