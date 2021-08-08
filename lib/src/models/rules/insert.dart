@@ -273,37 +273,6 @@ class InsertEmbedsRule extends InsertRule {
   }
 }
 
-class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
-  const ForceNewlineForInsertsAroundEmbedRule();
-
-  @override
-  Delta? applyRule(Delta document, int index,
-      {int? len, Object? data, Attribute? attribute}) {
-    if (data is! String) {
-      return null;
-    }
-
-    final text = data;
-    final itr = DeltaIterator(document);
-    final prev = itr.skip(index);
-    final cur = itr.next();
-    final cursorBeforeEmbed = cur.data is! String;
-    final cursorAfterEmbed = prev != null && prev.data is! String;
-
-    if (!cursorBeforeEmbed && !cursorAfterEmbed) {
-      return null;
-    }
-    final delta = Delta()..retain(index + (len ?? 0));
-    if (cursorBeforeEmbed && !text.endsWith('\n')) {
-      return delta..insert(text)..insert('\n');
-    }
-    if (cursorAfterEmbed && !text.startsWith('\n')) {
-      return delta..insert('\n')..insert(text);
-    }
-    return delta..insert(text);
-  }
-}
-
 class AutoFormatLinksRule extends InsertRule {
   const AutoFormatLinksRule();
 
@@ -480,6 +449,51 @@ class PreserveInlineMentionStylesRule extends InsertRule {
     }
     if (attributes[Attribute.mention.key] ==
         nextAttributes[Attribute.mention.key]) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    return delta;
+  }
+}
+
+class PreserveInlineHashStylesRule extends InsertRule {
+  const PreserveInlineHashStylesRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data.contains('\n')) {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null ||
+        prev.data is! String ||
+        (prev.data as String).contains('\n')) {
+      return null;
+    }
+    final attributes = prev.attributes;
+    final text = data;
+    if (attributes == null || !attributes.containsKey(Attribute.hashtag.key)) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    attributes.remove(Attribute.hashtag.key);
+    final delta = Delta()
+      ..retain(index + (len ?? 0))
+      ..insert(text, attributes.isEmpty ? null : attributes);
+    final next = itr.next();
+
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+
+    if (!nextAttributes.containsKey(Attribute.hashtag.key)) {
+      return delta;
+    }
+    if (attributes[Attribute.hashtag.key] ==
+        nextAttributes[Attribute.hashtag.key]) {
       return Delta()
         ..retain(index + (len ?? 0))
         ..insert(text, attributes);

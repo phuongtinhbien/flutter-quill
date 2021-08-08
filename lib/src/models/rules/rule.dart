@@ -37,18 +37,19 @@ class Rules {
   final List<Rule> _rules;
   static final Rules _instance = Rules([
     const FormatLinkAtCaretPositionRule(),
-    const FormatMentionAtCaretPositionRule(),
+    // const FormatMentionAtCaretPositionRule(),
+    const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
     const ResolveInlineFormatRule(),
     const InsertEmbedsRule(),
-    const ForceNewlineForInsertsAroundEmbedRule(),
     const AutoExitBlockRule(),
     const PreserveBlockStyleOnInsertRule(),
     const PreserveLineStyleOnSplitRule(),
     const ResetLineFormatOnNewLineRule(),
     const AutoFormatLinksRule(),
 
-    const PreserveInlineMentionStylesRule(),
+    // const PreserveInlineMentionStylesRule(),
+    const PreserveInlineHashStylesRule(),
     const PreserveInlineStylesRule(),
     const CatchAllInsertRule(),
     const EnsureEmbedLineRule(),
