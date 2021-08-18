@@ -125,7 +125,9 @@ class RawEditorState extends EditorState
   EditorTextSelectionOverlay? _selectionOverlay;
   EditorSuggestionsTextSelectionOverlay? _suggestionOverlay;
 
-  ScrollController? _scrollController;
+  @override
+  ScrollController get scrollController => _scrollController;
+  late ScrollController _scrollController;
 
   late CursorCont _cursorCont;
 
@@ -647,16 +649,16 @@ class RawEditorState extends EditorState
         final viewport = RenderAbstractViewport.of(renderEditor);
         final editorOffset =
             renderEditor.localToGlobal(const Offset(0, 0), ancestor: viewport);
-        final offsetInViewport = _scrollController!.offset + editorOffset.dy;
+        final offsetInViewport = _scrollController.offset + editorOffset.dy;
 
         final offset = renderEditor.getOffsetToRevealCursor(
-          _scrollController!.position.viewportDimension,
-          _scrollController!.offset,
+          _scrollController.position.viewportDimension,
+          _scrollController.offset,
           offsetInViewport,
         );
 
         if (offset != null) {
-          _scrollController!.animateTo(
+          _scrollController.animateTo(
             offset,
             duration: const Duration(milliseconds: 100),
             curve: Curves.fastOutSlowIn,
