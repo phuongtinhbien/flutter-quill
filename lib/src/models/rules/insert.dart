@@ -42,7 +42,8 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
 
     final text = after.data as String;
 
-    final delta = Delta()..retain(index + (len ?? 0));
+    final delta = Delta()
+      ..retain(index + (len ?? 0));
     if (text.contains('\n')) {
       assert(after.isPlain);
       delta.insert('\n');
@@ -74,12 +75,13 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
       return null;
     }
 
-    final itr = DeltaIterator(document)..skip(index);
+    final itr = DeltaIterator(document)
+      ..skip(index);
 
     // Look for the next newline.
     final nextNewLine = _getNextNewLine(itr);
     final lineStyle =
-        Style.fromJson(nextNewLine.item1?.attributes ?? <String, dynamic>{});
+    Style.fromJson(nextNewLine.item1?.attributes ?? <String, dynamic>{});
 
     final blockStyle = lineStyle.getBlocksExceptHeader();
     // Are we currently in a block? If not then ignore.
@@ -93,11 +95,14 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    } else if (lineStyle.containsKey(Attribute.checked.key)) {
+      resetStyle = Attribute.unchecked.toJson();
     }
 
     // Go over each inserted line and ensure block style is applied.
     final lines = data.split('\n');
-    final delta = Delta()..retain(index + (len ?? 0));
+    final delta = Delta()
+      ..retain(index + (len ?? 0));
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       if (line.isNotEmpty) {
@@ -114,10 +119,9 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
 
     // Reset style of the original newline character if needed.
     if (resetStyle != null) {
-      delta
-        ..retain(nextNewLine.item2!)
-        ..retain((nextNewLine.item1!.data as String).indexOf('\n'))
-        ..retain(1, resetStyle);
+      delta..retain(nextNewLine.item2!)..retain(
+          (nextNewLine.item1!.data as String).indexOf('\n'))..retain(
+          1, resetStyle);
     }
 
     return delta;
@@ -151,7 +155,8 @@ class AutoExitBlockRule extends InsertRule {
     }
 
     final itr = DeltaIterator(document);
-    final prev = itr.skip(index), cur = itr.next();
+    final prev = itr.skip(index),
+        cur = itr.next();
     final blockStyle = Style.fromJson(cur.attributes).getBlockExceptHeader();
     // We are not in a block, ignore.
     if (cur.isPlain || blockStyle == null) {
@@ -189,10 +194,11 @@ class AutoExitBlockRule extends InsertRule {
     // therefore we can exit this block.
     final attributes = cur.attributes ?? <String, dynamic>{};
     final k =
-        attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
+    attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
     attributes[k] = null;
     // retain(1) should be '\n', set it with no attribute
-    return Delta()..retain(index + (len ?? 0))..retain(1, attributes);
+    return Delta()
+      ..retain(index + (len ?? 0))..retain(1, attributes);
   }
 }
 
@@ -206,12 +212,14 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
       return null;
     }
 
-    final itr = DeltaIterator(document)..skip(index);
+    final itr = DeltaIterator(document)
+      ..skip(index);
     final cur = itr.next();
     if (cur.data is! String || !(cur.data as String).startsWith('\n')) {
       return null;
     }
 
+    print('checked case');
     Map<String, dynamic>? resetStyle;
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {
@@ -235,9 +243,11 @@ class InsertEmbedsRule extends InsertRule {
       return null;
     }
 
-    final delta = Delta()..retain(index + (len ?? 0));
+    final delta = Delta()
+      ..retain(index + (len ?? 0));
     final itr = DeltaIterator(document);
-    final prev = itr.skip(index), cur = itr.next();
+    final prev = itr.skip(index),
+        cur = itr.next();
 
     final textBefore = prev?.data is String ? prev!.data as String? : '';
     final textAfter = cur.data is String ? (cur.data as String?)! : '';
@@ -290,7 +300,11 @@ class AutoFormatLinksRule extends InsertRule {
     }
 
     try {
-      final cand = (prev.data as String).split('\n').last.split(' ').last;
+      final cand = (prev.data as String)
+          .split('\n')
+          .last
+          .split(' ')
+          .last;
       final link = Uri.parse(cand);
       if (!['https', 'http'].contains(link.scheme)) {
         return null;
@@ -303,8 +317,8 @@ class AutoFormatLinksRule extends InsertRule {
 
       attributes.addAll(LinkAttribute(link.toString()).toJson());
       return Delta()
-        ..retain(index + (len ?? 0) - cand.length)
-        ..retain(cand.length, attributes)
+        ..retain(index + (len ?? 0) - cand.length)..retain(
+            cand.length, attributes)
         ..insert(data, prev.attributes);
     } on FormatException {
       return null;
@@ -332,7 +346,11 @@ class AutoFormatMentionRule extends InsertRule {
     }
 
     try {
-      final cand = (prev.data as String).split('\n').last.split(' ').last;
+      final cand = (prev.data as String)
+          .split('\n')
+          .last
+          .split(' ')
+          .last;
       final exp = RegExp(r'(@|#)[a-zA-Z0-9]+');
       final allMatches = exp.allMatches(cand).toList();
       var tag = '';
@@ -358,8 +376,8 @@ class AutoFormatMentionRule extends InsertRule {
       // print(value);
       attributes.addAll(MentionAttribute(value).toJson());
       return Delta()
-        ..retain(index + (len ?? 0) - cand.length)
-        ..retain(tag.length, attributes)
+        ..retain(index + (len ?? 0) - cand.length)..retain(
+            tag.length, attributes)
         ..insert(data, prev.attributes);
       // print (delta.toString());
     } on FormatException {
@@ -519,7 +537,7 @@ Tuple2<Operation?, int?> _getNextNewLine(DeltaIterator iterator) {
   for (var skipped = 0; iterator.hasNext; skipped += op.length!) {
     op = iterator.next();
     final lineBreak =
-        (op.data is String ? op.data as String? : '')!.indexOf('\n');
+    (op.data is String ? op.data as String? : '')!.indexOf('\n');
     if (lineBreak >= 0) {
       return Tuple2(op, skipped);
     }

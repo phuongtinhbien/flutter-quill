@@ -345,8 +345,8 @@ class RawEditorState extends EditorState
     });
 
     _scrollController = widget.scrollController;
-    _scrollController!.addListener(_updateSelectionOverlayForScroll);
-    _scrollController!.addListener(_updateSuggestionOverlayForScroll);
+    _scrollController.addListener(_updateSelectionOverlayForScroll);
+    _scrollController.addListener(_updateSuggestionOverlayForScroll);
 
     _cursorCont = CursorCont(
       show: ValueNotifier<bool>(widget.showCursor),
@@ -415,11 +415,11 @@ class RawEditorState extends EditorState
     }
 
     if (widget.scrollController != _scrollController) {
-      _scrollController!.removeListener(_updateSelectionOverlayForScroll);
-      _scrollController!.removeListener(_updateSuggestionOverlayForScroll);
+      _scrollController.removeListener(_updateSelectionOverlayForScroll);
+      _scrollController.removeListener(_updateSuggestionOverlayForScroll);
       _scrollController = widget.scrollController;
-      _scrollController!.addListener(_updateSelectionOverlayForScroll);
-      _scrollController!.addListener(_updateSuggestionOverlayForScroll);
+      _scrollController.addListener(_updateSelectionOverlayForScroll);
+      _scrollController.addListener(_updateSuggestionOverlayForScroll);
     }
 
     if (widget.focusNode != oldWidget.focusNode) {
