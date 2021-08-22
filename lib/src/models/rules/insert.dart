@@ -93,6 +93,9 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    } else if (lineStyle.containsKey(Attribute.checked.key) &&
+        lineStyle.attributes[Attribute.checked.key]!.value == 'checked') {
+      resetStyle = Attribute.unchecked.toJson();
     }
 
     // Go over each inserted line and ensure block style is applied.
@@ -212,6 +215,7 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
       return null;
     }
 
+    print('checked case');
     Map<String, dynamic>? resetStyle;
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {

@@ -13,7 +13,7 @@ class Embeddable {
   final dynamic data;
 
   Map<String, dynamic> toJson() {
-    final m = <String, String>{type: data};
+    final m = <String, dynamic>{type: data};
     return m;
   }
 
