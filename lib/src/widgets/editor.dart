@@ -251,7 +251,9 @@ class QuillEditor extends StatefulWidget {
       this.onSingleLongTapStart,
       this.onSingleLongTapMoveUpdate,
       this.onSingleLongTapEnd,
-      this.embedBuilder = _defaultEmbedBuilder});
+      this.embedBuilder = _defaultEmbedBuilder,
+      this.customStyleBuilder,
+      Key? key});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -310,6 +312,7 @@ class QuillEditor extends StatefulWidget {
       onSingleLongTapEnd;
 
   final EmbedBuilder embedBuilder;
+  final CustomStyleBuilder? customStyleBuilder;
 
   @override
   _QuillEditorState createState() => _QuillEditorState();
@@ -374,46 +377,48 @@ class _QuillEditorState extends State<QuillEditor>
     return _selectionGestureDetectorBuilder.build(
       HitTestBehavior.translucent,
       RawEditor(
-          _editorKey,
-          widget.controller,
-          widget.focusNode,
-          widget.scrollController,
-          widget.scrollable,
-          widget.scrollBottomInset,
-          widget.padding,
-          widget.readOnly,
-          widget.placeholder,
-          widget.onLaunchUrl,
-          ToolbarOptions(
-            copy: widget.enableInteractiveSelection,
-            cut: widget.enableInteractiveSelection,
-            paste: widget.enableInteractiveSelection,
-            selectAll: widget.enableInteractiveSelection,
-          ),
-          theme.platform == TargetPlatform.iOS ||
-              theme.platform == TargetPlatform.android,
-          widget.showCursor,
-          CursorStyle(
-            color: cursorColor,
-            backgroundColor: Colors.grey,
-            width: 2,
-            radius: cursorRadius,
-            offset: cursorOffset,
-            paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
-            opacityAnimates: cursorOpacityAnimates,
-          ),
-          widget.textCapitalization,
-          widget.maxHeight,
-          widget.minHeight,
-          widget.customStyles,
-          widget.expands,
-          widget.autoFocus,
-          selectionColor,
-          textSelectionControls,
-          widget.keyboardAppearance,
-          widget.enableInteractiveSelection,
-          widget.scrollPhysics,
-          widget.embedBuilder),
+        _editorKey,
+        widget.controller,
+        widget.focusNode,
+        widget.scrollController,
+        widget.scrollable,
+        widget.scrollBottomInset,
+        widget.padding,
+        widget.readOnly,
+        widget.placeholder,
+        widget.onLaunchUrl,
+        ToolbarOptions(
+          copy: widget.enableInteractiveSelection,
+          cut: widget.enableInteractiveSelection,
+          paste: widget.enableInteractiveSelection,
+          selectAll: widget.enableInteractiveSelection,
+        ),
+        theme.platform == TargetPlatform.iOS ||
+            theme.platform == TargetPlatform.android,
+        widget.showCursor,
+        CursorStyle(
+          color: cursorColor,
+          backgroundColor: Colors.grey,
+          width: 2,
+          radius: cursorRadius,
+          offset: cursorOffset,
+          paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
+          opacityAnimates: cursorOpacityAnimates,
+        ),
+        widget.textCapitalization,
+        widget.maxHeight,
+        widget.minHeight,
+        widget.customStyles,
+        widget.expands,
+        widget.autoFocus,
+        selectionColor,
+        textSelectionControls,
+        widget.keyboardAppearance,
+        widget.enableInteractiveSelection,
+        widget.scrollPhysics,
+        widget.embedBuilder,
+        widget.customStyleBuilder,
+      ),
     );
   }
 
