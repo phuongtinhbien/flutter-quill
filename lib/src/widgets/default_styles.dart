@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_quill/src/widgets/delegate.dart';
 import 'package:tuple/tuple.dart';
 
 class QuillStyles extends InheritedWidget {
@@ -107,7 +108,8 @@ class DefaultStyles {
   final Widget? checkedCheckbox;
   final Widget? unCheckedCheckbox;
   final Widget Function(List<String>)? tagBuilder;
-  final Widget Function(BuildContext, int)? dateBuilder;
+  final DateBuilder? dateBuilder;
+
   // final Widget Function(BuildContext, dynamic)? suggestionItemBuilder;
   final double suggestionWidth;
   final double suggestionHeight;
@@ -269,11 +271,8 @@ class DefaultStyles {
             ],
           );
         },
-        dateBuilder: (_, date) {
-          return SizedBox(
-            width: 80,
-            child: Text(DateTime.fromMillisecondsSinceEpoch(date).toString()),
-          );
+        dateBuilder: (date, readOnly){
+          return Chip(label: Text(date,style: TextStyle(color: Colors.red),));\
         });
   }
 

@@ -9,7 +9,6 @@ import 'package:tuple/tuple.dart';
 import '../models/documents/attribute.dart';
 import '../models/documents/nodes/container.dart' as container;
 import '../models/documents/nodes/leaf.dart' as leaf;
-import '../models/documents/nodes/leaf.dart';
 import '../models/documents/nodes/line.dart';
 import '../models/documents/nodes/node.dart';
 import '../utils/color.dart';
@@ -43,7 +42,7 @@ class TextLine extends StatelessWidget {
     assert(debugCheckHasMediaQuery(context));
     if (line.hasEmbed && line.childCount == 1) {
       // For video, it is always single child
-      final embed = line.children.single as Embed;
+      final embed = line.children.single as leaf.Embed;
       return EmbedProxy(embedBuilder(context, embed, readOnly));
     }
     final textSpan = _getTextSpanForWholeLine(context);
@@ -71,14 +70,16 @@ class TextLine extends StatelessWidget {
   InlineSpan _getTextSpanForWholeLine(BuildContext context) {
     final lineStyle = _getLineStyle(styles);
     if (!line.hasEmbed) {
+      print(line.style);
+      print('-------------------');
       return _buildTextSpan(styles, line.children, lineStyle);
     }
-
     // The line could contain more than one Embed & more than one Text
     final textSpanChildren = <InlineSpan>[];
     var textNodes = LinkedList<Node>();
+
     for (final child in line.children) {
-      if (child is Embed) {
+      if (child is leaf.Embed) {
         if (textNodes.isNotEmpty) {
           textSpanChildren.add(_buildTextSpan(styles, textNodes, lineStyle));
           textNodes = LinkedList<Node>();
@@ -117,9 +118,9 @@ class TextLine extends StatelessWidget {
 
   TextSpan _buildTextSpan(DefaultStyles defaultStyles, LinkedList<Node> nodes,
       TextStyle lineStyle) {
-    final children = nodes
-        .map((node) => _getTextSpanFromNode(defaultStyles, node))
-        .toList(growable: false);
+    final children = nodes.map((node) {
+      return _getTextSpanFromNode(defaultStyles, node);
+    }).toList(growable: false);
 
     return TextSpan(children: children, style: lineStyle);
   }
@@ -177,7 +178,6 @@ class TextLine extends StatelessWidget {
     final style = textNode.style;
     var res = const TextStyle(); // This is inline text style
     final color = textNode.style.attributes[Attribute.color.key];
-
     <String, TextStyle?>{
       Attribute.bold.key: defaultStyles.bold,
       Attribute.italic.key: defaultStyles.italic,
@@ -245,7 +245,25 @@ class TextLine extends StatelessWidget {
     }
 
     res = _applyCustomAttributes(res, textNode.style.attributes);
-    return TextSpan(text: textNode.value, style: res);
+    final textSpan = TextSpan(text: textNode.value, style: res, children: [
+      // TextSpan(text: '\n'),
+      // WidgetSpan(
+      //     child: Container(
+      //       width: 10,
+      //       height: 10,
+      //       color: Colors.red,
+      //     )),
+    ]);
+    if (line.style.containsKey(Attribute.date.key)) {
+      final dateString =
+          line.style.attributes[Attribute.date.key]!.value.toString();
+      print('contain date');
+      textSpan.children!
+        ..add(TextSpan(text: '\n'))
+        ..add(WidgetSpan(
+            child: defaultStyles.dateBuilder!(dateString, readOnly)));
+    }
+    return textSpan;
   }
 
   TextStyle _merge(TextStyle a, TextStyle b) {

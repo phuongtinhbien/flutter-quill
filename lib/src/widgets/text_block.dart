@@ -213,27 +213,27 @@ class EditableTextBlock extends StatelessWidget {
 
   Widget? _buildTrailing(BuildContext context, Line line, int index,
       Map<int, int> indentLevelCounts, int count) {
-    final defaultStyles = QuillStyles.getStyles(context, false);
-    final attrs = line.style.attributes;
-    if (attrs.containsKey(Attribute.date.key)) {
-      var text = int.tryParse(attrs[Attribute.date.key]!.value.toString()) ??
-          DateTime.now().millisecondsSinceEpoch;
-      if (attrs[Attribute.list.key] == Attribute.checked) {
-        return _DateTrailing(
-          date: text,
-          builder: defaultStyles!.dateBuilder,
-          key: UniqueKey(),
-        );
-      }
-
-      if (attrs[Attribute.list.key] == Attribute.unchecked) {
-        return _DateTrailing(
-          date: text,
-          builder: defaultStyles!.dateBuilder,
-          key: UniqueKey(),
-        );
-      }
-    }
+    // final defaultStyles = QuillStyles.getStyles(context, false);
+    // final attrs = line.style.attributes;
+    // if (attrs.containsKey(Attribute.date.key)) {
+    //   var text = int.tryParse(attrs[Attribute.date.key]!.value.toString()) ??
+    //       DateTime.now().millisecondsSinceEpoch;
+    //   if (attrs[Attribute.list.key] == Attribute.checked) {
+    //     return _DateTrailing(
+    //       date: text,
+    //       builder: defaultStyles!.dateBuilder,
+    //       key: UniqueKey(),
+    //     );
+    //   }
+    //
+    //   if (attrs[Attribute.list.key] == Attribute.unchecked) {
+    //     return _DateTrailing(
+    //       date: text,
+    //       builder: defaultStyles!.dateBuilder,
+    //       key: UniqueKey(),
+    //     );
+    //   }
+    // }
 
     return null;
   }
@@ -795,6 +795,7 @@ class _Checkbox extends StatelessWidget {
       return Container(
           alignment: AlignmentDirectional.topEnd,
           width: width,
+          height: width,
           padding: const EdgeInsetsDirectional.only(
             end: 13,
           ),
@@ -806,6 +807,7 @@ class _Checkbox extends StatelessWidget {
     return Container(
       alignment: AlignmentDirectional.topEnd,
       width: width,
+      height: width,
       padding: const EdgeInsetsDirectional.only(end: 13),
       child: GestureDetector(
         onTap: () => _onCheckboxClicked(!isChecked),
