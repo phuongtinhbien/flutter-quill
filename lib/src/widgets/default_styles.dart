@@ -272,7 +272,7 @@ class DefaultStyles {
           );
         },
         dateBuilder: (date, readOnly){
-          return Chip(label: Text(date,style: TextStyle(color: Colors.red),));\
+          return Chip(label: Text(date,style: TextStyle(color: Colors.red),));
         });
   }
 
