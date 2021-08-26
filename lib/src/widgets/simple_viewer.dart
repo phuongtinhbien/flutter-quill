@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:tuple/tuple.dart';
 
@@ -24,6 +25,7 @@ import 'video_app.dart';
 import 'youtube_video_app.dart';
 
 class QuillSimpleViewer extends StatefulWidget {
+
   const QuillSimpleViewer({
     required this.controller,
     required this.readOnly,
@@ -36,6 +38,7 @@ class QuillSimpleViewer extends StatefulWidget {
     this.scrollBottomInset = 0,
     this.padding = EdgeInsets.zero,
     this.embedBuilder,
+    this.dateBuilder,
     Key? key,
   })  : assert(truncate ||
             ((truncateScale == null) &&
@@ -54,6 +57,8 @@ class QuillSimpleViewer extends StatefulWidget {
   final double scrollBottomInset;
   final EdgeInsetsGeometry padding;
   final EmbedBuilder? embedBuilder;
+  final DateBuilder? dateBuilder;
+
   final bool readOnly;
 
   @override
@@ -100,6 +105,7 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
   }
 
   EmbedBuilder get embedBuilder => widget.embedBuilder ?? _defaultEmbedBuilder;
+  DateBuilder get dateBuilder => widget.dateBuilder ?? _defaultDateBuilder;
 
   Widget _defaultEmbedBuilder(
       BuildContext context, leaf.Embed node, bool readOnly) {
@@ -128,6 +134,9 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
           'widgets.',
         );
     }
+  }
+  Widget _defaultDateBuilder(Node node, String date, bool readOnly) {
+   return Chip (label: Text(date),);
   }
 
   String _standardizeImageUrl(String url) {
@@ -218,7 +227,7 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
             cursorCont: _cursorCont,
             indentLevelCounts: indentLevelCounts,
             onCheckboxTap: _handleCheckboxTap,
-            readOnly: widget.readOnly);
+            readOnly: widget.readOnly, dateBuilder: dateBuilder,);
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -245,7 +254,7 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
       textDirection: _textDirection,
       embedBuilder: embedBuilder,
       styles: _styles,
-      readOnly: widget.readOnly,
+      readOnly: widget.readOnly, dateBuilder: dateBuilder,
     );
     final editableTextLine = EditableTextLine(
         node,

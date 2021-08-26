@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import '../../flutter_quill.dart';
+import 'package:flutter_quill/models/documents/nodes/node.dart';
 
+import '../../flutter_quill.dart';
 import '../models/documents/nodes/leaf.dart';
 import 'editor.dart';
 import 'text_selection.dart';
@@ -11,8 +12,7 @@ import 'text_selection.dart';
 typedef EmbedBuilder = Widget Function(
     BuildContext context, Embed node, bool readOnly);
 
-typedef DateBuilder = Widget Function(String date, bool readOnly);
-
+typedef DateBuilder = Widget Function(Node line, String date, bool readOnly);
 
 typedef CustomStyleBuilder = TextStyle Function(Attribute attribute);
 

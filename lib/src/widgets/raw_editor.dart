@@ -63,6 +63,7 @@ class RawEditor extends StatefulWidget {
     this.onHashtagTap,
     this.suggestionWidget,
     this.customStyleBuilder,
+      this.dateBuilder,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -97,6 +98,7 @@ class RawEditor extends StatefulWidget {
   final bool enableInteractiveSelection;
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
   final bool showSuggestions;
   final Widget? suggestionWidget;
 
@@ -269,7 +271,7 @@ class RawEditorState extends EditorState
             indentLevelCounts: indentLevelCounts,
             onCheckboxTap: _handleCheckboxTap,
             readOnly: widget.readOnly,
-            customStyleBuilder: widget.customStyleBuilder);
+            customStyleBuilder: widget.customStyleBuilder, dateBuilder: widget.dateBuilder,);
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -284,6 +286,7 @@ class RawEditorState extends EditorState
       line: node,
       textDirection: _textDirection,
       embedBuilder: widget.embedBuilder,
+      dateBuilder: widget.dateBuilder,
       customStyleBuilder: widget.customStyleBuilder,
       styles: _styles!,
       readOnly: widget.readOnly,

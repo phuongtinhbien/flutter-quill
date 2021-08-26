@@ -23,6 +23,7 @@ class TextLine extends StatelessWidget {
   const TextLine({
     required this.line,
     required this.embedBuilder,
+    required this.dateBuilder,
     required this.styles,
     required this.readOnly,
     this.textDirection,
@@ -33,6 +34,7 @@ class TextLine extends StatelessWidget {
   final Line line;
   final TextDirection? textDirection;
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
   final DefaultStyles styles;
   final bool readOnly;
   final CustomStyleBuilder? customStyleBuilder;
@@ -261,7 +263,7 @@ class TextLine extends StatelessWidget {
       textSpan.children!
         ..add(TextSpan(text: '\n'))
         ..add(WidgetSpan(
-            child: defaultStyles.dateBuilder!(dateString, readOnly)));
+            child: dateBuilder(line, dateString, readOnly)));
     }
     return textSpan;
   }

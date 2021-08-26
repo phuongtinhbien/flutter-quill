@@ -271,9 +271,7 @@ class DefaultStyles {
             ],
           );
         },
-        dateBuilder: (date, readOnly){
-          return Chip(label: Text(date,style: TextStyle(color: Colors.red),));
-        });
+    );
   }
 
   DefaultStyles merge(DefaultStyles other) {

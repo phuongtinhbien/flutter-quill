@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -228,42 +229,50 @@ Widget _defaultEmbedBuilder(
   }
 }
 
+Widget _defaultDateBuilder(Node node, String date, bool readOnly) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
 class QuillEditor extends StatefulWidget {
-  const QuillEditor(
-      {required this.controller,
-      required this.focusNode,
-      required this.scrollController,
-      required this.scrollable,
-      required this.padding,
-      required this.autoFocus,
-      required this.readOnly,
-      required this.expands,
-      this.showCursor,
-      this.paintCursorAboveText,
-      this.placeholder,
-      this.enableInteractiveSelection = true,
-      this.scrollBottomInset = 0,
-      this.minHeight,
-      this.maxHeight,
-      this.customStyles,
-      this.textCapitalization = TextCapitalization.sentences,
-      this.keyboardAppearance = Brightness.light,
-      this.scrollPhysics,
-      this.onLaunchUrl,
-      this.onTapDown,
-      this.onTapUp,
-      this.onSingleLongTapStart,
-      this.onSingleLongTapMoveUpdate,
-      this.onSingleLongTapEnd,
-      this.embedBuilder = _defaultEmbedBuilder,
-      this.customStyleBuilder,
-      Key? key,
-      this.mentionKeys,
-      this.mentionStrings,
-      this.onMentionTap,
-      this.onHashtagTap,
-      this.showSuggestions = true,
-      this.suggestionWidget});
+  const QuillEditor({
+    required this.controller,
+    required this.focusNode,
+    required this.scrollController,
+    required this.scrollable,
+    required this.padding,
+    required this.autoFocus,
+    required this.readOnly,
+    required this.expands,
+    this.showCursor,
+    this.paintCursorAboveText,
+    this.placeholder,
+    this.enableInteractiveSelection = true,
+    this.scrollBottomInset = 0,
+    this.minHeight,
+    this.maxHeight,
+    this.customStyles,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.keyboardAppearance = Brightness.light,
+    this.scrollPhysics,
+    this.onLaunchUrl,
+    this.onTapDown,
+    this.onTapUp,
+    this.onSingleLongTapStart,
+    this.onSingleLongTapMoveUpdate,
+    this.onSingleLongTapEnd,
+    this.embedBuilder = _defaultEmbedBuilder,
+    this.dateBuilder = _defaultDateBuilder,
+    this.customStyleBuilder,
+    Key? key,
+    this.mentionKeys,
+    this.mentionStrings,
+    this.onMentionTap,
+    this.onHashtagTap,
+    this.showSuggestions = true,
+    this.suggestionWidget,
+  });
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -332,6 +341,7 @@ class QuillEditor extends StatefulWidget {
       onSingleLongTapEnd;
 
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
   final CustomStyleBuilder? customStyleBuilder;
 
   @override
@@ -397,52 +407,52 @@ class _QuillEditorState extends State<QuillEditor>
     return _selectionGestureDetectorBuilder.build(
       HitTestBehavior.translucent,
       RawEditor(
-        _editorKey,
-        widget.controller,
-        widget.focusNode,
-        widget.scrollController,
-        widget.scrollable,
-        widget.scrollBottomInset,
-        widget.padding,
-        widget.readOnly,
-        widget.placeholder,
-        widget.onLaunchUrl,
-        ToolbarOptions(
-          copy: widget.enableInteractiveSelection,
-          cut: widget.enableInteractiveSelection,
-          paste: widget.enableInteractiveSelection,
-          selectAll: widget.enableInteractiveSelection,
-        ),
-        theme.platform == TargetPlatform.iOS ||
-            theme.platform == TargetPlatform.android,
-        widget.showCursor,
-        CursorStyle(
-          color: cursorColor,
-          backgroundColor: Colors.grey,
-          width: 2,
-          radius: cursorRadius,
-          offset: cursorOffset,
-          paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
-          opacityAnimates: cursorOpacityAnimates,
-        ),
-        widget.textCapitalization,
-        widget.maxHeight,
-        widget.minHeight,
-        widget.customStyles,
-        widget.expands,
-        widget.autoFocus,
-        selectionColor,
-        textSelectionControls,
-        widget.keyboardAppearance,
-        widget.enableInteractiveSelection,
-        widget.scrollPhysics,
-        widget.showSuggestions,
-        widget.embedBuilder,
-        widget.onMentionTap,
-        widget.onHashtagTap,
-        widget.suggestionWidget,
-        widget.customStyleBuilder,
-      ),
+          _editorKey,
+          widget.controller,
+          widget.focusNode,
+          widget.scrollController,
+          widget.scrollable,
+          widget.scrollBottomInset,
+          widget.padding,
+          widget.readOnly,
+          widget.placeholder,
+          widget.onLaunchUrl,
+          ToolbarOptions(
+            copy: widget.enableInteractiveSelection,
+            cut: widget.enableInteractiveSelection,
+            paste: widget.enableInteractiveSelection,
+            selectAll: widget.enableInteractiveSelection,
+          ),
+          theme.platform == TargetPlatform.iOS ||
+              theme.platform == TargetPlatform.android,
+          widget.showCursor,
+          CursorStyle(
+            color: cursorColor,
+            backgroundColor: Colors.grey,
+            width: 2,
+            radius: cursorRadius,
+            offset: cursorOffset,
+            paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
+            opacityAnimates: cursorOpacityAnimates,
+          ),
+          widget.textCapitalization,
+          widget.maxHeight,
+          widget.minHeight,
+          widget.customStyles,
+          widget.expands,
+          widget.autoFocus,
+          selectionColor,
+          textSelectionControls,
+          widget.keyboardAppearance,
+          widget.enableInteractiveSelection,
+          widget.scrollPhysics,
+          widget.showSuggestions,
+          widget.embedBuilder,
+          widget.onMentionTap,
+          widget.onHashtagTap,
+          widget.suggestionWidget,
+          widget.customStyleBuilder,
+          widget.dateBuilder),
     );
   }
 

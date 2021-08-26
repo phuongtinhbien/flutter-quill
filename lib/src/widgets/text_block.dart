@@ -47,24 +47,26 @@ const List<String> romanNumbers = [
 ];
 
 class EditableTextBlock extends StatelessWidget {
-  const EditableTextBlock(
-      {required this.block,
-      required this.textDirection,
-      required this.scrollBottomInset,
-      required this.verticalSpacing,
-      required this.textSelection,
-      required this.color,
-      required this.styles,
-      required this.enableInteractiveSelection,
-      required this.hasFocus,
-      required this.contentPadding,
-      required this.embedBuilder,
-      required this.cursorCont,
-      required this.indentLevelCounts,
-      required this.onCheckboxTap,
-      required this.readOnly,
-      this.customStyleBuilder,
-      Key? key});
+  const EditableTextBlock({
+    required this.block,
+    required this.textDirection,
+    required this.scrollBottomInset,
+    required this.verticalSpacing,
+    required this.textSelection,
+    required this.color,
+    required this.styles,
+    required this.enableInteractiveSelection,
+    required this.hasFocus,
+    required this.contentPadding,
+    required this.embedBuilder,
+    required this.cursorCont,
+    required this.indentLevelCounts,
+    required this.onCheckboxTap,
+    required this.readOnly,
+    required this.dateBuilder,
+    this.customStyleBuilder,
+    Key? key,
+  });
 
   final Block block;
   final TextDirection textDirection;
@@ -82,6 +84,7 @@ class EditableTextBlock extends StatelessWidget {
   final Map<int, int> indentLevelCounts;
   final Function(int, bool) onCheckboxTap;
   final bool readOnly;
+  final DateBuilder dateBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +129,7 @@ class EditableTextBlock extends StatelessWidget {
             line: line,
             textDirection: textDirection,
             embedBuilder: embedBuilder,
+            dateBuilder: dateBuilder,
             customStyleBuilder: customStyleBuilder,
             styles: styles!,
             readOnly: readOnly,
