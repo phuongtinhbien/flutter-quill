@@ -418,6 +418,15 @@
       "attributes": {
          "list": "checked",
          "date": "23/04/2021"
+
+      },
+      "insert": "\n"
+   },
+   {
+      "attributes": {
+
+         "date": "23/04/2021"
+
       },
       "insert": "\n"
    },
@@ -426,9 +435,7 @@
    },
    {
       "attributes": {
-         "list": "unchecked",
-         "date": "23/04/2021"
-
+         "list": "unchecked"
       },
       "insert": "\n"
    },

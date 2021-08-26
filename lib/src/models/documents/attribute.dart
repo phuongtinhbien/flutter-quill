@@ -315,5 +315,5 @@ class HashTagAttribute extends Attribute<String?> {
 }
 
 class DateAttribute extends Attribute<String?> {
-  DateAttribute(String? val) : super('date', AttributeScope.INLINE, val);
+  DateAttribute(String? val) : super('date', AttributeScope.BLOCK, val);
 }
