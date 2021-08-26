@@ -96,7 +96,8 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     } else if (lineStyle.containsKey(Attribute.checked.key) &&
         lineStyle.attributes[Attribute.checked.key]!.value == 'checked') {
       resetStyle = Attribute.unchecked.toJson();
-    } else if (lineStyle.containsKey(Attribute.date.key)) {
+    }
+    if (lineStyle.containsKey(Attribute.date.key)) {
       resetStyle = Attribute.date.toJson();
     }
 
