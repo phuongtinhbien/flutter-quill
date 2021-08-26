@@ -70,8 +70,8 @@ class TextLine extends StatelessWidget {
   InlineSpan _getTextSpanForWholeLine(BuildContext context) {
     final lineStyle = _getLineStyle(styles);
     if (!line.hasEmbed) {
-      print(line.style);
-      print('-------------------');
+      // print(line.style);
+      // print('-------------------');
       return _buildTextSpan(styles, line.children, lineStyle);
     }
     // The line could contain more than one Embed & more than one Text
