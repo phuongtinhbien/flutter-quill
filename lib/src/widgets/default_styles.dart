@@ -45,7 +45,7 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles({
+  DefaultStyles( {
     this.h1,
     this.h2,
     this.h3,
@@ -76,7 +76,8 @@ class DefaultStyles {
     this.dateBuilder,
     this.suggestionWidth = 200,
     this.suggestionHeight = 200,
-    this.hashtagStyle
+    this.hashtagStyle,
+    this.date,
   });
 
   final DefaultTextBlockStyle? h1;
@@ -100,6 +101,7 @@ class DefaultStyles {
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
+  final DefaultTextBlockStyle? date;
   final TextStyle? mentionStyle;
   final TextStyle? hashtagStyle;
 
@@ -204,6 +206,8 @@ class DefaultStyles {
             null),
         lists: DefaultTextBlockStyle(
             baseStyle, baseSpacing, const Tuple2(0, 6), null),
+      date: DefaultTextBlockStyle(
+            baseStyle, const Tuple2(0, 0), const Tuple2(0, 6), null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color!.withOpacity(0.6)),
             baseSpacing,
@@ -305,6 +309,7 @@ class DefaultStyles {
         mentionStyle: other.mentionStyle ?? mentionStyle,
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
+        date: other.date ?? date,
         suggestionWidth: other.suggestionWidth);
   }
 }

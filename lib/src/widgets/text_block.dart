@@ -293,6 +293,8 @@ class EditableTextBlock extends StatelessWidget {
         lineSpacing = defaultStyles!.code!.lineSpacing;
       } else if (attrs.containsKey(Attribute.align.key)) {
         lineSpacing = defaultStyles!.align!.lineSpacing;
+      } else if (attrs.containsKey(Attribute.date.key)) {
+        lineSpacing = defaultStyles!.date!.lineSpacing;
       }
       top = lineSpacing.item1;
       bottom = lineSpacing.item2;

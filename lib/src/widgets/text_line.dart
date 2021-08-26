@@ -247,23 +247,13 @@ class TextLine extends StatelessWidget {
     }
 
     res = _applyCustomAttributes(res, textNode.style.attributes);
-    final textSpan = TextSpan(text: textNode.value, style: res, children: [
-      // TextSpan(text: '\n'),
-      // WidgetSpan(
-      //     child: Container(
-      //       width: 10,
-      //       height: 10,
-      //       color: Colors.red,
-      //     )),
-    ]);
+    final textSpan = TextSpan(text: textNode.value, style: res, children: []);
     if (line.style.containsKey(Attribute.date.key)) {
       final dateString =
           line.style.attributes[Attribute.date.key]!.value.toString();
-      print('contain date');
       textSpan.children!
-        ..add(TextSpan(text: '\n'))
-        ..add(WidgetSpan(
-            child: dateBuilder(line, dateString, readOnly)));
+        ..add(const TextSpan(text: '\n'))
+        ..add(WidgetSpan(child: dateBuilder(line, dateString, readOnly)));
     }
     return textSpan;
   }
@@ -300,6 +290,8 @@ class EditableTextLine extends RenderObjectWidget {
   );
 
   final Line line;
+
+
   final Widget? leading;
   final Widget? trailing;
   final Widget body;

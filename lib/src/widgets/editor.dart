@@ -1189,6 +1189,7 @@ class RenderEditableContainerBox extends RenderBox
     final targetNode = _container.queryChild(position.offset, false).node;
 
     var targetChild = firstChild;
+
     while (targetChild != null) {
       if (targetChild.getContainer() == targetNode) {
         break;
