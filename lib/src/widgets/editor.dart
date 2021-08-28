@@ -236,6 +236,12 @@ Widget _defaultDateBuilder(Node node, String date, bool readOnly) {
   );
 }
 
+Widget _defaultMentionBlockBuilder(Node node, String date, bool readOnly) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
 class QuillEditor extends StatefulWidget {
   const QuillEditor({
     required this.controller,
@@ -265,6 +271,7 @@ class QuillEditor extends StatefulWidget {
     this.onSingleLongTapEnd,
     this.embedBuilder = _defaultEmbedBuilder,
     this.dateBuilder = _defaultDateBuilder,
+    this.mentionBuilder = _defaultMentionBlockBuilder,
     this.customStyleBuilder,
     Key? key,
     this.mentionKeys,
@@ -343,6 +350,7 @@ class QuillEditor extends StatefulWidget {
 
   final EmbedBuilder embedBuilder;
   final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
   final CustomStyleBuilder? customStyleBuilder;
 
   @override
@@ -453,7 +461,8 @@ class _QuillEditorState extends State<QuillEditor>
           widget.onHashtagTap,
           widget.suggestionWidget,
           widget.customStyleBuilder,
-          widget.dateBuilder),
+          widget.dateBuilder,
+          widget.mentionBuilder),
     );
   }
 
@@ -567,8 +576,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         launchUrl(link);
       }
       return false;
-    }
-    else if (segment.style.containsKey(Attribute.mention.key)) {
+    } else if (segment.style.containsKey(Attribute.mention.key)) {
       final launchUrl = getEditor()!.widget.onMentionTap;
       String? link = segment.style.attributes[Attribute.mention.key]!.value;
       if (getEditor()!.widget.readOnly && link != null) {
@@ -578,8 +586,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         }
       }
       return false;
-    }
-    else if (segment.style.containsKey(Attribute.hashtag.key)) {
+    } else if (segment.style.containsKey(Attribute.hashtag.key)) {
       final launchUrl = getEditor()!.widget.onHashtagTap;
       String? link = segment.style.attributes[Attribute.hashtag.key]!.value;
       if (getEditor()!.widget.readOnly && link != null) {
@@ -589,8 +596,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         }
       }
       return false;
-    }
-    else if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
+    } else if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
       final blockEmbed = segment.value as BlockEmbed;
       if (blockEmbed.type == 'image') {
         final imageUrl = _standardizeImageUrl(blockEmbed.data);

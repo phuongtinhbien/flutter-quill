@@ -64,6 +64,7 @@ class RawEditor extends StatefulWidget {
     this.suggestionWidget,
     this.customStyleBuilder,
     this.dateBuilder,
+      this.mentionBuilder,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -99,6 +100,7 @@ class RawEditor extends StatefulWidget {
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
   final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
   final bool showSuggestions;
   final Widget? suggestionWidget;
 
@@ -274,6 +276,7 @@ class RawEditorState extends EditorState
           readOnly: widget.readOnly,
           customStyleBuilder: widget.customStyleBuilder,
           dateBuilder: widget.dateBuilder,
+          mentionBuilder: widget.mentionBuilder,
         );
         result.add(editableTextBlock);
       } else {

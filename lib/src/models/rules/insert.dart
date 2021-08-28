@@ -100,6 +100,9 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     if (lineStyle.containsKey(Attribute.date.key)) {
       resetStyle = Attribute.date.toJson();
     }
+    if (lineStyle.containsKey(Attribute.mentionBlock.key)) {
+      resetStyle = Attribute.mentionBlock.toJson();
+    }
 
     // Go over each inserted line and ensure block style is applied.
     final lines = data.split('\n');

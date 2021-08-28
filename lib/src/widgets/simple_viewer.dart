@@ -39,12 +39,14 @@ class QuillSimpleViewer extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.embedBuilder,
     this.dateBuilder,
+    this.mentionBlockBuilder,
     Key? key,
-  })  : assert(truncate ||
-            ((truncateScale == null) &&
-                (truncateAlignment == null) &&
-                (truncateHeight == null) &&
-                (truncateWidth == null))),
+  })
+      : assert(truncate ||
+      ((truncateScale == null) &&
+          (truncateAlignment == null) &&
+          (truncateHeight == null) &&
+          (truncateWidth == null))),
         super(key: key);
 
   final QuillController controller;
@@ -58,6 +60,7 @@ class QuillSimpleViewer extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final EmbedBuilder? embedBuilder;
   final DateBuilder? dateBuilder;
+  final MentionBlockBuilder? mentionBlockBuilder;
 
   final bool readOnly;
 
@@ -105,10 +108,14 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
   }
 
   EmbedBuilder get embedBuilder => widget.embedBuilder ?? _defaultEmbedBuilder;
+
   DateBuilder get dateBuilder => widget.dateBuilder ?? _defaultDateBuilder;
 
-  Widget _defaultEmbedBuilder(
-      BuildContext context, leaf.Embed node, bool readOnly) {
+  MentionBlockBuilder get mentionBlockBuilder =>
+      widget.mentionBlockBuilder ?? _defaultMentionBlockBuilder;
+
+  Widget _defaultEmbedBuilder(BuildContext context, leaf.Embed node,
+      bool readOnly) {
     assert(!kIsWeb, 'Please provide EmbedBuilder for Web');
     switch (node.value.type) {
       case 'image':
@@ -116,8 +123,8 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
         return imageUrl.startsWith('http')
             ? Image.network(imageUrl)
             : isBase64(imageUrl)
-                ? Image.memory(base64.decode(imageUrl))
-                : Image.file(io.File(imageUrl));
+            ? Image.memory(base64.decode(imageUrl))
+            : Image.file(io.File(imageUrl));
       case 'video':
         final videoUrl = node.value.data;
         if (videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be')) {
@@ -129,14 +136,19 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
       default:
         throw UnimplementedError(
           'Embeddable type "${node.value.type}" is not supported by default '
-          'embed builder of QuillEditor. You must pass your own builder '
-          'function to embedBuilder property of QuillEditor or QuillField '
-          'widgets.',
+              'embed builder of QuillEditor. You must pass your own builder '
+              'function to embedBuilder property of QuillEditor or QuillField '
+              'widgets.',
         );
     }
   }
+
   Widget _defaultDateBuilder(Node node, String date, bool readOnly) {
-   return Chip (label: Text(date),);
+    return Chip(label: Text(date),);
+  }
+
+  Widget _defaultMentionBlockBuilder(Node node, String mention, bool readOnly) {
+    return Chip(label: Text(mention),);
   }
 
   String _standardizeImageUrl(String url) {
@@ -187,7 +199,7 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
                         child: Transform.scale(
                             scale: widget.truncateScale!,
                             alignment:
-                                widget.truncateAlignment ?? Alignment.topLeft,
+                            widget.truncateAlignment ?? Alignment.topLeft,
                             child: child)))));
       } else {
         child = Container(
@@ -211,23 +223,25 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-            block: node,
-            textDirection: _textDirection,
-            scrollBottomInset: widget.scrollBottomInset,
-            verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
-            textSelection: widget.controller.selection,
-            color: Colors.black,
-            styles: _styles,
-            enableInteractiveSelection: false,
-            hasFocus: false,
-            contentPadding: attrs.containsKey(Attribute.codeBlock.key)
-                ? const EdgeInsets.all(16)
-                : null,
-            embedBuilder: embedBuilder,
-            cursorCont: _cursorCont,
-            indentLevelCounts: indentLevelCounts,
-            onCheckboxTap: _handleCheckboxTap,
-            readOnly: widget.readOnly, dateBuilder: dateBuilder,);
+          block: node,
+          textDirection: _textDirection,
+          scrollBottomInset: widget.scrollBottomInset,
+          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          textSelection: widget.controller.selection,
+          color: Colors.black,
+          styles: _styles,
+          enableInteractiveSelection: false,
+          hasFocus: false,
+          contentPadding: attrs.containsKey(Attribute.codeBlock.key)
+              ? const EdgeInsets.all(16)
+              : null,
+          embedBuilder: embedBuilder,
+          cursorCont: _cursorCont,
+          indentLevelCounts: indentLevelCounts,
+          onCheckboxTap: _handleCheckboxTap,
+          readOnly: widget.readOnly,
+          dateBuilder: dateBuilder,
+          mentionBuilder: mentionBlockBuilder,);
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -247,14 +261,15 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
     return result;
   }
 
-  EditableTextLine _getEditableTextLineFromNode(
-      Line node, BuildContext context) {
+  EditableTextLine _getEditableTextLineFromNode(Line node,
+      BuildContext context) {
     final textLine = TextLine(
       line: node,
       textDirection: _textDirection,
       embedBuilder: embedBuilder,
       styles: _styles,
-      readOnly: widget.readOnly, dateBuilder: dateBuilder,
+      readOnly: widget.readOnly,
+      dateBuilder: dateBuilder,
     );
     final editableTextLine = EditableTextLine(
         node,
@@ -271,13 +286,15 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
         //enableInteractiveSelection,
         false,
         //_hasFocus,
-        MediaQuery.of(context).devicePixelRatio,
+        MediaQuery
+            .of(context)
+            .devicePixelRatio,
         _cursorCont);
     return editableTextLine;
   }
 
-  Tuple2<double, double> _getVerticalSpacingForLine(
-      Line line, DefaultStyles? defaultStyles) {
+  Tuple2<double, double> _getVerticalSpacingForLine(Line line,
+      DefaultStyles? defaultStyles) {
     final attrs = line.style.attributes;
     if (attrs.containsKey(Attribute.header.key)) {
       final int? level = attrs[Attribute.header.key]!.value;
@@ -296,8 +313,8 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
     return defaultStyles!.paragraph!.verticalSpacing;
   }
 
-  Tuple2<double, double> _getVerticalSpacingForBlock(
-      Block node, DefaultStyles? defaultStyles) {
+  Tuple2<double, double> _getVerticalSpacingForBlock(Block node,
+      DefaultStyles? defaultStyles) {
     final attrs = node.style.attributes;
     if (attrs.containsKey(Attribute.blockQuote.key)) {
       return defaultStyles!.quote!.verticalSpacing;
@@ -309,8 +326,8 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
     return defaultStyles!.lists!.verticalSpacing;
   }
 
-  void _nullSelectionChanged(
-      TextSelection selection, SelectionChangedCause cause) {}
+  void _nullSelectionChanged(TextSelection selection,
+      SelectionChangedCause cause) {}
 }
 
 class _SimpleViewer extends MultiChildRenderObjectWidget {
@@ -353,8 +370,8 @@ class _SimpleViewer extends MultiChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(
-      BuildContext context, covariant RenderEditor renderObject) {
+  void updateRenderObject(BuildContext context,
+      covariant RenderEditor renderObject) {
     renderObject
       ..document = document
       ..setContainer(document.root)

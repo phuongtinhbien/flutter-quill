@@ -13,6 +13,8 @@ typedef EmbedBuilder = Widget Function(
     BuildContext context, Embed node, bool readOnly);
 
 typedef DateBuilder = Widget Function(Node line, String date, bool readOnly);
+typedef MentionBlockBuilder = Widget Function(
+    Node line, String mention, bool readOnly);
 
 typedef CustomStyleBuilder = TextStyle Function(Attribute attribute);
 
@@ -45,7 +47,6 @@ class EditorTextSelectionGestureDetectorBuilder {
     shouldShowSelectionToolbar = kind == null ||
         kind == PointerDeviceKind.touch ||
         kind == PointerDeviceKind.stylus;
-
   }
 
   void onForcePressStart(ForcePressDetails details) {
@@ -75,7 +76,6 @@ class EditorTextSelectionGestureDetectorBuilder {
   void onSingleTapUp(TapUpDetails details) {
     if (delegate.getSelectionEnabled()) {
       getRenderEditor()!.selectWordEdge(SelectionChangedCause.tap);
-
     }
   }
 
