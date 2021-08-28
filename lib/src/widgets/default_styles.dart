@@ -314,6 +314,7 @@ class DefaultStyles {
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
         date: other.date ?? date,
+      mentionBlock: other.mentionBlock ?? mentionBlock,
         suggestionWidth: other.suggestionWidth);
   }
 }
