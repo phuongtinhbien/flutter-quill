@@ -78,6 +78,7 @@ class DefaultStyles {
     this.suggestionHeight = 200,
     this.hashtagStyle,
     this.date,
+    this.mentionBlock
   });
 
   final DefaultTextBlockStyle? h1;
@@ -102,6 +103,7 @@ class DefaultStyles {
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
   final DefaultTextBlockStyle? date;
+  final DefaultTextBlockStyle? mentionBlock;
   final TextStyle? mentionStyle;
   final TextStyle? hashtagStyle;
 
@@ -207,6 +209,8 @@ class DefaultStyles {
         lists: DefaultTextBlockStyle(
             baseStyle, baseSpacing, const Tuple2(0, 6), null),
       date: DefaultTextBlockStyle(
+            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      mentionBlock: DefaultTextBlockStyle(
             baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color!.withOpacity(0.6)),
