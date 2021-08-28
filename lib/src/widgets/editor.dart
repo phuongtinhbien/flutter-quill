@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
+import 'package:flutter_quill/src/widgets/text_block.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -566,7 +567,8 @@ class _QuillEditorSelectionGestureDetectorBuilder
         launchUrl(link);
       }
       return false;
-    } else if (segment.style.containsKey(Attribute.mention.key)) {
+    }
+    else if (segment.style.containsKey(Attribute.mention.key)) {
       final launchUrl = getEditor()!.widget.onMentionTap;
       String? link = segment.style.attributes[Attribute.mention.key]!.value;
       if (getEditor()!.widget.readOnly && link != null) {
@@ -576,7 +578,8 @@ class _QuillEditorSelectionGestureDetectorBuilder
         }
       }
       return false;
-    } else if (segment.style.containsKey(Attribute.hashtag.key)) {
+    }
+    else if (segment.style.containsKey(Attribute.hashtag.key)) {
       final launchUrl = getEditor()!.widget.onHashtagTap;
       String? link = segment.style.attributes[Attribute.hashtag.key]!.value;
       if (getEditor()!.widget.readOnly && link != null) {
@@ -586,7 +589,8 @@ class _QuillEditorSelectionGestureDetectorBuilder
         }
       }
       return false;
-    } else if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
+    }
+    else if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
       final blockEmbed = segment.value as BlockEmbed;
       if (blockEmbed.type == 'image') {
         final imageUrl = _standardizeImageUrl(blockEmbed.data);
@@ -870,6 +874,7 @@ class RenderEditor extends RenderEditableContainerBox
   @override
   void handleTapDown(TapDownDetails details) {
     _lastTapDownPosition = details.globalPosition;
+    print(details.globalPosition);
   }
 
   @override
@@ -905,6 +910,7 @@ class RenderEditor extends RenderEditableContainerBox
         !focusingEmpty) {
       return;
     }
+
     onSelectionChanged(nextSelection, cause);
   }
 
@@ -1046,8 +1052,10 @@ class RenderEditor extends RenderEditableContainerBox
   @override
   double preferredLineHeight(TextPosition position) {
     final child = childAtPosition(position);
-    return child.preferredLineHeight(
+    final height = child.preferredLineHeight(
         TextPosition(offset: position.offset - child.getContainer().offset));
+    // print ('preferredLineHeight: $height');
+    return height;
   }
 
   @override
@@ -1072,7 +1080,6 @@ class RenderEditor extends RenderEditableContainerBox
   double? getOffsetToRevealCursor(
       double viewportHeight, double scrollOffset, double offsetInViewport) {
     final endpoints = getEndpointsForSelection(selection);
-
     // when we drag the right handle, we should get the last point
     TextSelectionPoint endpoint;
     if (selection.isCollapsed) {

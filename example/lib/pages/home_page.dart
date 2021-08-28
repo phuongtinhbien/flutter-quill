@@ -112,9 +112,19 @@ class _HomePageState extends State<HomePage> {
         onMentionTap: (val) {
           print(val);
         },
-
         dateBuilder: (_, date, readOnly) {
-          return Text(date, style: TextStyle(color: Colors.red),);
+          return InkWell(
+            onTap: (){
+              print ('date tap');
+            },
+            child: Container(
+              height: 50,
+              alignment: Alignment.topLeft,
+              child: Row(
+                children: [ Text(date, style: TextStyle(color: Colors.red), )],
+              ),
+            ),
+          );
         },
         showSuggestions: showSuggestions,
         suggestionWidget: Material(
@@ -220,12 +230,13 @@ class _HomePageState extends State<HomePage> {
               : Container(
                   child: IconButton(
                       onPressed: () {
-                        _controller!.formatSelection(DateAttribute('12/08/2021'));
-                      }, icon: Icon(Icons.date_range_rounded)))
+                        _controller!
+                            .formatSelection(DateAttribute('12/08/2021'));
+                      },
+                      icon: Icon(Icons.date_range_rounded)))
         ],
       ),
     );
-
   }
 
   bool _isDesktop() => !kIsWeb && !Platform.isAndroid && !Platform.isIOS;

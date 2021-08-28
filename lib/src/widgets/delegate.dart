@@ -45,6 +45,7 @@ class EditorTextSelectionGestureDetectorBuilder {
     shouldShowSelectionToolbar = kind == null ||
         kind == PointerDeviceKind.touch ||
         kind == PointerDeviceKind.stylus;
+
   }
 
   void onForcePressStart(ForcePressDetails details) {
@@ -74,6 +75,7 @@ class EditorTextSelectionGestureDetectorBuilder {
   void onSingleTapUp(TapUpDetails details) {
     if (delegate.getSelectionEnabled()) {
       getRenderEditor()!.selectWordEdge(SelectionChangedCause.tap);
+
     }
   }
 

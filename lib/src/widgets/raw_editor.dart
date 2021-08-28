@@ -63,7 +63,7 @@ class RawEditor extends StatefulWidget {
     this.onHashtagTap,
     this.suggestionWidget,
     this.customStyleBuilder,
-      this.dateBuilder,
+    this.dateBuilder,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -103,6 +103,7 @@ class RawEditor extends StatefulWidget {
   final Widget? suggestionWidget;
 
   final CustomStyleBuilder? customStyleBuilder;
+
   @override
   State<StatefulWidget> createState() => RawEditorState();
 }
@@ -254,24 +255,26 @@ class RawEditorState extends EditorState
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-            block: node,
-            textDirection: _textDirection,
-            scrollBottomInset: widget.scrollBottomInset,
-            verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
-            textSelection: widget.controller.selection,
-            color: widget.selectionColor,
-            styles: _styles,
-            enableInteractiveSelection: widget.enableInteractiveSelection,
-            hasFocus: _hasFocus,
-            contentPadding: attrs.containsKey(Attribute.codeBlock.key)
-                ? const EdgeInsets.all(16)
-                : null,
-            embedBuilder: widget.embedBuilder,
-            cursorCont: _cursorCont,
-            indentLevelCounts: indentLevelCounts,
-            onCheckboxTap: _handleCheckboxTap,
-            readOnly: widget.readOnly,
-            customStyleBuilder: widget.customStyleBuilder, dateBuilder: widget.dateBuilder,);
+          block: node,
+          textDirection: _textDirection,
+          scrollBottomInset: widget.scrollBottomInset,
+          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          textSelection: widget.controller.selection,
+          color: widget.selectionColor,
+          styles: _styles,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          hasFocus: _hasFocus,
+          contentPadding: attrs.containsKey(Attribute.codeBlock.key)
+              ? const EdgeInsets.all(16)
+              : null,
+          embedBuilder: widget.embedBuilder,
+          cursorCont: _cursorCont,
+          indentLevelCounts: indentLevelCounts,
+          onCheckboxTap: _handleCheckboxTap,
+          readOnly: widget.readOnly,
+          customStyleBuilder: widget.customStyleBuilder,
+          dateBuilder: widget.dateBuilder,
+        );
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -352,8 +355,9 @@ class RawEditorState extends EditorState
     });
 
     _scrollController = widget.scrollController;
-    _scrollController.addListener(_updateSelectionOverlayForScroll);
-    _scrollController.addListener(_updateSuggestionOverlayForScroll);
+    _scrollController
+      ..addListener(_updateSelectionOverlayForScroll)
+      ..addListener(_updateSuggestionOverlayForScroll);
 
     _cursorCont = CursorCont(
       show: ValueNotifier<bool>(widget.showCursor),

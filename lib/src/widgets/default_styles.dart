@@ -207,7 +207,7 @@ class DefaultStyles {
         lists: DefaultTextBlockStyle(
             baseStyle, baseSpacing, const Tuple2(0, 6), null),
       date: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 0), const Tuple2(0, 6), null),
+            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color!.withOpacity(0.6)),
             baseSpacing,
