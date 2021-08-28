@@ -46,6 +46,7 @@ class Attribute<T> {
     Attribute.mention.key: Attribute.mention,
     Attribute.hashtag.key: Attribute.hashtag,
     Attribute.date.key: Attribute.date,
+    Attribute.mentionBlock.key: Attribute.mentionBlock,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -327,5 +328,5 @@ class DateAttribute extends Attribute<String?> {
 
 class MentionBlockAttribute extends Attribute<String?> {
   MentionBlockAttribute(String? val)
-      : super('mention_block', AttributeScope.BLOCK, val);
+      : super('mention-block', AttributeScope.BLOCK, val);
 }
