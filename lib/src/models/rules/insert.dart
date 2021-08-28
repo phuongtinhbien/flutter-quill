@@ -94,14 +94,21 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
     } else if (lineStyle.containsKey(Attribute.checked.key) &&
-        lineStyle.attributes[Attribute.checked.key]!.value == 'checked') {
+        lineStyle.attributes[Attribute.checked.key]! == Attribute.checked) {
       resetStyle = Attribute.unchecked.toJson();
     }
-    if (lineStyle.containsKey(Attribute.date.key)) {
-      resetStyle = Attribute.date.toJson();
-    }
-    if (lineStyle.containsKey(Attribute.mentionBlock.key)) {
-      resetStyle = Attribute.mentionBlock.toJson();
+    if (lineStyle.containsKey(Attribute.checked.key) &&
+        (lineStyle.attributes[Attribute.checked.key]! == Attribute.checked ||
+            lineStyle.attributes[Attribute.checked.key]! ==
+                Attribute.unchecked)) {
+      resetStyle ??= {};
+
+      if (lineStyle.containsKey(Attribute.date.key)) {
+        resetStyle.addAll(Attribute.date.toJson());
+      }
+      if (lineStyle.containsKey(Attribute.mentionBlock.key)) {
+        resetStyle.addAll(Attribute.mentionBlock.toJson());
+      }
     }
 
     // Go over each inserted line and ensure block style is applied.
