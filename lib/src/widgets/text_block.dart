@@ -259,11 +259,11 @@ class EditableTextBlock extends StatelessWidget {
       if (attrs.containsKey(Attribute.mentionBlock.key)) {
         final text = attrs[Attribute.mentionBlock.key]!.value.toString();
 
-        children.add(_DateTrailing(
-          date: text,
+        children.add(_MentionBlockTrailing(
+          mention: text,
           line: line,
           readOnly: readOnly,
-          builder: dateBuilder,
+          builder: mentionBuilder,
           key: UniqueKey(),
         ));
       }
