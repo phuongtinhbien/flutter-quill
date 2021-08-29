@@ -247,20 +247,15 @@ class TextLine extends StatelessWidget {
       res = res.merge(TextStyle(backgroundColor: backgroundColor));
     }
 
+    ///Apply style for checked item
+    final checked = line.style.attributes[Attribute.checked.key];
+    if (checked != null && checked.value == Attribute.checked.value) {
+      res = res.merge(const TextStyle(decoration: TextDecoration.lineThrough));
+    }
+    ///Apply style for checked item
+
     res = _applyCustomAttributes(res, textNode.style.attributes);
-    final textSpan = TextSpan(text: textNode.value, style: res, children: []);
-    // if (line.style.containsKey(Attribute.date.key)) {
-    //   final dateString =
-    //       line.style.attributes[Attribute.date.key]!.value.toString();
-    //   textSpan.children!.add(TextSpan(
-    //       text: '\n',
-    //       recognizer: new TapGestureRecognizer()
-    //         ..onTap = () => print('Tap Here onTap'),
-    //       children: [
-    //         WidgetSpan(child: dateBuilder(line, dateString, readOnly))
-    //       ]));
-    // }
-    return textSpan;
+    return TextSpan(text: textNode.value, style: res);
   }
 
   TextStyle _merge(TextStyle a, TextStyle b) {
