@@ -12,9 +12,10 @@ import 'text_selection.dart';
 typedef EmbedBuilder = Widget Function(
     BuildContext context, Embed node, bool readOnly);
 
-typedef DateBuilder = Widget Function(Node line, String date, bool readOnly);
+typedef DateBuilder = Widget Function(
+    Node line, String date, bool readOnly, bool hasFocus);
 typedef MentionBlockBuilder = Widget Function(
-    Node line, String mention, bool readOnly);
+    Node line, String mention, bool readOnly, bool hasFocus);
 
 typedef CustomStyleBuilder = TextStyle Function(Attribute attribute);
 

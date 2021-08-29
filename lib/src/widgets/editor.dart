@@ -230,13 +230,15 @@ Widget _defaultEmbedBuilder(
   }
 }
 
-Widget _defaultDateBuilder(Node node, String date, bool readOnly) {
+Widget _defaultDateBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
   return Chip(
     label: Text(date),
   );
 }
 
-Widget _defaultMentionBlockBuilder(Node node, String date, bool readOnly) {
+Widget _defaultMentionBlockBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
   return Chip(
     label: Text(date),
   );
@@ -880,7 +882,6 @@ class RenderEditor extends RenderEditableContainerBox
   @override
   void handleTapDown(TapDownDetails details) {
     _lastTapDownPosition = details.globalPosition;
-    print(details.globalPosition);
   }
 
   @override

@@ -104,12 +104,12 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
       resetStyle ??= {};
 
       if (lineStyle.containsKey(Attribute.date.key)) {
-        resetStyle.addAll(Attribute.date.toJson());
+        resetStyle.addAll(DateAttribute('new').toJson());
       }
       if (lineStyle.containsKey(Attribute.mentionBlock.key)) {
-        resetStyle.addAll(Attribute.mentionBlock.toJson());
+        resetStyle.addAll(MentionBlockAttribute('new').toJson());
       }
-    }
+    } else {}
 
     // Go over each inserted line and ensure block style is applied.
     final lines = data.split('\n');
@@ -204,9 +204,26 @@ class AutoExitBlockRule extends InsertRule {
     // Here we now know that the line after `cur` is not in the same block
     // therefore we can exit this block.
     final attributes = cur.attributes ?? <String, dynamic>{};
-    final k =
-        attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
-    attributes[k] = null;
+    print(attributes);
+
+    if (attributes.containsKey(Attribute.checked.key) &&
+        (attributes[Attribute.checked.key] == Attribute.checked.value ||
+            attributes[Attribute.checked.key] == Attribute.unchecked.value)) {
+      if (attributes.containsKey(Attribute.date.key)) {
+        attributes[Attribute.date.key] = null;
+      }
+      if (attributes.containsKey(Attribute.mentionBlock.key)) {
+        attributes[Attribute.mentionBlock.key] = null;
+      }
+      attributes[Attribute.checked.key] = null;
+    } else {
+      final k =
+          attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
+      attributes[k] = null;
+    }
+
+    print('new attributes: $attributes');
+
     // retain(1) should be '\n', set it with no attribute
     return Delta()..retain(index + (len ?? 0))..retain(1, attributes);
   }
@@ -228,7 +245,6 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
       return null;
     }
 
-    print('checked case');
     Map<String, dynamic>? resetStyle;
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {

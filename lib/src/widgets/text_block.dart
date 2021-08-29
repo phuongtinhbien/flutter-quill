@@ -129,7 +129,8 @@ class EditableTextBlock extends StatelessWidget {
       final editableTextLine = EditableTextLine(
           line,
           _buildLeading(context, line, index, indentLevelCounts, count),
-          _buildTrailing(context, line, index, indentLevelCounts, count),
+          _buildTrailing(
+              context, line, index, indentLevelCounts, count, hasFocus),
           TextLine(
             line: line,
             textDirection: textDirection,
@@ -240,7 +241,7 @@ class EditableTextBlock extends StatelessWidget {
   }
 
   Widget? _buildTrailing(BuildContext context, Line line, int index,
-      Map<int, int> indentLevelCounts, int count) {
+      Map<int, int> indentLevelCounts, int count, bool hasFocus) {
     final defaultStyles = QuillStyles.getStyles(context, false);
     final attrs = line.style.attributes;
     final children = <Widget>[];
@@ -253,6 +254,7 @@ class EditableTextBlock extends StatelessWidget {
           line: line,
           readOnly: readOnly,
           builder: dateBuilder,
+          hasFocus: hasFocus,
           key: UniqueKey(),
         ));
       }
@@ -263,6 +265,7 @@ class EditableTextBlock extends StatelessWidget {
           mention: text,
           line: line,
           readOnly: readOnly,
+          hasFocus: hasFocus,
           builder: mentionBuilder,
           key: UniqueKey(),
         ));
@@ -272,6 +275,8 @@ class EditableTextBlock extends StatelessWidget {
     if (children.isNotEmpty) {
       return Wrap(
         spacing: 12,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runAlignment: WrapAlignment.center,
         children: children,
       );
     }
@@ -331,7 +336,7 @@ class EditableTextBlock extends StatelessWidget {
         lineSpacing = defaultStyles!.align!.lineSpacing;
       } else if (attrs.containsKey(Attribute.date.key)) {
         lineSpacing = defaultStyles!.date!.lineSpacing;
-      }else if (attrs.containsKey(Attribute.mentionBlock.key)) {
+      } else if (attrs.containsKey(Attribute.mentionBlock.key)) {
         lineSpacing = defaultStyles!.mentionBlock!.lineSpacing;
       }
       top = lineSpacing.item1;
@@ -869,6 +874,7 @@ class _DateTrailing extends StatefulWidget {
     required this.date,
     required this.readOnly,
     required this.line,
+    required this.hasFocus,
     Key? key,
     this.style,
     this.width,
@@ -882,6 +888,7 @@ class _DateTrailing extends StatefulWidget {
   final int? offset;
   final bool readOnly;
   final DateBuilder? builder;
+  final bool hasFocus;
 
   @override
   __DateTrailingState createState() => __DateTrailingState();
@@ -891,7 +898,8 @@ class __DateTrailingState extends State<_DateTrailing> {
   @override
   Widget build(BuildContext context) {
     if (widget.builder != null) {
-      return widget.builder!(widget.line, widget.date, widget.readOnly);
+      return widget.builder!(
+          widget.line, widget.date, widget.readOnly, widget.hasFocus);
     }
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -912,6 +920,17 @@ class __DateTrailingState extends State<_DateTrailing> {
 }
 
 class _MentionBlockTrailing extends StatefulWidget {
+  const _MentionBlockTrailing(
+      {required this.readOnly,
+      required this.mention,
+      required this.line,
+      required this.hasFocus,
+      Key? key,
+      this.style,
+      this.width,
+      this.offset,
+      this.builder})
+      : super(key: key);
   final TextStyle? style;
   final double? width;
   final String mention;
@@ -919,17 +938,7 @@ class _MentionBlockTrailing extends StatefulWidget {
   final int? offset;
   final bool readOnly;
   final DateBuilder? builder;
-
-  const _MentionBlockTrailing(
-      {required this.readOnly,
-      required this.mention,
-      required this.line,
-      Key? key,
-      this.style,
-      this.width,
-      this.offset,
-      this.builder})
-      : super(key: key);
+  final bool hasFocus;
 
   @override
   _MentionBlockTrailingState createState() => _MentionBlockTrailingState();
@@ -939,7 +948,8 @@ class _MentionBlockTrailingState extends State<_MentionBlockTrailing> {
   @override
   Widget build(BuildContext context) {
     if (widget.builder != null) {
-      return widget.builder!(widget.line, widget.mention, widget.readOnly);
+      return widget.builder!(
+          widget.line, widget.mention, widget.readOnly, widget.hasFocus);
     }
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

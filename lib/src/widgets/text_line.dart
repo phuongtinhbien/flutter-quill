@@ -803,7 +803,7 @@ class RenderEditableTextLine extends RenderEditableBox {
       ));
       return;
     }
-    var padding = _resolvedPadding!;
+    final padding = _resolvedPadding!;
     final innerConstraints = constraints.deflate(padding);
 
     final indentWidth = textDirection == TextDirection.ltr
@@ -930,9 +930,6 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    double mainAxisPosition, crossAxisPosition;
-    mainAxisPosition = position.dy;
-    crossAxisPosition = position.dx;
     final sliverResult = BoxHitTestResult.wrap(result);
     for (final child in _children) {
       final transform = Matrix4.identity();

@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
         onMentionTap: (val) {
           print(val);
         },
-        dateBuilder: (_, date, readOnly) {
+        dateBuilder: (_, date, readOnly, hasFocus) {
           return InkWell(
             onTap: (){
               print ('date tap');

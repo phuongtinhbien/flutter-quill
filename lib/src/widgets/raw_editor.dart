@@ -64,7 +64,7 @@ class RawEditor extends StatefulWidget {
     this.suggestionWidget,
     this.customStyleBuilder,
     this.dateBuilder,
-      this.mentionBuilder,
+    this.mentionBuilder,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
