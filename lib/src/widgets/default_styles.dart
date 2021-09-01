@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_quill/src/widgets/delegate.dart';
 import 'package:tuple/tuple.dart';
 
 class QuillStyles extends InheritedWidget {
@@ -44,7 +45,7 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles({
+  DefaultStyles( {
     this.h1,
     this.h2,
     this.h3,
@@ -75,7 +76,9 @@ class DefaultStyles {
     this.dateBuilder,
     this.suggestionWidth = 200,
     this.suggestionHeight = 200,
-    this.hashtagStyle
+    this.hashtagStyle,
+    this.date,
+    this.mentionBlock
   });
 
   final DefaultTextBlockStyle? h1;
@@ -99,6 +102,8 @@ class DefaultStyles {
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
   final DefaultTextBlockStyle? tag;
+  final DefaultTextBlockStyle? date;
+  final DefaultTextBlockStyle? mentionBlock;
   final TextStyle? mentionStyle;
   final TextStyle? hashtagStyle;
 
@@ -107,7 +112,8 @@ class DefaultStyles {
   final Widget? checkedCheckbox;
   final Widget? unCheckedCheckbox;
   final Widget Function(List<String>)? tagBuilder;
-  final Widget Function(BuildContext, int)? dateBuilder;
+  final DateBuilder? dateBuilder;
+
   // final Widget Function(BuildContext, dynamic)? suggestionItemBuilder;
   final double suggestionWidth;
   final double suggestionHeight;
@@ -202,6 +208,10 @@ class DefaultStyles {
             null),
         lists: DefaultTextBlockStyle(
             baseStyle, baseSpacing, const Tuple2(0, 6), null),
+      date: DefaultTextBlockStyle(
+            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      mentionBlock: DefaultTextBlockStyle(
+            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color!.withOpacity(0.6)),
             baseSpacing,
@@ -269,12 +279,7 @@ class DefaultStyles {
             ],
           );
         },
-        dateBuilder: (_, date) {
-          return SizedBox(
-            width: 80,
-            child: Text(DateTime.fromMillisecondsSinceEpoch(date).toString()),
-          );
-        });
+    );
   }
 
   DefaultStyles merge(DefaultStyles other) {
@@ -308,6 +313,8 @@ class DefaultStyles {
         mentionStyle: other.mentionStyle ?? mentionStyle,
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
+        date: other.date ?? date,
+      mentionBlock: other.mentionBlock ?? mentionBlock,
         suggestionWidth: other.suggestionWidth);
   }
 }

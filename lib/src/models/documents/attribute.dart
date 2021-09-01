@@ -46,6 +46,7 @@ class Attribute<T> {
     Attribute.mention.key: Attribute.mention,
     Attribute.hashtag.key: Attribute.hashtag,
     Attribute.date.key: Attribute.date,
+    Attribute.mentionBlock.key: Attribute.mentionBlock,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -90,7 +91,6 @@ class Attribute<T> {
 
   static final MentionAttribute mention = MentionAttribute(null);
   static final HashTagAttribute hashtag = HashTagAttribute(null);
-  static final DateAttribute date = DateAttribute(null);
 
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
@@ -112,6 +112,8 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.date.key,
+    Attribute.mentionBlock.key,
   });
 
   static final Set<String> blockKeysExceptHeader = LinkedHashSet.of({
@@ -120,7 +122,13 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.date.key,
+    Attribute.mentionBlock.key,
   });
+
+  static final DateAttribute date = DateAttribute(null);
+
+  static final MentionBlockAttribute mentionBlock = MentionBlockAttribute(null);
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
 
@@ -180,11 +188,11 @@ class Attribute<T> {
 
   Map<String, dynamic> toJson() => <String, dynamic>{key: value};
 
-  static Attribute fromKeyValue(String key, dynamic value) {
-    if (!_registry.containsKey(key)) {
-      throw ArgumentError.value(key, 'key "$key" not found.');
+  static Attribute? fromKeyValue(String key, dynamic value) {
+    final origin = _registry[key];
+    if (origin == null) {
+      return null;
     }
-    final origin = _registry[key]!;
     final attribute = clone(origin, value);
     return attribute;
   }
@@ -315,5 +323,10 @@ class HashTagAttribute extends Attribute<String?> {
 }
 
 class DateAttribute extends Attribute<String?> {
-  DateAttribute(String? val) : super('date', AttributeScope.INLINE, val);
+  DateAttribute(String? val) : super('date', AttributeScope.BLOCK, val);
+}
+
+class MentionBlockAttribute extends Attribute<String?> {
+  MentionBlockAttribute(String? val)
+      : super('mention-block', AttributeScope.BLOCK, val);
 }

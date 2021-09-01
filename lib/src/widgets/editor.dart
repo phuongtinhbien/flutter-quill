@@ -8,7 +8,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
+import 'package:flutter_quill/src/widgets/text_block.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -228,40 +230,59 @@ Widget _defaultEmbedBuilder(
   }
 }
 
+Widget _defaultDateBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
+Widget _defaultMentionBlockBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
 class QuillEditor extends StatefulWidget {
-  const QuillEditor(
-      {required this.controller,
-      required this.focusNode,
-      required this.scrollController,
-      required this.scrollable,
-      required this.padding,
-      required this.autoFocus,
-      required this.readOnly,
-      required this.expands,
-      this.showCursor,
-      this.paintCursorAboveText,
-      this.placeholder,
-      this.enableInteractiveSelection = true,
-      this.scrollBottomInset = 0,
-      this.minHeight,
-      this.maxHeight,
-      this.customStyles,
-      this.textCapitalization = TextCapitalization.sentences,
-      this.keyboardAppearance = Brightness.light,
-      this.scrollPhysics,
-      this.onLaunchUrl,
-      this.onTapDown,
-      this.onTapUp,
-      this.onSingleLongTapStart,
-      this.onSingleLongTapMoveUpdate,
-      this.onSingleLongTapEnd,
-      this.embedBuilder = _defaultEmbedBuilder,
-      this.mentionKeys,
-      this.mentionStrings,
-      this.onMentionTap,
-      this.onHashtagTap,
-      this.showSuggestions = true,
-      this.suggestionWidget});
+  const QuillEditor({
+    required this.controller,
+    required this.focusNode,
+    required this.scrollController,
+    required this.scrollable,
+    required this.padding,
+    required this.autoFocus,
+    required this.readOnly,
+    required this.expands,
+    this.showCursor,
+    this.paintCursorAboveText,
+    this.placeholder,
+    this.enableInteractiveSelection = true,
+    this.scrollBottomInset = 0,
+    this.minHeight,
+    this.maxHeight,
+    this.customStyles,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.keyboardAppearance = Brightness.light,
+    this.scrollPhysics,
+    this.onLaunchUrl,
+    this.onTapDown,
+    this.onTapUp,
+    this.onSingleLongTapStart,
+    this.onSingleLongTapMoveUpdate,
+    this.onSingleLongTapEnd,
+    this.embedBuilder = _defaultEmbedBuilder,
+    this.dateBuilder = _defaultDateBuilder,
+    this.mentionBuilder = _defaultMentionBlockBuilder,
+    this.customStyleBuilder,
+    Key? key,
+    this.mentionKeys,
+    this.mentionStrings,
+    this.onMentionTap,
+    this.onHashtagTap,
+    this.showSuggestions = true,
+    this.suggestionWidget,
+  });
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -330,6 +351,9 @@ class QuillEditor extends StatefulWidget {
       onSingleLongTapEnd;
 
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
+  final CustomStyleBuilder? customStyleBuilder;
 
   @override
   _QuillEditorState createState() => _QuillEditorState();
@@ -437,7 +461,10 @@ class _QuillEditorState extends State<QuillEditor>
           widget.embedBuilder,
           widget.onMentionTap,
           widget.onHashtagTap,
-          widget.suggestionWidget),
+          widget.suggestionWidget,
+          widget.customStyleBuilder,
+          widget.dateBuilder,
+          widget.mentionBuilder),
     );
   }
 
@@ -546,7 +573,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         link = link.trim();
         if (!linkPrefixes
             .any((linkPrefix) => link!.toLowerCase().startsWith(linkPrefix))) {
-          link = 'http://$link';
+          link = 'https://$link';
         }
         launchUrl(link);
       }
@@ -890,6 +917,7 @@ class RenderEditor extends RenderEditableContainerBox
         !focusingEmpty) {
       return;
     }
+
     onSelectionChanged(nextSelection, cause);
   }
 
@@ -1031,8 +1059,10 @@ class RenderEditor extends RenderEditableContainerBox
   @override
   double preferredLineHeight(TextPosition position) {
     final child = childAtPosition(position);
-    return child.preferredLineHeight(
+    final height = child.preferredLineHeight(
         TextPosition(offset: position.offset - child.getContainer().offset));
+    // print ('preferredLineHeight: $height');
+    return height;
   }
 
   @override
@@ -1057,7 +1087,6 @@ class RenderEditor extends RenderEditableContainerBox
   double? getOffsetToRevealCursor(
       double viewportHeight, double scrollOffset, double offsetInViewport) {
     final endpoints = getEndpointsForSelection(selection);
-
     // when we drag the right handle, we should get the last point
     TextSelectionPoint endpoint;
     if (selection.isCollapsed) {
@@ -1174,6 +1203,7 @@ class RenderEditableContainerBox extends RenderBox
     final targetNode = _container.queryChild(position.offset, false).node;
 
     var targetChild = firstChild;
+
     while (targetChild != null) {
       if (targetChild.getContainer() == targetNode) {
         break;

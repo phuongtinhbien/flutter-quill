@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -13,8 +14,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tuple/tuple.dart';
 
 import '../universal_ui/universal_ui.dart';
-import 'read_only_page.dart';
 import 'operation_utils.dart';
+import 'read_only_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -25,14 +26,12 @@ class _HomePageState extends State<HomePage> {
   QuillController? _controller;
   final FocusNode _focusNode = FocusNode();
   bool showSuggestions = false;
-  int length =3;
+  int length = 3;
 
   @override
   void initState() {
     super.initState();
     _loadFromAssets();
-
-
   }
 
   Future<void> _loadFromAssets() async {
@@ -107,22 +106,41 @@ class _HomePageState extends State<HomePage> {
         placeholder: 'Add content',
         expands: false,
         padding: EdgeInsets.zero,
-
-        onLaunchUrl: (val){
-          print (val);
+        onLaunchUrl: (val) {
+          print(val);
         },
-        onMentionTap: (val){
-          print (val);
+        onMentionTap: (val) {
+          print(val);
+        },
+        dateBuilder: (_, date, readOnly, hasFocus) {
+          return InkWell(
+            onTap: (){
+              print ('date tap');
+            },
+            child: Container(
+              height: 50,
+              alignment: Alignment.topLeft,
+              child: Row(
+                children: [ Text(date, style: TextStyle(color: Colors.red), )],
+              ),
+            ),
+          );
         },
         showSuggestions: showSuggestions,
-        suggestionWidget:Material(
-          child: ListView.builder(itemBuilder: (_, index){
-            return ListTile(title: Text('Suggestion $index'),onTap: (){
-              setState(() {
-                showSuggestions = !showSuggestions;
-              });
-            },);
-          }, itemCount: length,),
+        suggestionWidget: Material(
+          child: ListView.builder(
+            itemBuilder: (_, index) {
+              return ListTile(
+                title: Text('Suggestion $index'),
+                onTap: () {
+                  setState(() {
+                    showSuggestions = !showSuggestions;
+                  });
+                },
+              );
+            },
+            itemCount: length,
+          ),
         ),
         // onTapDown: (details, position){
         //   // print(details);
@@ -209,7 +227,13 @@ class _HomePageState extends State<HomePage> {
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                   child: toolbar,
                 ))
-              : Container(child: toolbar)
+              : Container(
+                  child: IconButton(
+                      onPressed: () {
+                        _controller!
+                            .formatSelection(DateAttribute('12/08/2021'));
+                      },
+                      icon: Icon(Icons.date_range_rounded)))
         ],
       ),
     );
@@ -326,7 +350,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   void _onSearchChanged() {
     final line = _controller!.document
         .queryChild(_controller!.selection.baseOffset)
@@ -337,8 +360,8 @@ class _HomePageState extends State<HomePage> {
       final allMatches = exp.allMatches(cand).toList();
       var tag = '';
       setState(() {
-        showSuggestions =allMatches.isNotEmpty;
-        length+=3;
+        showSuggestions = allMatches.isNotEmpty;
+        length += 3;
       });
     } else {
       setState(() {

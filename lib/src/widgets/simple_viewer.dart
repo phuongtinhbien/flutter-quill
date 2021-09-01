@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:tuple/tuple.dart';
 
@@ -36,6 +37,8 @@ class QuillSimpleViewer extends StatefulWidget {
     this.scrollBottomInset = 0,
     this.padding = EdgeInsets.zero,
     this.embedBuilder,
+    this.dateBuilder,
+    this.mentionBlockBuilder,
     Key? key,
   })  : assert(truncate ||
             ((truncateScale == null) &&
@@ -54,6 +57,9 @@ class QuillSimpleViewer extends StatefulWidget {
   final double scrollBottomInset;
   final EdgeInsetsGeometry padding;
   final EmbedBuilder? embedBuilder;
+  final DateBuilder? dateBuilder;
+  final MentionBlockBuilder? mentionBlockBuilder;
+
   final bool readOnly;
 
   @override
@@ -101,6 +107,11 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
 
   EmbedBuilder get embedBuilder => widget.embedBuilder ?? _defaultEmbedBuilder;
 
+  DateBuilder get dateBuilder => widget.dateBuilder ?? _defaultDateBuilder;
+
+  MentionBlockBuilder get mentionBlockBuilder =>
+      widget.mentionBlockBuilder ?? _defaultMentionBlockBuilder;
+
   Widget _defaultEmbedBuilder(
       BuildContext context, leaf.Embed node, bool readOnly) {
     assert(!kIsWeb, 'Please provide EmbedBuilder for Web');
@@ -128,6 +139,20 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
           'widgets.',
         );
     }
+  }
+
+  Widget _defaultDateBuilder(
+      Node node, String date, bool readOnly, bool hasFocus) {
+    return Chip(
+      label: Text(date),
+    );
+  }
+
+  Widget _defaultMentionBlockBuilder(
+      Node node, String mention, bool readOnly, bool hasFocus) {
+    return Chip(
+      label: Text(mention),
+    );
   }
 
   String _standardizeImageUrl(String url) {
@@ -202,26 +227,26 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-            node,
-            _textDirection,
-            widget.scrollBottomInset,
-            _getVerticalSpacingForBlock(node, _styles),
-            widget.controller.selection,
-            Colors.black,
-            // selectionColor,
-            _styles,
-            false,
-            // enableInteractiveSelection,
-            false,
-            // hasFocus,
-            attrs.containsKey(Attribute.codeBlock.key)
-                ? const EdgeInsets.all(16)
-                : null,
-            embedBuilder,
-            _cursorCont,
-            indentLevelCounts,
-            _handleCheckboxTap,
-            widget.readOnly);
+          block: node,
+          textDirection: _textDirection,
+          scrollBottomInset: widget.scrollBottomInset,
+          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          textSelection: widget.controller.selection,
+          color: Colors.black,
+          styles: _styles,
+          enableInteractiveSelection: false,
+          hasFocus: false,
+          contentPadding: attrs.containsKey(Attribute.codeBlock.key)
+              ? const EdgeInsets.all(16)
+              : null,
+          embedBuilder: embedBuilder,
+          cursorCont: _cursorCont,
+          indentLevelCounts: indentLevelCounts,
+          onCheckboxTap: _handleCheckboxTap,
+          readOnly: widget.readOnly,
+          dateBuilder: dateBuilder,
+          mentionBuilder: mentionBlockBuilder,
+        );
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -249,6 +274,7 @@ class _QuillSimpleViewerState extends State<QuillSimpleViewer>
       embedBuilder: embedBuilder,
       styles: _styles,
       readOnly: widget.readOnly,
+      dateBuilder: dateBuilder,
     );
     final editableTextLine = EditableTextLine(
         node,

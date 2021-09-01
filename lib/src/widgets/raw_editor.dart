@@ -62,6 +62,9 @@ class RawEditor extends StatefulWidget {
     this.onMentionTap,
     this.onHashtagTap,
     this.suggestionWidget,
+    this.customStyleBuilder,
+    this.dateBuilder,
+    this.mentionBuilder,
   )   : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -96,8 +99,12 @@ class RawEditor extends StatefulWidget {
   final bool enableInteractiveSelection;
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
   final bool showSuggestions;
   final Widget? suggestionWidget;
+
+  final CustomStyleBuilder? customStyleBuilder;
 
   @override
   State<StatefulWidget> createState() => RawEditorState();
@@ -250,23 +257,27 @@ class RawEditorState extends EditorState
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-            node,
-            _textDirection,
-            widget.scrollBottomInset,
-            _getVerticalSpacingForBlock(node, _styles),
-            widget.controller.selection,
-            widget.selectionColor,
-            _styles,
-            widget.enableInteractiveSelection,
-            _hasFocus,
-            attrs.containsKey(Attribute.codeBlock.key)
-                ? const EdgeInsets.all(16)
-                : null,
-            widget.embedBuilder,
-            _cursorCont,
-            indentLevelCounts,
-            _handleCheckboxTap,
-            widget.readOnly);
+          block: node,
+          textDirection: _textDirection,
+          scrollBottomInset: widget.scrollBottomInset,
+          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          textSelection: widget.controller.selection,
+          color: widget.selectionColor,
+          styles: _styles,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          hasFocus: _hasFocus,
+          contentPadding: attrs.containsKey(Attribute.codeBlock.key)
+              ? const EdgeInsets.all(16)
+              : null,
+          embedBuilder: widget.embedBuilder,
+          cursorCont: _cursorCont,
+          indentLevelCounts: indentLevelCounts,
+          onCheckboxTap: _handleCheckboxTap,
+          readOnly: widget.readOnly,
+          customStyleBuilder: widget.customStyleBuilder,
+          dateBuilder: widget.dateBuilder,
+          mentionBuilder: widget.mentionBuilder,
+        );
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -281,6 +292,8 @@ class RawEditorState extends EditorState
       line: node,
       textDirection: _textDirection,
       embedBuilder: widget.embedBuilder,
+      dateBuilder: widget.dateBuilder,
+      customStyleBuilder: widget.customStyleBuilder,
       styles: _styles!,
       readOnly: widget.readOnly,
     );
@@ -345,8 +358,9 @@ class RawEditorState extends EditorState
     });
 
     _scrollController = widget.scrollController;
-    _scrollController.addListener(_updateSelectionOverlayForScroll);
-    _scrollController.addListener(_updateSuggestionOverlayForScroll);
+    _scrollController
+      ..addListener(_updateSelectionOverlayForScroll)
+      ..addListener(_updateSuggestionOverlayForScroll);
 
     _cursorCont = CursorCont(
       show: ValueNotifier<bool>(widget.showCursor),
@@ -526,7 +540,6 @@ class RawEditorState extends EditorState
       if (!mounted) {
         return;
       }
-      // print('_onChangeTextEditingValue');
       _updateOrDisposeSelectionOverlayIfNeeded();
     });
     if (mounted) {
@@ -711,10 +724,25 @@ class RawEditorState extends EditorState
       if (data != null) {
         final length =
             textEditingValue.selection.end - textEditingValue.selection.start;
+        var str = data.text!;
+        final codes = data.text!.codeUnits;
+        // For clip from editor, it may contain image, a.k.a 65532.
+        // For clip from browser, image is directly ignore.
+        // Here we skip image when pasting.
+        if (codes.contains(65532)) {
+          final sb = StringBuffer();
+          for (var i = 0; i < str.length; i++) {
+            if (str.codeUnitAt(i) == 65532) {
+              continue;
+            }
+            sb.write(str[i]);
+          }
+          str = sb.toString();
+        }
         widget.controller.replaceText(
           value.selection.start,
           length,
-          data.text,
+          str,
           value.selection,
         );
         // move cursor to the end of pasted text selection
