@@ -38,6 +38,8 @@ class Rules {
   static final Rules _instance = Rules([
     const FormatLinkAtCaretPositionRule(),
     // const FormatMentionAtCaretPositionRule(),
+    const AutoListDashRule(),
+
     const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
     const ResolveInlineFormatRule(),

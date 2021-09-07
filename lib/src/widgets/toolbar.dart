@@ -73,6 +73,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     bool showHeaderStyle = true,
     bool showListNumbers = true,
     bool showListBullets = true,
+    bool showListDash = true,
     bool showListCheck = true,
     bool showCodeBlock = true,
     bool showQuote = true,
@@ -241,6 +242,12 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
         if (showListBullets)
           ToggleStyleButton(
             attribute: Attribute.ul,
+            controller: controller,
+            icon: Icons.format_list_bulleted,
+            iconSize: toolbarIconSize,
+          ), if (showListDash)
+          ToggleStyleButton(
+            attribute: Attribute.dash,
             controller: controller,
             icon: Icons.format_list_bulleted,
             iconSize: toolbarIconSize,

@@ -204,7 +204,6 @@ class AutoExitBlockRule extends InsertRule {
     // Here we now know that the line after `cur` is not in the same block
     // therefore we can exit this block.
     final attributes = cur.attributes ?? <String, dynamic>{};
-    print(attributes);
 
     if (attributes.containsKey(Attribute.checked.key) &&
         (attributes[Attribute.checked.key] == Attribute.checked.value ||
@@ -221,8 +220,6 @@ class AutoExitBlockRule extends InsertRule {
           attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
       attributes[k] = null;
     }
-
-    print('new attributes: $attributes');
 
     // retain(1) should be '\n', set it with no attribute
     return Delta()..retain(index + (len ?? 0))..retain(1, attributes);
@@ -342,6 +339,67 @@ class AutoFormatLinksRule extends InsertRule {
     } on FormatException {
       return null;
     }
+  }
+}
+
+class AutoListDashRule extends InsertRule {
+  const AutoListDashRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index), cur = itr.next();
+
+    if (prev == null || prev.data is! String) {
+      return null;
+    }
+
+    final textBefore = prev.data is String ? prev.data as String : '';
+    final textAfter = cur.data is String ? cur.data as String : '';
+
+    // print('textBefore: $textBefore');
+    // print('textAfter: $textAfter');
+    final isNewlineBefore = textBefore.endsWith('-');
+    final isNewlineAfter = textAfter.startsWith('\n');
+    //
+    //
+    // print('isNewlineBefore: $isNewlineBefore');
+    // print('isNewlineAfter: $isNewlineAfter');
+    if (isNewlineBefore && isNewlineAfter) {
+      final copyDocument = Delta.fromJson(document.toJson());
+      final before = copyDocument.slice(0, index).toList();
+      final after = copyDocument.slice(index);
+      final text = before.last.data.toString().trimRight();
+      final newText = text.substring(0, text.length - 1);
+      final attributes = before.last.attributes;
+      final newOperation = Operation.insert('$newText\n ', attributes);
+      before
+        ..removeLast()
+        ..add(newOperation)
+        // ..add(Operation.insert(''))
+        ..add(Operation.insert('\n', Attribute.dash.toJson()))
+        ..addAll(after.toList());
+
+      final newData = Delta.fromJson(before.map((e) => e.toJson()).toList());
+      final diff = document.diff(newData);
+      return diff..delete(1);
+    }
+    // if (isNewlineBefore) {
+    //   delta.retain(1, Attribute.dash.toJson());
+    // }
+    // if (!isNewlineAfter) {
+    //   delta.insert('\n');
+    // }
+    // final deltaLast = document.compose(delta);
+    //
+    // print(document.diff(deltaLast));
+
+    return null;
   }
 }
 

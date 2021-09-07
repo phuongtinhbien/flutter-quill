@@ -151,6 +151,9 @@ class Attribute<T> {
   // "attributes":{"list":"bullet"}
   static Attribute<String?> get ul => ListAttribute('bullet');
 
+  // "attributes":{"list":"dash"}
+  static Attribute<String?> get dash => ListAttribute('dash');
+
   // "attributes":{"list":"ordered"}
   static Attribute<String?> get ol => ListAttribute('ordered');
 

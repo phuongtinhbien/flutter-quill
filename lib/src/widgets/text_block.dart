@@ -178,6 +178,13 @@ class EditableTextBlock extends StatelessWidget {
       );
     }
 
+    if (attrs[Attribute.list.key] == Attribute.dash) {
+      return _DashLeading(
+        style: defaultStyles!.leading!.style,
+        width: 32,
+      );
+    }
+
     if (attrs[Attribute.list.key] == Attribute.checked) {
       return _Checkbox(
         key: UniqueKey(),
@@ -809,6 +816,27 @@ class _BulletPoint extends StatelessWidget {
   }
 }
 
+class _DashLeading extends StatelessWidget {
+  const _DashLeading({
+    required this.style,
+    required this.width,
+    Key? key,
+  }) : super(key: key);
+
+  final TextStyle style;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: AlignmentDirectional.topEnd,
+      width: width,
+      padding: const EdgeInsetsDirectional.only(end: 13),
+      child: Text('-', style: style),
+    );
+  }
+}
+
 class _Checkbox extends StatelessWidget {
   const _Checkbox(
       {Key? key,
@@ -891,10 +919,10 @@ class _DateTrailing extends StatefulWidget {
   final bool hasFocus;
 
   @override
-  __DateTrailingState createState() => __DateTrailingState();
+  _DateTrailingState createState() => _DateTrailingState();
 }
 
-class __DateTrailingState extends State<_DateTrailing> {
+class _DateTrailingState extends State<_DateTrailing> {
   @override
   Widget build(BuildContext context) {
     if (widget.builder != null) {
