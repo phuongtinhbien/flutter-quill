@@ -1,3 +1,15 @@
+## [2.0.2]
+* Address KeyboardListener class name conflict.
+
+## [2.0.1]
+* Upgrade flutter_colorpicker to 0.5.0.
+
+## [2.0.0]
+* Text Alignment functions + Block Format standards.
+
+## [1.9.6]
+* Support putting QuillEditor inside a Scrollable view.
+
 ## [1.9.5]
 * Skip image when pasting.
 

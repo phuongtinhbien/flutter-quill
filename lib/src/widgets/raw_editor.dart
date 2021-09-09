@@ -106,7 +106,7 @@ class RawEditorState extends EditorState
   final GlobalKey _editorKey = GlobalKey();
 
   // Keyboard
-  late KeyboardListener _keyboardListener;
+  late KeyboardEventHandler _keyboardListener;
   KeyboardVisibilityController? _keyboardVisibilityController;
   StreamSubscription<bool>? _keyboardVisibilitySubscription;
   bool _keyboardVisible = false;
@@ -313,8 +313,12 @@ class RawEditorState extends EditorState
       return defaultStyles!.code!.verticalSpacing;
     } else if (attrs.containsKey(Attribute.indent.key)) {
       return defaultStyles!.indent!.verticalSpacing;
+    } else if (attrs.containsKey(Attribute.list.key)) {
+      return defaultStyles!.lists!.verticalSpacing;
+    } else if (attrs.containsKey(Attribute.align.key)) {
+      return defaultStyles!.align!.verticalSpacing;
     }
-    return defaultStyles!.lists!.verticalSpacing;
+    return const Tuple2(0, 0);
   }
 
   @override
@@ -336,7 +340,7 @@ class RawEditorState extends EditorState
       tickerProvider: this,
     );
 
-    _keyboardListener = KeyboardListener(
+    _keyboardListener = KeyboardEventHandler(
       handleCursorMovement,
       handleShortcut,
       handleDelete,
@@ -564,7 +568,7 @@ class RawEditorState extends EditorState
 
     _showCaretOnScreenScheduled = true;
     SchedulerBinding.instance!.addPostFrameCallback((_) {
-      if (widget.scrollable) {
+      if (widget.scrollable || _scrollController.hasClients) {
         _showCaretOnScreenScheduled = false;
 
         final renderEditor = getRenderEditor();
@@ -608,6 +612,7 @@ class RawEditorState extends EditorState
   void requestKeyboard() {
     if (_hasFocus) {
       openConnectionIfNeeded();
+      _showCaretOnScreen();
     } else {
       widget.focusNode.requestFocus();
     }
