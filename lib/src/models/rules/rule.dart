@@ -39,6 +39,8 @@ class Rules {
     const FormatLinkAtCaretPositionRule(),
     // const FormatMentionAtCaretPositionRule(),
     const AutoListDashRule(),
+    const AutoListBulletRule(),
+    const AutoListNumberRule(),
 
     const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
