@@ -14,6 +14,7 @@ import 'toolbar/image_button.dart';
 import 'toolbar/indent_button.dart';
 import 'toolbar/insert_embed_button.dart';
 import 'toolbar/link_style_button.dart';
+import 'toolbar/select_alignment_button.dart';
 import 'toolbar/select_header_style_button.dart';
 import 'toolbar/toggle_check_list_button.dart';
 import 'toolbar/toggle_style_button.dart';
@@ -29,6 +30,7 @@ export 'toolbar/insert_embed_button.dart';
 export 'toolbar/link_style_button.dart';
 export 'toolbar/quill_dropdown_button.dart';
 export 'toolbar/quill_icon_button.dart';
+export 'toolbar/select_alignment_button.dart';
 export 'toolbar/select_header_style_button.dart';
 export 'toolbar/toggle_check_list_button.dart';
 export 'toolbar/toggle_style_button.dart';
@@ -65,11 +67,13 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     double toolbarIconSize = kDefaultIconSize,
     bool showBoldButton = true,
     bool showItalicButton = true,
+    bool showSmallButton = false,
     bool showUnderLineButton = true,
     bool showStrikeThrough = true,
     bool showColorButton = true,
     bool showBackgroundColorButton = true,
     bool showClearFormat = true,
+    bool showAlignmentButtons = false,
     bool showHeaderStyle = true,
     bool showListNumbers = true,
     bool showListBullets = true,
@@ -97,6 +101,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
       showHistory ||
           showBoldButton ||
           showItalicButton ||
+          showSmallButton ||
           showUnderLineButton ||
           showStrikeThrough ||
           showColorButton ||
@@ -104,6 +109,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
           showClearFormat ||
           onImagePickCallback != null ||
           onVideoPickCallback != null,
+      showAlignmentButtons,
       showHeaderStyle,
       showListNumbers || showListBullets || showListCheck || showCodeBlock,
       showQuote || showIndent,
@@ -140,6 +146,13 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
           ToggleStyleButton(
             attribute: Attribute.italic,
             icon: Icons.format_italic,
+            iconSize: toolbarIconSize,
+            controller: controller,
+          ),
+        if (showSmallButton)
+          ToggleStyleButton(
+            attribute: Attribute.small,
+            icon: Icons.format_size,
             iconSize: toolbarIconSize,
             controller: controller,
           ),
@@ -212,7 +225,23 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             (isButtonGroupShown[1] ||
                 isButtonGroupShown[2] ||
                 isButtonGroupShown[3] ||
-                isButtonGroupShown[4]))
+                isButtonGroupShown[4] ||
+                isButtonGroupShown[5]))
+          VerticalDivider(
+            indent: 12,
+            endIndent: 12,
+            color: Colors.grey.shade400,
+          ),
+        if (showAlignmentButtons)
+          SelectAlignmentButton(
+            controller: controller,
+            iconSize: toolbarIconSize,
+          ),
+        if (isButtonGroupShown[1] &&
+            (isButtonGroupShown[2] ||
+                isButtonGroupShown[3] ||
+                isButtonGroupShown[4] ||
+                isButtonGroupShown[5]))
           VerticalDivider(
             indent: 12,
             endIndent: 12,
@@ -223,10 +252,10 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             controller: controller,
             iconSize: toolbarIconSize,
           ),
-        if (isButtonGroupShown[1] &&
-            (isButtonGroupShown[2] ||
-                isButtonGroupShown[3] ||
-                isButtonGroupShown[4]))
+        if (isButtonGroupShown[2] &&
+            (isButtonGroupShown[3] ||
+                isButtonGroupShown[4] ||
+                isButtonGroupShown[5]))
           VerticalDivider(
             indent: 12,
             endIndent: 12,
@@ -266,8 +295,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             icon: Icons.code,
             iconSize: toolbarIconSize,
           ),
-        if (isButtonGroupShown[2] &&
-            (isButtonGroupShown[3] || isButtonGroupShown[4]))
+        if (isButtonGroupShown[3] &&
+            (isButtonGroupShown[4] || isButtonGroupShown[5]))
           VerticalDivider(
             indent: 12,
             endIndent: 12,
@@ -294,7 +323,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             controller: controller,
             isIncrease: false,
           ),
-        if (isButtonGroupShown[3] && isButtonGroupShown[4])
+        if (isButtonGroupShown[4] && isButtonGroupShown[5])
           VerticalDivider(
             indent: 12,
             endIndent: 12,

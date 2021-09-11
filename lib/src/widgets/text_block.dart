@@ -303,7 +303,14 @@ class EditableTextBlock extends StatelessWidget {
       return 16.0 + extraIndent;
     }
 
-    return 32.0 + extraIndent;
+    var baseIndent = 0.0;
+
+    if (attrs.containsKey(Attribute.list.key) ||
+        attrs.containsKey(Attribute.codeBlock.key)) {
+      baseIndent = 32.0;
+    }
+
+    return baseIndent + extraIndent;
   }
 
   Tuple2 _getSpacingForLine(

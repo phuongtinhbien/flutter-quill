@@ -10,21 +10,16 @@ enum AttributeScope {
 }
 
 class Attribute<T> {
-  Attribute(
-    this.key,
-    this.scope,
-    this.value,
-  );
+  Attribute(this.key, this.scope, this.value);
 
   final String key;
   final AttributeScope scope;
   final T value;
 
-  // int? createdDate = DateTime.now().millisecondsSinceEpoch;
-
   static final Map<String, Attribute> _registry = LinkedHashMap.of({
     Attribute.bold.key: Attribute.bold,
     Attribute.italic.key: Attribute.italic,
+    Attribute.small.key: Attribute.small,
     Attribute.underline.key: Attribute.underline,
     Attribute.strikeThrough.key: Attribute.strikeThrough,
     Attribute.font.key: Attribute.font,
@@ -52,6 +47,8 @@ class Attribute<T> {
   static final BoldAttribute bold = BoldAttribute();
 
   static final ItalicAttribute italic = ItalicAttribute();
+
+  static final SmallAttribute small = SmallAttribute();
 
   static final UnderlineAttribute underline = UnderlineAttribute();
 
@@ -95,6 +92,7 @@ class Attribute<T> {
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
     Attribute.italic.key,
+    Attribute.small.key,
     Attribute.underline.key,
     Attribute.strikeThrough.key,
     Attribute.link.key,
@@ -129,6 +127,13 @@ class Attribute<T> {
   static final DateAttribute date = DateAttribute(null);
 
   static final MentionBlockAttribute mentionBlock = MentionBlockAttribute(null);
+
+  static final Set<String> exclusiveBlockKeys = LinkedHashSet.of({
+    Attribute.header.key,
+    Attribute.list.key,
+    Attribute.codeBlock.key,
+    Attribute.blockQuote.key,
+  });
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
 
@@ -219,7 +224,7 @@ class Attribute<T> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! Attribute<T>) return false;
+    if (other is! Attribute) return false;
     final typedOther = other;
     return key == typedOther.key &&
         scope == typedOther.scope &&
@@ -241,6 +246,10 @@ class BoldAttribute extends Attribute<bool> {
 
 class ItalicAttribute extends Attribute<bool> {
   ItalicAttribute() : super('italic', AttributeScope.INLINE, true);
+}
+
+class SmallAttribute extends Attribute<bool> {
+  SmallAttribute() : super('small', AttributeScope.INLINE, true);
 }
 
 class UnderlineAttribute extends Attribute<bool> {
