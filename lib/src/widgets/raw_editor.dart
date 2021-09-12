@@ -9,9 +9,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
+import 'package:html2md/html2md.dart' as html2md;
 import 'package:tuple/tuple.dart';
 
+import '../../flutter_quill.dart';
 import '../models/documents/attribute.dart';
 import '../models/documents/document.dart';
 import '../models/documents/nodes/block.dart';
@@ -729,27 +732,41 @@ class RawEditorState extends EditorState
       if (data != null) {
         final length =
             textEditingValue.selection.end - textEditingValue.selection.start;
-        var str = data.text!;
-        final codes = data.text!.codeUnits;
-        // For clip from editor, it may contain image, a.k.a 65532.
-        // For clip from browser, image is directly ignore.
-        // Here we skip image when pasting.
-        if (codes.contains(65532)) {
-          final sb = StringBuffer();
-          for (var i = 0; i < str.length; i++) {
-            if (str.codeUnitAt(i) == 65532) {
-              continue;
-            }
-            sb.write(str[i]);
-          }
-          str = sb.toString();
+        if (data.text == null) return;
+        final markdown = html2md.convert(data.text ?? '');
+        if (markdown.isNotEmpty) {
+          final operationString = markdownToDelta(markdown);
+          final deltaData =
+              Delta.fromJson(jsonDecode(operationString)).toJson();
+          final retainOperation =
+              Operation.retain(value.selection.start).toJson();
+
+          final delta = Delta.fromJson([retainOperation, ...deltaData]);
+
+          print(delta);
+          widget.controller.compose(delta, value.selection, ChangeSource.LOCAL);
         }
-        widget.controller.replaceText(
-          value.selection.start,
-          length,
-          str,
-          value.selection,
-        );
+        // var str = data.text!;
+        // final codes = data.text!.codeUnits;
+        // // For clip from editor, it may contain image, a.k.a 65532.
+        // // For clip from browser, image is directly ignore.
+        // // Here we skip image when pasting.
+        // if (codes.contains(65532)) {
+        //   final sb = StringBuffer();
+        //   for (var i = 0; i < str.length; i++) {
+        //     if (str.codeUnitAt(i) == 65532) {
+        //       continue;
+        //     }
+        //     sb.write(str[i]);
+        //   }
+        //   str = sb.toString();
+        // }
+        // widget.controller.replaceText(
+        //   value.selection.start,
+        //   length,
+        //   str,
+        //   value.selection,
+        // );
         // move cursor to the end of pasted text selection
         widget.controller.updateSelection(
             TextSelection.collapsed(

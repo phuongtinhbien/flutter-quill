@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:characters/characters.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 import '../../models/documents/document.dart';
 import '../../utils/diff_delta.dart';
@@ -97,8 +101,28 @@ mixin RawEditorStateKeyboardMixin on EditorState {
       return;
     }
     if (shortcut == InputShortcut.PASTE && !widget.readOnly) {
+      //TODO format clipboard
       final data = await Clipboard.getData(Clipboard.kTextPlain);
+
       if (data != null) {
+        if (data.text == null) return;
+        final markdown = html2md.convert(data.text ?? '');
+        if (markdown.isNotEmpty) {
+          final operationString = markdownToDelta(markdown);
+          final deltaData =
+              Delta.fromJson(jsonDecode(operationString)).toJson();
+          final retainOperation = Operation.retain(selection.start).toJson();
+
+          final delta = Delta.fromJson([retainOperation, ...deltaData]);
+
+          print(operationString);
+          widget.controller.compose(
+              delta,
+              TextSelection.collapsed(
+                  offset: selection.start + data.text!.length),
+              ChangeSource.LOCAL);
+        }
+
         widget.controller.replaceText(
           selection.start,
           selection.end - selection.start,
