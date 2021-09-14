@@ -893,7 +893,7 @@ class RenderEditableTextLine extends RenderEditableBox {
           cursorCont.show.value &&
           containsCursor() &&
           !cursorCont.style.paintAboveText) {
-        _paintCursor(context, effectiveOffset);
+        _paintCursor(context, effectiveOffset, line.hasEmbed);
       }
 
       context.paintChild(_body!, effectiveOffset);
@@ -902,7 +902,7 @@ class RenderEditableTextLine extends RenderEditableBox {
           cursorCont.show.value &&
           containsCursor() &&
           cursorCont.style.paintAboveText) {
-        _paintCursor(context, effectiveOffset);
+        _paintCursor(context, effectiveOffset, line.hasEmbed);
       }
     }
 
@@ -923,12 +923,14 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
   }
 
-  void _paintCursor(PaintingContext context, Offset effectiveOffset) {
+  void _paintCursor(
+      PaintingContext context, Offset effectiveOffset, bool lineHasEmbed) {
     final position = TextPosition(
       offset: textSelection.extentOffset - line.documentOffset,
       affinity: textSelection.base.affinity,
     );
-    _cursorPainter.paint(context.canvas, effectiveOffset, position);
+    _cursorPainter.paint(
+        context.canvas, effectiveOffset, position, lineHasEmbed);
   }
 
   @override
