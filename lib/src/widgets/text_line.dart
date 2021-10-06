@@ -121,9 +121,9 @@ class TextLine extends StatelessWidget {
 
   TextSpan _buildTextSpan(DefaultStyles defaultStyles, LinkedList<Node> nodes,
       TextStyle lineStyle) {
-    final children = nodes.map((node) {
-      return _getTextSpanFromNode(defaultStyles, node);
-    }).toList(growable: false);
+    final children = nodes
+        .map((node) => _getTextSpanFromNode(defaultStyles, node))
+        .toList(growable: false);
 
     return TextSpan(children: children, style: lineStyle);
   }
@@ -197,6 +197,7 @@ class TextLine extends StatelessWidget {
       Attribute.strikeThrough.key: defaultStyles.strikeThrough,
       Attribute.mention.key: defaultStyles.mentionStyle,
       Attribute.hashtag.key: defaultStyles.hashtagStyle,
+      Attribute.inlineCode.key: defaultStyles.inlineCode,
     }.forEach((k, s) {
       if (style.values.any((v) => v.key == k)) {
         if (k == Attribute.underline.key || k == Attribute.strikeThrough.key) {
@@ -806,26 +807,15 @@ class RenderEditableTextLine extends RenderEditableBox {
       ));
       return;
     }
-    final padding = _resolvedPadding!;
-    final innerConstraints = constraints.deflate(padding);
+    final innerConstraints = constraints.deflate(_resolvedPadding!);
 
     final indentWidth = textDirection == TextDirection.ltr
         ? _resolvedPadding!.left
         : _resolvedPadding!.right;
 
-    // _body!.layout(innerConstraints, parentUsesSize: true);
-    if (_body != null) {
-      _body!.layout(innerConstraints, parentUsesSize: true);
-
-      // final trailingConstraints = innerConstraints.copyWith(
-      //     minWidth: indentWidth,
-      //     maxWidth: _body!.size.width,
-      //     maxHeight: _body!.size.height);
-      // _body!.layout(trailingConstraints, parentUsesSize: true);
-
-      (_body!.parentData as BoxParentData).offset =
-          Offset(_resolvedPadding!.left, _resolvedPadding!.top);
-    }
+    _body!.layout(innerConstraints, parentUsesSize: true);
+    (_body!.parentData as BoxParentData).offset =
+        Offset(_resolvedPadding!.left, _resolvedPadding!.top);
 
     if (_leading != null) {
       final leadingConstraints = innerConstraints.copyWith(
