@@ -318,43 +318,48 @@ class EditableTextBlock extends StatelessWidget {
     var top = 0.0, bottom = 0.0;
 
     final attrs = block.style.attributes;
-    if (attrs.containsKey(Attribute.header.key)) {
-      final level = attrs[Attribute.header.key]!.value;
-      switch (level) {
-        case 1:
-          top = defaultStyles!.h1!.verticalSpacing.item1;
-          bottom = defaultStyles.h1!.verticalSpacing.item2;
-          break;
-        case 2:
-          top = defaultStyles!.h2!.verticalSpacing.item1;
-          bottom = defaultStyles.h2!.verticalSpacing.item2;
-          break;
-        case 3:
-          top = defaultStyles!.h3!.verticalSpacing.item1;
-          bottom = defaultStyles.h3!.verticalSpacing.item2;
-          break;
-        default:
-          throw 'Invalid level $level';
+    if (attrs.isNotEmpty) {
+      if (attrs.containsKey(Attribute.header.key)) {
+        final level = attrs[Attribute.header.key]!.value;
+        switch (level) {
+          case 1:
+            top = defaultStyles!.h1!.verticalSpacing.item1;
+            bottom = defaultStyles.h1!.verticalSpacing.item2;
+            break;
+          case 2:
+            top = defaultStyles!.h2!.verticalSpacing.item1;
+            bottom = defaultStyles.h2!.verticalSpacing.item2;
+            break;
+          case 3:
+            top = defaultStyles!.h3!.verticalSpacing.item1;
+            bottom = defaultStyles.h3!.verticalSpacing.item2;
+            break;
+          default:
+            throw 'Invalid level $level';
+        }
+      } else {
+        late Tuple2 lineSpacing;
+        if (attrs.containsKey(Attribute.blockQuote.key)) {
+          lineSpacing = defaultStyles!.quote!.lineSpacing;
+        }
+        else if (attrs.containsKey(Attribute.indent.key)) {
+          lineSpacing = defaultStyles!.indent!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.list.key)) {
+          lineSpacing = defaultStyles!.lists!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.codeBlock.key)) {
+          lineSpacing = defaultStyles!.code!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.align.key)) {
+          lineSpacing = defaultStyles!.align!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.date.key)) {
+          lineSpacing = defaultStyles!.date!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.mentionBlock.key)) {
+          lineSpacing = defaultStyles!.mentionBlock!.lineSpacing;
+        } else {
+          lineSpacing = Tuple2(0.0, 0.0);
+        }
+        top = lineSpacing.item1;
+        bottom = lineSpacing.item2;
       }
-    } else {
-      late Tuple2 lineSpacing;
-      if (attrs.containsKey(Attribute.blockQuote.key)) {
-        lineSpacing = defaultStyles!.quote!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.indent.key)) {
-        lineSpacing = defaultStyles!.indent!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.list.key)) {
-        lineSpacing = defaultStyles!.lists!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.codeBlock.key)) {
-        lineSpacing = defaultStyles!.code!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.align.key)) {
-        lineSpacing = defaultStyles!.align!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.date.key)) {
-        lineSpacing = defaultStyles!.date!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.mentionBlock.key)) {
-        lineSpacing = defaultStyles!.mentionBlock!.lineSpacing;
-      }
-      top = lineSpacing.item1;
-      bottom = lineSpacing.item2;
     }
 
     if (index == 1) {

@@ -253,6 +253,7 @@ class DefaultStyles {
         sizeSmall: const TextStyle(fontSize: 10),
         sizeLarge: const TextStyle(fontSize: 18),
         sizeHuge: const TextStyle(fontSize: 22),
+
         tagBuilder: (tags) {
           return Row(
             children: [
@@ -325,6 +326,7 @@ class DefaultStyles {
         mentionStyle: other.mentionStyle ?? mentionStyle,
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
+
         date: other.date ?? date,
       mentionBlock: other.mentionBlock ?? mentionBlock,
         suggestionWidth: other.suggestionWidth);

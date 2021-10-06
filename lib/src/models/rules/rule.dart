@@ -40,7 +40,7 @@ class Rules {
     // const FormatMentionAtCaretPositionRule(),
     const AutoListDashRule(),
     const AutoListBulletRule(),
-    const AutoListNumberRule(),
+    // const AutoListNumberRule(),
 
     const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
