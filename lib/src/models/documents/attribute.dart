@@ -43,6 +43,7 @@ class Attribute<T> {
     Attribute.hashtag.key: Attribute.hashtag,
     Attribute.date.key: Attribute.date,
     Attribute.mentionBlock.key: Attribute.mentionBlock,
+    Attribute.title.key: Attribute.title,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -91,6 +92,7 @@ class Attribute<T> {
 
   static final MentionAttribute mention = MentionAttribute(null);
   static final HashTagAttribute hashtag = HashTagAttribute(null);
+  static final TitleAttribute title = TitleAttribute();
 
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
@@ -115,6 +117,7 @@ class Attribute<T> {
     Attribute.indent.key,
     Attribute.date.key,
     Attribute.mentionBlock.key,
+    Attribute.title.key,
   });
 
   static final Set<String> blockKeysExceptHeader = LinkedHashSet.of({
@@ -136,6 +139,7 @@ class Attribute<T> {
     Attribute.list.key,
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
+    Attribute.title.key,
   });
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
@@ -179,6 +183,8 @@ class Attribute<T> {
 
   // "attributes":{"indent":3"}
   static Attribute<int?> get indentL3 => IndentAttribute(level: 3);
+
+
 
   static Attribute<int?> getIndentLevel(int? level) {
     if (level == 1) {
@@ -348,4 +354,8 @@ class DateAttribute extends Attribute<String?> {
 class MentionBlockAttribute extends Attribute<String?> {
   MentionBlockAttribute(String? val)
       : super('mention-block', AttributeScope.BLOCK, val);
+}
+
+class TitleAttribute extends Attribute<bool?> {
+  TitleAttribute({bool? val}) : super('title', AttributeScope.BLOCK, val);
 }

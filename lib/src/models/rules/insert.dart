@@ -94,6 +94,8 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    } else if (lineStyle.containsKey(Attribute.title.key)) {
+      resetStyle = Attribute.title.toJson();
     } else if (lineStyle.containsKey(Attribute.checked.key) &&
         lineStyle.attributes[Attribute.checked.key]! == Attribute.checked) {
       resetStyle = Attribute.unchecked.toJson();
@@ -249,6 +251,9 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    }else if (cur.attributes != null &&
+        cur.attributes!.containsKey(Attribute.title.key)) {
+      resetStyle = Attribute.title.toJson();
     }
     return Delta()
       ..retain(index + (len ?? 0))

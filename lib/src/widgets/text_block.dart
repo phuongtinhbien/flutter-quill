@@ -337,7 +337,10 @@ class EditableTextBlock extends StatelessWidget {
           default:
             throw 'Invalid level $level';
         }
-      } else {
+      } else  if (attrs.containsKey(Attribute.title.key)) {
+        top = defaultStyles!.title!.verticalSpacing.item1;
+        bottom = defaultStyles.title!.verticalSpacing.item2;
+      }else {
         late Tuple2 lineSpacing;
         if (attrs.containsKey(Attribute.blockQuote.key)) {
           lineSpacing = defaultStyles!.quote!.lineSpacing;

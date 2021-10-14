@@ -45,43 +45,45 @@ class DefaultTextBlockStyle {
 }
 
 class DefaultStyles {
-  DefaultStyles( {
-    this.h1,
-    this.h2,
-    this.h3,
-    this.paragraph,
-    this.bold,
-    this.italic,
-    this.small,
-    this.underline,
-    this.strikeThrough,
-    this.inlineCode,
-    this.link,
-    this.color,
-    this.placeHolder,
-    this.lists,
-    this.quote,
-    this.code,
-    this.indent,
-    this.align,
-    this.leading,
-    this.sizeSmall,
-    this.sizeLarge,
-    this.sizeHuge,
-    this.customizeCheckbox = false,
-    this.showDateCheckbox = false,
-    this.checkedCheckbox,
-    this.unCheckedCheckbox,
-    this.tag,
-    this.tagBuilder,
-    this.mentionStyle,
-    this.dateBuilder,
-    this.suggestionWidth = 200,
-    this.suggestionHeight = 200,
-    this.hashtagStyle,
-    this.date,
-    this.mentionBlock
-  });
+  DefaultStyles(
+      {this.h1,
+      this.h2,
+      this.h3,
+      this.paragraph,
+      this.bold,
+      this.italic,
+      this.small,
+      this.underline,
+      this.strikeThrough,
+      this.inlineCode,
+      this.link,
+      this.color,
+      this.placeHolder,
+      this.lists,
+      this.quote,
+      this.code,
+      this.indent,
+      this.align,
+      this.leading,
+      this.sizeSmall,
+      this.sizeLarge,
+      this.sizeHuge,
+      this.customizeCheckbox = false,
+      this.showDateCheckbox = false,
+      this.checkedCheckbox,
+      this.unCheckedCheckbox,
+      this.tag,
+      this.tagBuilder,
+      this.mentionStyle,
+      this.dateBuilder,
+      this.suggestionWidth = 200,
+      this.suggestionHeight = 200,
+      this.hashtagStyle,
+      this.date,
+      this.mentionBlock,
+      this.title});
+
+  final DefaultTextBlockStyle? title;
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -147,154 +149,164 @@ class DefaultStyles {
     }
 
     return DefaultStyles(
-        h1: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 34,
-              color: defaultTextStyle.style.color!.withOpacity(0.70),
-              height: 1.15,
-              fontWeight: FontWeight.w300,
-            ),
-            const Tuple2(16, 0),
-            const Tuple2(0, 0),
-            null),
-        h2: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 24,
-              color: defaultTextStyle.style.color!.withOpacity(0.70),
-              height: 1.15,
-              fontWeight: FontWeight.normal,
-            ),
-            const Tuple2(8, 0),
-            const Tuple2(0, 0),
-            null),
-        h3: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 20,
-              color: defaultTextStyle.style.color!.withOpacity(0.70),
-              height: 1.25,
-              fontWeight: FontWeight.w500,
-            ),
-            const Tuple2(8, 0),
-            const Tuple2(0, 0),
-            null),
-        tag: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 20,
-              color: defaultTextStyle.style.color!.withOpacity(0.70),
-              height: 1.25,
-              fontWeight: FontWeight.w500,
-            ),
-            const Tuple2(8, 0),
-            const Tuple2(0, 0),
-            null),
-        paragraph: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
-        bold: const TextStyle(fontWeight: FontWeight.bold),
-        mentionStyle:
-            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-        hashtagStyle:
-            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-        italic: const TextStyle(fontStyle: FontStyle.italic),
-        small: const TextStyle(fontSize: 12, color: Colors.black45),
-        underline: const TextStyle(decoration: TextDecoration.underline),
-        strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
-        inlineCode: TextStyle(
-          color: Colors.blue.shade900.withOpacity(0.9),
-          fontFamily: fontFamily,
-          fontSize: 13,
-        ),
-        link: TextStyle(
-          color: themeData.colorScheme.secondary,
-          decoration: TextDecoration.underline,
-        ),
-        placeHolder: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 20,
-              height: 1.5,
-              color: Colors.grey.withOpacity(0.6),
-            ),
-            const Tuple2(0, 0),
-            const Tuple2(0, 0),
-            null),
-        lists: DefaultTextBlockStyle(
-            baseStyle, baseSpacing, const Tuple2(0, 6), null),
+      title: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 34,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.15,
+            fontWeight: FontWeight.w300,
+          ),
+          const Tuple2(16, 0),
+          const Tuple2(0, 0),
+          null),
+      h1: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 34,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.15,
+            fontWeight: FontWeight.w300,
+          ),
+          const Tuple2(16, 0),
+          const Tuple2(0, 0),
+          null),
+      h2: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 24,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.15,
+            fontWeight: FontWeight.normal,
+          ),
+          const Tuple2(8, 0),
+          const Tuple2(0, 0),
+          null),
+      h3: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 20,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+          ),
+          const Tuple2(8, 0),
+          const Tuple2(0, 0),
+          null),
+      tag: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 20,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+          ),
+          const Tuple2(8, 0),
+          const Tuple2(0, 0),
+          null),
+      paragraph: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
+      bold: const TextStyle(fontWeight: FontWeight.bold),
+      mentionStyle:
+          const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      hashtagStyle:
+          const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      italic: const TextStyle(fontStyle: FontStyle.italic),
+      small: const TextStyle(fontSize: 12, color: Colors.black45),
+      underline: const TextStyle(decoration: TextDecoration.underline),
+      strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
+      inlineCode: TextStyle(
+        color: Colors.blue.shade900.withOpacity(0.9),
+        fontFamily: fontFamily,
+        fontSize: 13,
+      ),
+      link: TextStyle(
+        color: themeData.colorScheme.secondary,
+        decoration: TextDecoration.underline,
+      ),
+      placeHolder: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 20,
+            height: 1.5,
+            color: Colors.grey.withOpacity(0.6),
+          ),
+          const Tuple2(0, 0),
+          const Tuple2(0, 0),
+          null),
+      lists: DefaultTextBlockStyle(
+          baseStyle, baseSpacing, const Tuple2(0, 6), null),
       date: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
       mentionBlock: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
-        quote: DefaultTextBlockStyle(
-            TextStyle(color: baseStyle.color!.withOpacity(0.6)),
-            baseSpacing,
-            const Tuple2(6, 2),
-            BoxDecoration(
-              border: Border(
-                left: BorderSide(width: 4, color: Colors.grey.shade300),
-              ),
-            )),
-        code: DefaultTextBlockStyle(
-            TextStyle(
-              color: Colors.blue.shade900.withOpacity(0.9),
-              fontFamily: fontFamily,
-              fontSize: 13,
-              height: 1.15,
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      quote: DefaultTextBlockStyle(
+          TextStyle(color: baseStyle.color!.withOpacity(0.6)),
+          baseSpacing,
+          const Tuple2(6, 2),
+          BoxDecoration(
+            border: Border(
+              left: BorderSide(width: 4, color: Colors.grey.shade300),
             ),
-            baseSpacing,
-            const Tuple2(0, 0),
-            BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(2),
-            )),
-        indent: DefaultTextBlockStyle(
-            baseStyle, baseSpacing, const Tuple2(0, 6), null),
-        align: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
-        leading: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
-        sizeSmall: const TextStyle(fontSize: 10),
-        sizeLarge: const TextStyle(fontSize: 18),
-        sizeHuge: const TextStyle(fontSize: 22),
-
-        tagBuilder: (tags) {
-          return Row(
-            children: [
-              Expanded(
-                child: Wrap(
-                  runSpacing: 10,
-                  spacing: 10,
-                  children: tags
-                      .map((e) => IntrinsicWidth(
-                            child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                height: 19,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: Colors.amber,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: Colors.amber)),
-                                child: Text(
-                                  e,
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.black),
-                                )),
-                          ))
-                      .toList(),
-                ),
+          )),
+      code: DefaultTextBlockStyle(
+          TextStyle(
+            color: Colors.blue.shade900.withOpacity(0.9),
+            fontFamily: fontFamily,
+            fontSize: 13,
+            height: 1.15,
+          ),
+          baseSpacing,
+          const Tuple2(0, 0),
+          BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(2),
+          )),
+      indent: DefaultTextBlockStyle(
+          baseStyle, baseSpacing, const Tuple2(0, 6), null),
+      align: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
+      leading: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
+      sizeSmall: const TextStyle(fontSize: 10),
+      sizeLarge: const TextStyle(fontSize: 18),
+      sizeHuge: const TextStyle(fontSize: 22),
+      tagBuilder: (tags) {
+        return Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                runSpacing: 10,
+                spacing: 10,
+                children: tags
+                    .map((e) => IntrinsicWidth(
+                          child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              height: 19,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.amber)),
+                              child: Text(
+                                e,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.black),
+                              )),
+                        ))
+                    .toList(),
               ),
-              InkWell(
-                  onTap: () {},
-                  child: const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.amber,
-                  ))
-            ],
-          );
-        },
+            ),
+            InkWell(
+                onTap: () {},
+                child: const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.amber,
+                ))
+          ],
+        );
+      },
     );
   }
 
   DefaultStyles merge(DefaultStyles other) {
     return DefaultStyles(
+        title: other.title ?? title,
         h1: other.h1 ?? h1,
         h2: other.h2 ?? h2,
         h3: other.h3 ?? h3,
@@ -326,9 +338,8 @@ class DefaultStyles {
         mentionStyle: other.mentionStyle ?? mentionStyle,
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
-
         date: other.date ?? date,
-      mentionBlock: other.mentionBlock ?? mentionBlock,
+        mentionBlock: other.mentionBlock ?? mentionBlock,
         suggestionWidth: other.suggestionWidth);
   }
 }

@@ -332,6 +332,8 @@ class RawEditorState extends EditorState
         default:
           throw 'Invalid level $level';
       }
+    } else if (attrs.containsKey(Attribute.title.key)) {
+      return defaultStyles!.title!.verticalSpacing;
     }
 
     return defaultStyles!.paragraph!.verticalSpacing;

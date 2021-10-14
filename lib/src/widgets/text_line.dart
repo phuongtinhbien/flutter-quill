@@ -133,6 +133,9 @@ class TextLine extends StatelessWidget {
 
     if (line.style.containsKey(Attribute.placeholder.key)) {
       return defaultStyles.placeHolder!.style;
+
+    }    if (line.style.containsKey(Attribute.title.key)) {
+      return defaultStyles.title!.style;
     }
 
     final header = line.style.attributes[Attribute.header.key];
@@ -141,6 +144,8 @@ class TextLine extends StatelessWidget {
       Attribute.h2: defaultStyles.h2!.style,
       Attribute.h3: defaultStyles.h3!.style,
     };
+
+
 
     textStyle = textStyle.merge(m[header] ?? defaultStyles.paragraph!.style);
 
