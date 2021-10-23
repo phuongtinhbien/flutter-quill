@@ -437,7 +437,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     color = c;
     if (containsTextSelection()) {
-      markNeedsPaint();
+      safeMarkNeedsPaint();
     }
   }
 
@@ -449,7 +449,7 @@ class RenderEditableTextLine extends RenderEditableBox {
     final containsSelection = containsTextSelection();
     if (attached && containsCursor()) {
       cursorCont.removeListener(markNeedsLayout);
-      cursorCont.color.removeListener(markNeedsPaint);
+      cursorCont.color.removeListener(safeMarkNeedsPaint);
     }
 
     textSelection = t;
@@ -457,11 +457,11 @@ class RenderEditableTextLine extends RenderEditableBox {
     _containsCursor = null;
     if (attached && containsCursor()) {
       cursorCont.addListener(markNeedsLayout);
-      cursorCont.color.addListener(markNeedsPaint);
+      cursorCont.color.addListener(safeMarkNeedsPaint);
     }
 
     if (containsSelection || containsTextSelection()) {
-      markNeedsPaint();
+      safeMarkNeedsPaint();
     }
   }
 
@@ -670,7 +670,7 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
     if (containsCursor()) {
       cursorCont.addListener(markNeedsLayout);
-      cursorCont.color.addListener(markNeedsPaint);
+      cursorCont.color.addListener(safeMarkNeedsPaint);
     }
   }
 
@@ -682,7 +682,7 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
     if (containsCursor()) {
       cursorCont.removeListener(markNeedsLayout);
-      cursorCont.color.removeListener(markNeedsPaint);
+      cursorCont.color.removeListener(safeMarkNeedsPaint);
     }
   }
 
@@ -971,6 +971,14 @@ class RenderEditableTextLine extends RenderEditableBox {
       offset: position.offset - getContainer().documentOffset,
       affinity: position.affinity,
     );
+  }
+
+  void safeMarkNeedsPaint() {
+    if (!attached) {
+      //Should not paint if it was unattach.
+      return;
+    }
+    safeMarkNeedsPaint();
   }
 }
 
