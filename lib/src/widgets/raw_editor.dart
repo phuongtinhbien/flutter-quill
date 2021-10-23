@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -400,12 +401,11 @@ class RawEditorState extends EditorState
       });
     }
 
-    _focusAttachment = widget.focusNode.attach(context,
-        onKey: (node, event) {
+    _focusAttachment = widget.focusNode.attach(context, onKey: (node, event) {
       // print (node);
       // print (event);
-          return _keyboardListener.handleRawKeyEvent(event);
-        });
+      return _keyboardListener.handleRawKeyEvent(event);
+    });
     widget.focusNode.addListener(_handleFocusChanged);
   }
 
@@ -734,12 +734,13 @@ class RawEditorState extends EditorState
       );
     } else {
       final value = textEditingValue;
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final data = await getClipboardImage();
+
       if (data != null) {
         final length =
             textEditingValue.selection.end - textEditingValue.selection.start;
-        if (data.text == null) return;
-        final markdown = html2md.convert(data.text ?? '');
+        if (data == null) return;
+        final markdown = html2md.convert(data);
         if (markdown.isNotEmpty) {
           final operationString = markdownToDelta(markdown);
           final deltaData =
@@ -749,7 +750,7 @@ class RawEditorState extends EditorState
 
           final delta = Delta.fromJson([retainOperation, ...deltaData]);
 
-          print(delta);
+          // print(delta);
           widget.controller.compose(delta, value.selection, ChangeSource.LOCAL);
         }
         // var str = data.text!;
@@ -776,10 +777,36 @@ class RawEditorState extends EditorState
         // move cursor to the end of pasted text selection
         widget.controller.updateSelection(
             TextSelection.collapsed(
-                offset: value.selection.start + data.text!.length),
+                offset: value.selection.start + data.length),
             ChangeSource.LOCAL);
       }
     }
+  }
+
+  Future<String> getClipboardImage() async {
+    try {
+      final result = await MethodChannel('clipboard/image')
+          .invokeMethod('getClipboardImage');
+      print (result);
+      Uint8List data = Uint8List.fromList(result);
+
+
+      try {
+        return utf8.decode(data);
+      } on FormatException {
+        return '<img src="data:image/jpeg;base64,${base64.encode(data)}"/>';
+      } catch (e) {
+        print("error in getting clipboard image");
+        print(e);
+      }
+
+      // callback(prov);
+    } on PlatformException {
+    }  catch (e) {
+      print("error in getting clipboard image");
+      print(e);
+    }
+    return '';
   }
 
   Future<bool> _isItCut(TextEditingValue value) async {
