@@ -1,3 +1,15 @@
+## [2.0.9]
+* Improve UX when trying to add a link.
+
+## [2.0.8]
+* Adding translations to the toolbar.
+
+## [2.0.7]
+* Added theming options for toolbar icons and LinkDialog.
+
+## [2.0.6]
+* Avoid runtime error when placed inside TabBarView.
+
 ## [2.0.5]
 * Support inline code formatting.
 
