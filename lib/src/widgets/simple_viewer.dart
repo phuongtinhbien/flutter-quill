@@ -348,10 +348,12 @@ class _SimpleViewer extends MultiChildRenderObjectWidget {
     required this.endHandleLayerLink,
     required this.onSelectionChanged,
     required this.scrollBottomInset,
+    this.offset,
     this.padding = EdgeInsets.zero,
     Key? key,
   }) : super(key: key, children: children);
 
+  final ViewportOffset? offset;
   final Document document;
   final TextDirection textDirection;
   final LayerLink startHandleLayerLink;
@@ -363,6 +365,7 @@ class _SimpleViewer extends MultiChildRenderObjectWidget {
   @override
   RenderEditor createRenderObject(BuildContext context) {
     return RenderEditor(
+      offset,
       null,
       textDirection,
       scrollBottomInset,

@@ -874,15 +874,6 @@ class RenderEditableTextLine extends RenderEditableBox {
       final parentData = _body!.parentData as BoxParentData;
 
       final effectiveOffset = offset + parentData.offset;
-      if (enableInteractiveSelection &&
-          line.documentOffset <= textSelection.end &&
-          textSelection.start <= line.documentOffset + line.length - 1) {
-        final local = localSelection(line, textSelection, false);
-        _selectedRects ??= _body!.getBoxesForSelection(
-          local,
-        );
-        _paintSelection(context, effectiveOffset);
-      }
 
       if (hasFocus &&
           cursorCont.show.value &&
@@ -898,6 +889,17 @@ class RenderEditableTextLine extends RenderEditableBox {
           containsCursor() &&
           cursorCont.style.paintAboveText) {
         _paintCursor(context, effectiveOffset, line.hasEmbed);
+      }
+
+      // paint the selection on the top
+      if (enableInteractiveSelection &&
+          line.documentOffset <= textSelection.end &&
+          textSelection.start <= line.documentOffset + line.length - 1) {
+        final local = localSelection(line, textSelection, false);
+        _selectedRects ??= _body!.getBoxesForSelection(
+          local,
+        );
+        _paintSelection(context, effectiveOffset);
       }
     }
 
@@ -975,10 +977,10 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   void safeMarkNeedsPaint() {
     if (!attached) {
-      //Should not paint if it was unattach.
+      //Should not paint if it was unattached.
       return;
     }
-    safeMarkNeedsPaint();
+    markNeedsPaint();
   }
 }
 
