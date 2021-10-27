@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -752,65 +752,83 @@ class RawEditorState extends EditorState
       );
     } else {
       final value = textEditingValue;
-      final data = await getClipboardImage();
+      final data = await getClipboardData();
 
-      if (data != null) {
-        final length =
-            textEditingValue.selection.end - textEditingValue.selection.start;
-        if (data == null) return;
-        final markdown = html2md.convert(data);
-        if (markdown.isNotEmpty) {
-          final operationString = markdownToDelta(markdown);
-          final deltaData =
-              Delta.fromJson(jsonDecode(operationString)).toJson();
-          final retainOperation =
-              Operation.retain(value.selection.start).toJson();
+      final length =
+          textEditingValue.selection.end - textEditingValue.selection.start;
 
-          final delta = Delta.fromJson([retainOperation, ...deltaData]);
+      final markdown = html2md.convert(data, ignore: [
+        'style'
+      ], rules: [
+        html2md.Rule('parse_span', filters: ['span'], filterFn: (node) {
+          return node.nodeName == 'span' &&
+              (node.className.contains('s1') || node.className.contains('s2'));
+        }, replacement: (content, node) {
+          if (node.className.contains('s1') || node.className.contains('s2')) {
+            final hLevel = int.parse(node.className.substring(1));
+            final underline =
+                List.filled(content.length, hLevel == 1 ? '=' : '-').join();
+            return '\n\n$content\n$underline\n\n';
+          } else if (node.className.contains('s4')) {
+            return '**$content**';
+          }
+          if (node.isBlock) {
+            return '\n$content\n';
+          } else {
+            return content;
+          }
+        })
+      ]);
+      if (markdown.isNotEmpty) {
+        final operationString = markdownToDelta(markdown);
+        final deltaData = Delta.fromJson(jsonDecode(operationString)).toJson();
+        final retainOperation =
+            Operation.retain(value.selection.start).toJson();
 
-          // print(delta);
-          widget.controller.compose(delta, value.selection, ChangeSource.LOCAL);
-        }
-        // var str = data.text!;
-        // final codes = data.text!.codeUnits;
-        // // For clip from editor, it may contain image, a.k.a 65532.
-        // // For clip from browser, image is directly ignore.
-        // // Here we skip image when pasting.
-        // if (codes.contains(65532)) {
-        //   final sb = StringBuffer();
-        //   for (var i = 0; i < str.length; i++) {
-        //     if (str.codeUnitAt(i) == 65532) {
-        //       continue;
-        //     }
-        //     sb.write(str[i]);
-        //   }
-        //   str = sb.toString();
-        // }
-        // widget.controller.replaceText(
-        //   value.selection.start,
-        //   length,
-        //   str,
-        //   value.selection,
-        // );
-        // move cursor to the end of pasted text selection
-        widget.controller.updateSelection(
-            TextSelection.collapsed(
-                offset: value.selection.start + data.length),
-            ChangeSource.LOCAL);
+        final delta = Delta.fromJson([retainOperation, ...deltaData]);
+
+        // print(delta);
+        widget.controller.compose(delta, value.selection, ChangeSource.LOCAL);
       }
+      // var str = data.text!;
+      // final codes = data.text!.codeUnits;
+      // // For clip from editor, it may contain image, a.k.a 65532.
+      // // For clip from browser, image is directly ignore.
+      // // Here we skip image when pasting.
+      // if (codes.contains(65532)) {
+      //   final sb = StringBuffer();
+      //   for (var i = 0; i < str.length; i++) {
+      //     if (str.codeUnitAt(i) == 65532) {
+      //       continue;
+      //     }
+      //     sb.write(str[i]);
+      //   }
+      //   str = sb.toString();
+      // }
+      // widget.controller.replaceText(
+      //   value.selection.start,
+      //   length,
+      //   str,
+      //   value.selection,
+      // );
+      // move cursor to the end of pasted text selection
+      widget.controller.updateSelection(
+          TextSelection.collapsed(offset: value.selection.start + data.length),
+          ChangeSource.LOCAL);
     }
   }
 
-  Future<String> getClipboardImage() async {
+  Future<String> getClipboardData() async {
     try {
-      final result = await MethodChannel('clipboard/image')
-          .invokeMethod('getClipboardImage');
-      print (result);
+      final result = await MethodChannel('clipboard/data')
+          .invokeMethod('getClipboardData');
+      print(result);
       Uint8List data = Uint8List.fromList(result);
 
-
       try {
-        return utf8.decode(data);
+        final decodeData = utf8.decode(data);
+        // Clipboard.setData(ClipboardData(text: decodeData));
+        return decodeData;
       } on FormatException {
         return '<img src="data:image/jpeg;base64,${base64.encode(data)}"/>';
       } catch (e) {
@@ -820,7 +838,7 @@ class RawEditorState extends EditorState
 
       // callback(prov);
     } on PlatformException {
-    }  catch (e) {
+    } catch (e) {
       print("error in getting clipboard image");
       print(e);
     }
