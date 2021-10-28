@@ -14,24 +14,23 @@ import 'editor.dart';
 enum _TextSelectionHandlePosition { START, END }
 
 class EditorSuggestionsTextSelectionOverlay {
-  EditorSuggestionsTextSelectionOverlay(
-    this.value,
-    this.handlesVisible,
-    this.context,
-    this.debugRequiredFor,
-    this.toolbarLayerLink,
-    this.startHandleLayerLink,
-    this.endHandleLayerLink,
-    this.renderObject,
-    this.selectionCtrls,
-    this.selectionDelegate,
-    this.dragStartBehavior,
-    this.onSelectionHandleTapped,
-    this.clipboardStatus, {
-    this.maxWidth = 200,
-    this.maxHeight = 200,
-    this.suggestionWidget,
-  }) {
+  EditorSuggestionsTextSelectionOverlay(this.value,
+      this.handlesVisible,
+      this.context,
+      this.debugRequiredFor,
+      this.toolbarLayerLink,
+      this.startHandleLayerLink,
+      this.endHandleLayerLink,
+      this.renderObject,
+      this.selectionCtrls,
+      this.selectionDelegate,
+      this.dragStartBehavior,
+      this.onSelectionHandleTapped,
+      this.clipboardStatus, {
+        this.maxWidth = 200,
+        this.maxHeight = 200,
+        this.suggestionWidget,
+      }) {
     final overlay = Overlay.of(context, rootOverlay: true)!;
 
     _toolbarController = AnimationController(
@@ -99,8 +98,8 @@ class EditorSuggestionsTextSelectionOverlay {
     _toolbarController.forward(from: 0);
   }
 
-  Widget _buildHandle(
-      BuildContext context, _TextSelectionHandlePosition position) {
+  Widget _buildHandle(BuildContext context,
+      _TextSelectionHandlePosition position) {
     if (_selection.isCollapsed &&
         position == _TextSelectionHandlePosition.END) {
       return Container();
@@ -138,8 +137,8 @@ class EditorSuggestionsTextSelectionOverlay {
     }
   }
 
-  void _handleSelectionHandleChanged(
-      TextSelection? newSelection, _TextSelectionHandlePosition position) {
+  void _handleSelectionHandleChanged(TextSelection? newSelection,
+      _TextSelectionHandlePosition position) {
     TextPosition textPosition;
     switch (position) {
       case _TextSelectionHandlePosition.START:
@@ -158,12 +157,12 @@ class EditorSuggestionsTextSelectionOverlay {
 
     final currSelection = newSelection != null
         ? DragTextSelection(
-            baseOffset: newSelection.baseOffset,
-            extentOffset: newSelection.extentOffset,
-            affinity: newSelection.affinity,
-            isDirectional: newSelection.isDirectional,
-            first: position == _TextSelectionHandlePosition.START,
-          )
+      baseOffset: newSelection.baseOffset,
+      extentOffset: newSelection.extentOffset,
+      affinity: newSelection.affinity,
+      isDirectional: newSelection.isDirectional,
+      first: position == _TextSelectionHandlePosition.START,
+    )
         : null;
 
     selectionDelegate
@@ -183,7 +182,7 @@ class EditorSuggestionsTextSelectionOverlay {
 
     final baseLineHeight = renderObject!.preferredLineHeight(_selection.base);
     final extentLineHeight =
-        renderObject!.preferredLineHeight(_selection.extent);
+    renderObject!.preferredLineHeight(_selection.extent);
     final smallestLineHeight = math.min(baseLineHeight, extentLineHeight);
     final isMultiline = endpoints.last.point.dy - endpoints.first.point.dy >
         smallestLineHeight / 2;
@@ -297,8 +296,8 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
     switch (position) {
       case _TextSelectionHandlePosition.START:
         return renderObject!.selectionStartInViewport;
-      // case _TextSelectionHandlePosition.END:
-      //   return renderObject!.selectionEndInViewport;
+    case _TextSelectionHandlePosition.END:
+      return renderObject!.selectionEndInViewport;
       default:
         return ValueNotifier(false);
     }
@@ -368,19 +367,19 @@ class _TextSelectionHandleOverlayState
       case _TextSelectionHandlePosition.START:
         newSelection = TextSelection(
           baseOffset:
-              isNormalized ? position.offset : widget.selection.baseOffset,
+          isNormalized ? position.offset : widget.selection.baseOffset,
           extentOffset:
-              isNormalized ? widget.selection.extentOffset : position.offset,
+          isNormalized ? widget.selection.extentOffset : position.offset,
         );
         break;
-      // case _TextSelectionHandlePosition.END:
-      //   newSelection = TextSelection(
-      //     baseOffset:
-      //     isNormalized ? widget.selection.baseOffset : position.offset,
-      //     extentOffset:
-      //     isNormalized ? position.offset : widget.selection.extentOffset,
-      //   );
-      //   break;
+    // case _TextSelectionHandlePosition.END:
+    //   newSelection = TextSelection(
+    //     baseOffset:
+    //     isNormalized ? widget.selection.baseOffset : position.offset,
+    //     extentOffset:
+    //     isNormalized ? position.offset : widget.selection.extentOffset,
+    //   );
+    //   break;
     }
 
     widget.onSelectionHandleChanged(newSelection);
@@ -422,7 +421,7 @@ class _TextSelectionHandleOverlayState
         : widget.selection.extent;
     final lineHeight = widget.renderObject!.preferredLineHeight(textPosition);
     final handleAnchor =
-        widget.selectionControls.getHandleAnchor(type!, lineHeight);
+    widget.selectionControls.getHandleAnchor(type!, lineHeight);
     final handleSize = widget.selectionControls.getHandleSize(lineHeight);
     _handleSize = handleSize;
 
@@ -435,7 +434,7 @@ class _TextSelectionHandleOverlayState
 
     final interactiveRect = handleRect.expandToInclude(
       Rect.fromCircle(
-          center: handleRect.center, radius: kMinInteractiveDimension / 2),
+          center: handleRect.center, radius: widget.maxWidth / 2),
     );
     final padding = RelativeRect.fromLTRB(
       math.max((interactiveRect.width - handleRect.width) / 2, 0),
@@ -443,19 +442,44 @@ class _TextSelectionHandleOverlayState
       math.max((interactiveRect.width - handleRect.width) / 2, 0),
       math.max((interactiveRect.height - handleRect.height) / 2, 0),
     );
+
+    final objectBounds = widget.renderObject!.size;
+    final objectOffset = widget.renderObject!.globalToLocal(handleRect.center);
+    final positionCursor = layerLink.leader!.offset;
+    print(positionCursor);
+    print(objectBounds);
+    print(objectOffset);
+    print(interactiveRect.width);
+    print(interactiveRect.height);
+    final overlapsOffsetX = objectBounds.width - positionCursor.dx;
+    final overlapsOffsetY = objectBounds.height - positionCursor.dy;
+    var offset = interactiveRect.topLeft;
+
+    print('overlapsOffsetX: $overlapsOffsetX');
+    print('overlapsOffsetY: $overlapsOffsetY');
+    if (overlapsOffsetX < interactiveRect.width) {
+      offset = Offset(-(interactiveRect.width - objectOffset.dx),
+          interactiveRect.topLeft.dy);
+
+    }
+    if (overlapsOffsetY < interactiveRect.height) {
+      offset = Offset(offset.dx,-(interactiveRect.height + overlapsOffsetY));
+    }
+    print(offset);
+
     //TODO render view
     return CompositedTransformFollower(
       link: layerLink,
-      offset: interactiveRect.topLeft,
+      offset: offset,
       showWhenUnlinked: false,
       child: FadeTransition(
         opacity: _opacity,
         child: Container(
           alignment: Alignment.topLeft,
-          constraints: BoxConstraints(
-            maxWidth: widget.maxWidth,
-            maxHeight: widget.maxHeight,
-          ),
+          // constraints: BoxConstraints(
+          //   maxWidth: widget.maxWidth,
+          //   maxHeight: widget.maxHeight,
+          // ),
           margin: EdgeInsets.only(
             left: padding.left,
             top: padding.top + lineHeight + 10,
@@ -477,11 +501,9 @@ class _TextSelectionHandleOverlayState
     );
   }
 
-  TextSelectionHandleType? _chooseType(
-    TextDirection textDirection,
-    TextSelectionHandleType ltrType,
-    TextSelectionHandleType rtlType,
-  ) {
+  TextSelectionHandleType? _chooseType(TextDirection textDirection,
+      TextSelectionHandleType ltrType,
+      TextSelectionHandleType rtlType,) {
     if (widget.selection.isCollapsed) return TextSelectionHandleType.collapsed;
 
     switch (textDirection) {
