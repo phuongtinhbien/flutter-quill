@@ -72,9 +72,10 @@ class ClipboardUtils {
     }
   }
 
-  static void copy(Delta delta){
-    final data = deltaToMarkdown(jsonEncode(delta.toJson()).toString());
-
-    Clipboard.setData(ClipboardData(text: markdownToHtml(data)));
+  static void copy(String delta){
+    final data = deltaToMarkdown(delta);
+    final htmlData = markdownToHtml(data);
+    print (data);
+    Clipboard.setData(ClipboardData(text: htmlData));
   }
 }

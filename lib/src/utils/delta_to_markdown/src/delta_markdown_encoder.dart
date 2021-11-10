@@ -275,7 +275,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     } else if (block.key == Attribute.list.key) {
       final check = block.value == 'checked' ? 'x' : ' ';
       buffer.write('- [$check] ');
-    } else if (block.key == Attribute.title.key && block.value == true) {
+    } else if (block.key == Attribute.h1.key && block.value == 1) {
       buffer.write('# ');
     }  else {
       throw ArgumentError('Cannot handle block $block');
