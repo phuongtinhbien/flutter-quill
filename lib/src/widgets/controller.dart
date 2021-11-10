@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_quill/models/documents/nodes/line.dart';
 import 'package:flutter_quill/src/utils/clipboard_utils.dart';
 import 'package:tuple/tuple.dart';
 
@@ -17,8 +20,7 @@ class QuillController extends ChangeNotifier {
     required this.document,
     required TextSelection selection,
     bool keepStyleOnNewLine = false,
-  })
-      : _selection = selection,
+  })  : _selection = selection,
         _keepStyleOnNewLine = keepStyleOnNewLine;
 
   factory QuillController.basic() {
@@ -59,8 +61,7 @@ class QuillController extends ChangeNotifier {
   // item3: The source of this change.
   Stream<Tuple3<Delta, Delta, ChangeSource>> get changes => document.changes;
 
-  TextEditingValue get plainTextEditingValue =>
-      TextEditingValue(
+  TextEditingValue get plainTextEditingValue => TextEditingValue(
         text: document.toPlainText(),
         selection: selection,
       );
@@ -114,8 +115,8 @@ class QuillController extends ChangeNotifier {
 
   bool get hasRedo => document.hasRedo;
 
-  void replaceText(int index, int len, Object? data,
-      TextSelection? textSelection,
+  void replaceText(
+      int index, int len, Object? data, TextSelection? textSelection,
       {bool ignoreFocus = false}) {
     assert(data is String || data is Embeddable);
 
@@ -132,15 +133,15 @@ class QuillController extends ChangeNotifier {
           delta.last.data == '\n') {
         // if all attributes are inline, shouldRetainDelta should be false
         final anyAttributeNotInline =
-        toggledStyle.values.any((attr) => !attr.isInline);
+            toggledStyle.values.any((attr) => !attr.isInline);
         if (!anyAttributeNotInline) {
           shouldRetainDelta = false;
         }
       }
       if (shouldRetainDelta) {
         final retainDelta = Delta()
-          ..retain(index)..retain(
-              data is String ? data.length : 1, toggledStyle.toJson());
+          ..retain(index)
+          ..retain(data is String ? data.length : 1, toggledStyle.toJson());
         document.compose(retainDelta, ChangeSource.LOCAL);
       }
     }
@@ -213,7 +214,7 @@ class QuillController extends ChangeNotifier {
     textSelection = selection.copyWith(
         baseOffset: delta.transformPosition(selection.baseOffset, force: false),
         extentOffset:
-        delta.transformPosition(selection.extentOffset, force: false));
+            delta.transformPosition(selection.extentOffset, force: false));
     if (selection != textSelection) {
       _updateSelection(textSelection, source);
     }
@@ -259,7 +260,6 @@ class QuillController extends ChangeNotifier {
 
   Future<void> paste() async {
     final data = await ClipboardUtils.getClipboardDelta(selection);
-    print(data);
     if (data != null) {
       compose(data.item1, selection, ChangeSource.LOCAL);
       updateSelection(
@@ -269,29 +269,42 @@ class QuillController extends ChangeNotifier {
   }
 
   void copy() {
-    final node = document
-        .queryChild(selection.baseOffset)
-        .node;
+    final node = document.queryChild(selection.baseOffset).node;
     final operations = <dynamic>[];
     if (node != null) {
       node.list?.forEach((entry) {
-        if (entry.containsOffset(selection.extentOffset)) {
-          final start = selection.baseOffset - entry.documentOffset;
-          final end = selection.extentOffset - entry.documentOffset;
-          final attributes = <String, dynamic>{};
-          final attributesList = entry.style.attributes.values.map((e) => e.toJson())
-              .toList();
-          print (entry.toDelta());
-          attributesList.forEach((e) => attributes.addAll(e));
-          final entryDelta = Delta()
-            ..insert(entry.toPlainText().substring(start, end),
-                attributes);
+        final entryOffset = entry.documentOffset;
+        final entryOffsetLength = entryOffset + entry.length;
+        if (entryOffset >= selection.baseOffset &&
+                entryOffsetLength <= selection.extentOffset ||
+            entry.containsOffset(selection.baseOffset) ||
+            entry.containsOffset(selection.extentOffset)) {
+          final start = max(selection.baseOffset - entry.documentOffset, 0);
+          final end = min(
+              selection.extentOffset - entry.documentOffset + 1, entry.length);
+          final text = entry.toPlainText().substring(start, end);
+          print(text);
+          var entryDelta;
+          if (entry is Line) {
+            final attributes = <String, dynamic>{};
+            entry.collectStyle(start, end).values.forEach((element) {
+              attributes.addAll(element.toJson());
+            });
+            entryDelta = Delta()..insert(text, attributes);
+          } else {
+            entryDelta = Delta()..insert(text);
+          }
+
           operations.addAll(entryDelta.toJson());
         }
       });
     }
-    print (operations);
-    operations.add(Operation.insert('\n'));
+    print(operations);
     ClipboardUtils.copy(jsonEncode(operations));
+
+    // if (!selection.isCollapsed) {
+    //   Clipboard.setData(ClipboardData(
+    //       text: selection.textInside(plainTextEditingValue.text)));
+    // }
   }
 }
