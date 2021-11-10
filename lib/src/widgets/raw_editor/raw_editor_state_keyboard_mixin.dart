@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:characters/characters.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/src/utils/clipboard_utils.dart';
 import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
 import 'package:html2md/html2md.dart' as html2md;
 
@@ -114,34 +115,16 @@ mixin RawEditorStateKeyboardMixin on EditorState {
     }
     if (shortcut == InputShortcut.PASTE && !widget.readOnly) {
       //TODO format clipboard
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-
+      final data = await ClipboardUtils.getClipboardDelta(selection);
       if (data != null) {
-        if (data.text == null) return;
-        final markdown = html2md.convert(data.text ?? '');
-        if (markdown.isNotEmpty) {
-          final operationString = markdownToDelta(markdown);
-          final deltaData =
-              Delta.fromJson(jsonDecode(operationString)).toJson();
-          final retainOperation = Operation.retain(selection.start).toJson();
-
-          final delta = Delta.fromJson([retainOperation, ...deltaData]);
-
-          print(operationString);
-          widget.controller.compose(
-              delta,
-              TextSelection.collapsed(
-                  offset: selection.start + data.text!.length),
-              ChangeSource.LOCAL);
-        }
-
-        widget.controller.replaceText(
-          selection.start,
-          selection.end - selection.start,
-          data.text,
-          TextSelection.collapsed(offset: selection.start + data.text!.length),
-        );
+        // print(delta);
+        widget.controller
+            .compose(data.item1, selection, ChangeSource.LOCAL);
+        widget.controller.updateSelection(
+            TextSelection.collapsed(offset: selection.start + data.item2),
+            ChangeSource.LOCAL);
       }
+
       return;
     }
     if (shortcut == InputShortcut.SELECT_ALL &&

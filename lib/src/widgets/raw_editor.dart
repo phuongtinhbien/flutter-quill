@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -11,9 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
+import 'package:flutter_quill/src/utils/clipboard_utils.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
-import 'package:html2md/html2md.dart' as html2md;
 import 'package:tuple/tuple.dart';
 
 import '../../flutter_quill.dart';
@@ -752,43 +750,19 @@ class RawEditorState extends EditorState
       );
     } else {
       final value = textEditingValue;
-      final data = await getClipboardData();
+      final data = await ClipboardUtils.getClipboardDelta(value.selection);
 
-      final length =
-          textEditingValue.selection.end - textEditingValue.selection.start;
-
-      final markdown = html2md.convert(data, ignore: [
-        'style'
-      ], rules: [
-        html2md.Rule('parse_span', filters: ['span'], filterFn: (node) {
-          return node.nodeName == 'span' &&
-              (node.className.contains('s1') || node.className.contains('s2'));
-        }, replacement: (content, node) {
-          if (node.className.contains('s1') || node.className.contains('s2')) {
-            final hLevel = int.parse(node.className.substring(1));
-            final underline =
-                List.filled(content.length, hLevel == 1 ? '=' : '-').join();
-            return '\n\n$content\n$underline\n\n';
-          } else if (node.className.contains('s4')) {
-            return '**$content**';
-          }
-          if (node.isBlock) {
-            return '\n$content\n';
-          } else {
-            return content;
-          }
-        })
-      ]);
-      if (markdown.isNotEmpty) {
-        final operationString = markdownToDelta(markdown);
-        final deltaData = Delta.fromJson(jsonDecode(operationString)).toJson();
-        final retainOperation =
-            Operation.retain(value.selection.start).toJson();
-
-        final delta = Delta.fromJson([retainOperation, ...deltaData]);
-
+      if (data != null) {
         // print(delta);
-        widget.controller.compose(delta, value.selection, ChangeSource.LOCAL);
+        widget.controller
+            .compose(data.item1, value.selection, ChangeSource.LOCAL);
+        widget.controller.updateSelection(
+            TextSelection.collapsed(offset: value.selection.start + data.item2),
+            ChangeSource.LOCAL);
+      } else {
+        widget.controller.updateSelection(
+            TextSelection.collapsed(offset: value.selection.start),
+            ChangeSource.LOCAL);
       }
       // var str = data.text!;
       // final codes = data.text!.codeUnits;
@@ -812,37 +786,8 @@ class RawEditorState extends EditorState
       //   value.selection,
       // );
       // move cursor to the end of pasted text selection
-      widget.controller.updateSelection(
-          TextSelection.collapsed(offset: value.selection.start + data.length),
-          ChangeSource.LOCAL);
+
     }
-  }
-
-  Future<String> getClipboardData() async {
-    try {
-      final result = await MethodChannel('clipboard/data')
-          .invokeMethod('getClipboardData');
-      print(result);
-      Uint8List data = Uint8List.fromList(result);
-
-      try {
-        final decodeData = utf8.decode(data);
-        // Clipboard.setData(ClipboardData(text: decodeData));
-        return decodeData;
-      } on FormatException {
-        return '<img src="data:image/jpeg;base64,${base64.encode(data)}"/>';
-      } catch (e) {
-        print("error in getting clipboard image");
-        print(e);
-      }
-
-      // callback(prov);
-    } on PlatformException {
-    } catch (e) {
-      print("error in getting clipboard image");
-      print(e);
-    }
-    return '';
   }
 
   Future<bool> _isItCut(TextEditingValue value) async {

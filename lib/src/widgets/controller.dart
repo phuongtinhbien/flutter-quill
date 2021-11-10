@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_quill/src/utils/clipboard_utils.dart';
 import 'package:tuple/tuple.dart';
 
 import '../models/documents/attribute.dart';
@@ -251,5 +252,38 @@ class QuillController extends ChangeNotifier {
     _selection = selection.copyWith(
         baseOffset: math.min(selection.baseOffset, end),
         extentOffset: math.min(selection.extentOffset, end));
+  }
+
+  Future<void> paste() async {
+    final data = await ClipboardUtils.getClipboardDelta(selection);
+
+    if (data != null) {
+      compose(data.item1, selection, ChangeSource.LOCAL);
+      updateSelection(
+          TextSelection.collapsed(offset: selection.start + data.item2),
+          ChangeSource.LOCAL);
+    }
+  }
+
+  void copy() {
+    final node = document.queryChild(selection.baseOffset).node;
+    var delta = Delta();
+    if (node != null) {
+      print(node.list);
+      print(selection.baseOffset);
+      print(selection.extentOffset);
+      node.list?.forEach((entry) {
+        print(entry.documentOffset);
+        print(entry.containsOffset(selection.extentOffset));
+        if (entry.containsOffset(selection.extentOffset)) {
+          delta = entry
+              .toDelta()
+              ..retain(selection.extentOffset);
+          print (delta);
+        }
+      });
+    }
+    print(delta);
+    ClipboardUtils.copy(delta);
   }
 }

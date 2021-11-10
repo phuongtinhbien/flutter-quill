@@ -446,25 +446,25 @@ class _TextSelectionHandleOverlayState
     final objectBounds = widget.renderObject!.size;
     final objectOffset = widget.renderObject!.globalToLocal(handleRect.center);
     final positionCursor = layerLink.leader!.offset;
-    print(positionCursor);
-    print(objectBounds);
-    print(objectOffset);
-    print(interactiveRect.width);
-    print(interactiveRect.height);
+    // print(positionCursor);
+    // print(objectBounds);
+    // print(objectOffset);
+    // print(interactiveRect.width);
+    // print(interactiveRect.height);
     final overlapsOffsetX = objectBounds.width - positionCursor.dx;
     final overlapsOffsetY = objectBounds.height - positionCursor.dy;
     var offset = interactiveRect.topLeft;
-
-    print('overlapsOffsetX: $overlapsOffsetX');
-    print('overlapsOffsetY: $overlapsOffsetY');
+    //
+    // print('overlapsOffsetX: $overlapsOffsetX');
+    // print('overlapsOffsetY: $overlapsOffsetY');
     if (overlapsOffsetX < interactiveRect.width) {
       offset = Offset(
           -(interactiveRect.width + (interactiveRect.width - overlapsOffsetX)),
           interactiveRect.topLeft.dy);
     }
-    if (overlapsOffsetY < interactiveRect.height) {
-      offset = Offset(offset.dx, -(interactiveRect.height + overlapsOffsetY));
-    }
+    // if (overlapsOffsetY < interactiveRect.height) {
+    //   offset = Offset(offset.dx, -(interactiveRect.height + overlapsOffsetY));
+    // }
     print(offset);
 
     //TODO render view
