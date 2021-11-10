@@ -287,9 +287,11 @@ class QuillController extends ChangeNotifier {
           var entryDelta;
           if (entry is Line) {
             final attributes = <String, dynamic>{};
-            entry.collectStyle(start, end).values.forEach((element) {
+            final style = entry.collectStyle(start, end);
+            style.values.forEach((element) {
               attributes.addAll(element.toJson());
             });
+            if (style.isInline)
             entryDelta = Delta()..insert(text, attributes);
           } else {
             entryDelta = Delta()..insert(text);
