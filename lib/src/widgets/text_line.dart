@@ -230,7 +230,14 @@ class TextLine extends StatelessWidget {
           res = res.merge(defaultStyles.sizeHuge);
           break;
         default:
-          final fontSize = double.tryParse(size.value);
+          double? fontSize;
+          if (size.value is double) {
+            fontSize = size.value;
+          } else if (size.value is int) {
+            fontSize = size.value.toDouble();
+          } else if (size.value is String) {
+            fontSize = double.tryParse(size.value);
+          }
           if (fontSize != null) {
             res = res.merge(TextStyle(fontSize: fontSize));
           } else {
@@ -876,7 +883,14 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    return _children.first.hitTest(result, position: position);
+    if (_body == null) return false;
+    final parentData = _body!.parentData as BoxParentData;
+    return result.addWithPaintOffset(
+        offset: parentData.offset,
+        position: position,
+        hitTest: (result, position) {
+          return _body!.hitTest(result, position: position);
+        });
   }
 
   @override
