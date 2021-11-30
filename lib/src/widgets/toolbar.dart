@@ -58,10 +58,12 @@ const double kIconButtonFactor = 1.77;
 class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
   const QuillToolbar({
     required this.children,
-    this.toolBarHeight = 36,
+    this.toolbarHeight = 36,
+    this.toolbarIconAlignment = WrapAlignment.center,
+    this.toolbarSectionSpacing = 4,
+    this.multiRowsDisplay = true,
     this.color,
     this.filePickImpl,
-    this.multiRowsDisplay,
     this.locale,
     Key? key,
   }) : super(key: key);
@@ -69,6 +71,9 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
   factory QuillToolbar.basic({
     required QuillController controller,
     double toolbarIconSize = kDefaultIconSize,
+    double toolbarSectionSpacing = 4,
+    WrapAlignment toolbarIconAlignment = WrapAlignment.center,
+    bool showDividers = true,
     bool showBoldButton = true,
     bool showItalicButton = true,
     bool showSmallButton = false,
@@ -79,6 +84,10 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     bool showBackgroundColorButton = true,
     bool showClearFormat = true,
     bool showAlignmentButtons = false,
+    bool showLeftAlignment = true,
+    bool showCenterAlignment = true,
+    bool showRightAlignment = true,
+    bool showJustifyAlignment = true,
     bool showHeaderStyle = true,
     bool showListNumbers = true,
     bool showListBullets = true,
@@ -114,6 +123,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
     /// * Locale('de')
     /// * Locale('fr')
     /// * Locale('zh')
+    /// and more https://github.com/singerdmx/flutter-quill#translation-of-toolbar
     Locale? locale,
     Key? key,
   }) {
@@ -131,6 +141,10 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
           onImagePickCallback != null ||
           onVideoPickCallback != null,
       showAlignmentButtons,
+      showLeftAlignment,
+      showCenterAlignment,
+      showRightAlignment,
+      showJustifyAlignment,
       showHeaderStyle,
       showListNumbers || showListBullets || showListCheck || showCodeBlock,
       showQuote || showIndent,
@@ -139,7 +153,9 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
 
     return QuillToolbar(
       key: key,
-      toolBarHeight: toolbarIconSize * 2,
+      toolbarHeight: toolbarIconSize * 2,
+      toolbarSectionSpacing: toolbarSectionSpacing,
+      toolbarIconAlignment: toolbarIconAlignment,
       multiRowsDisplay: multiRowsDisplay,
       locale: locale,
       children: [
@@ -267,7 +283,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             webVideoPickImpl: webVideoPickImpl,
             iconTheme: iconTheme,
           ),
-        if (isButtonGroupShown[0] &&
+        if (showDividers &&
+            isButtonGroupShown[0] &&
             (isButtonGroupShown[1] ||
                 isButtonGroupShown[2] ||
                 isButtonGroupShown[3] ||
@@ -282,8 +299,14 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
           SelectAlignmentButton(
             controller: controller,
             iconSize: toolbarIconSize,
+            iconTheme: iconTheme,
+            showLeftAlignment: showLeftAlignment,
+            showCenterAlignment: showCenterAlignment,
+            showRightAlignment: showRightAlignment,
+            showJustifyAlignment: showJustifyAlignment,
           ),
-        if (isButtonGroupShown[1] &&
+        if (showDividers &&
+            isButtonGroupShown[1] &&
             (isButtonGroupShown[2] ||
                 isButtonGroupShown[3] ||
                 isButtonGroupShown[4] ||
@@ -299,7 +322,9 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             iconSize: toolbarIconSize,
             iconTheme: iconTheme,
           ),
-        if (isButtonGroupShown[2] &&
+        if (showDividers &&
+            showHeaderStyle &&
+            isButtonGroupShown[2] &&
             (isButtonGroupShown[3] ||
                 isButtonGroupShown[4] ||
                 isButtonGroupShown[5]))
@@ -346,7 +371,8 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             iconSize: toolbarIconSize,
             iconTheme: iconTheme,
           ),
-        if (isButtonGroupShown[3] &&
+        if (showDividers &&
+            isButtonGroupShown[3] &&
             (isButtonGroupShown[4] || isButtonGroupShown[5]))
           VerticalDivider(
             indent: 12,
@@ -377,7 +403,7 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
             isIncrease: false,
             iconTheme: iconTheme,
           ),
-        if (isButtonGroupShown[4] && isButtonGroupShown[5])
+        if (showDividers && isButtonGroupShown[4] && isButtonGroupShown[5])
           VerticalDivider(
             indent: 12,
             endIndent: 12,
@@ -401,8 +427,10 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   final List<Widget> children;
-  final double toolBarHeight;
-  final bool? multiRowsDisplay;
+  final double toolbarHeight;
+  final double toolbarSectionSpacing;
+  final WrapAlignment toolbarIconAlignment;
+  final bool multiRowsDisplay;
 
   /// The color of the toolbar.
   ///
@@ -418,20 +446,21 @@ class QuillToolbar extends StatelessWidget implements PreferredSizeWidget {
   /// * Locale('de')
   /// * Locale('fr')
   /// * Locale('zh', 'CN')
+  /// and more https://github.com/singerdmx/flutter-quill#translation-of-toolbar
   final Locale? locale;
 
   @override
-  Size get preferredSize => Size.fromHeight(toolBarHeight);
+  Size get preferredSize => Size.fromHeight(toolbarHeight);
 
   @override
   Widget build(BuildContext context) {
     return I18n(
       initialLocale: locale,
-      child: multiRowsDisplay ?? true
+      child: multiRowsDisplay
           ? Wrap(
-              alignment: WrapAlignment.center,
+              alignment: toolbarIconAlignment,
               runSpacing: 4,
-              spacing: 4,
+              spacing: toolbarSectionSpacing,
               children: children,
             )
           : Container(

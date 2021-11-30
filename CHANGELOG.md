@@ -1,3 +1,30 @@
+## [2.0.22]
+* Fix attribute compare and fix font size parsing.
+
+## [2.0.21]
+* Handle click on embed object.
+
+## [2.0.20]
+* Improved UX/UI of Image widget.
+
+## [2.0.19]
+* When uploading a video, applying indicator.
+
+## [2.0.18]
+* Make toolbar dividers optional.
+
+## [2.0.17]
+* Allow alignment of the toolbar icons to match WrapAlignment.
+
+## [2.0.16]
+* Add hide / show alignment buttons.
+
+## [2.0.15]
+* Implement change cursor to SystemMouseCursors.click when hovering a link styled text.
+
+## [2.0.14]
+* Enable customize the checkbox widget using DefaultListBlockStyle style.
+
 ## [2.0.13]
 * Improve the scrolling performance by reducing the repaint areas.
 

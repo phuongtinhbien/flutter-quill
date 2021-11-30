@@ -8,6 +8,7 @@ import 'package:tuple/tuple.dart';
 import '../models/documents/attribute.dart';
 import '../models/documents/nodes/block.dart';
 import '../models/documents/nodes/line.dart';
+import '../widgets/style_widgets/style_widgets.dart';
 import 'box.dart';
 import 'cursor.dart';
 import 'default_styles.dart';
@@ -49,27 +50,26 @@ const List<String> romanNumbers = [
 ];
 
 class EditableTextBlock extends StatelessWidget {
-  const EditableTextBlock({
-    required this.block,
-    required this.textDirection,
-    required this.scrollBottomInset,
-    required this.verticalSpacing,
-    required this.textSelection,
-    required this.color,
-    required this.styles,
-    required this.enableInteractiveSelection,
-    required this.hasFocus,
-    required this.contentPadding,
-    required this.embedBuilder,
-    required this.cursorCont,
-    required this.indentLevelCounts,
-    required this.onCheckboxTap,
-    required this.readOnly,
-    required this.dateBuilder,
-    required this.mentionBuilder,
-    this.customStyleBuilder,
-    Key? key,
-  });
+  const EditableTextBlock(
+      {required this.block,
+      required this.textDirection,
+      required this.scrollBottomInset,
+      required this.verticalSpacing,
+      required this.textSelection,
+      required this.color,
+      required this.styles,
+      required this.enableInteractiveSelection,
+      required this.hasFocus,
+      required this.contentPadding,
+      required this.embedBuilder,
+      required this.cursorCont,
+      required this.indentLevelCounts,
+      required this.onCheckboxTap,
+      required this.readOnly,
+      this.customStyleBuilder,
+        required this.dateBuilder,
+        required this.mentionBuilder,
+      Key? key});
 
   final Block block;
   final TextDirection textDirection;
@@ -159,7 +159,7 @@ class EditableTextBlock extends StatelessWidget {
     final defaultStyles = QuillStyles.getStyles(context, false);
     final attrs = line.style.attributes;
     if (attrs[Attribute.list.key] == Attribute.ol) {
-      return _NumberPoint(
+      return QuillNumberPoint(
         index: index,
         indentLevelCounts: indentLevelCounts,
         count: count,
@@ -171,7 +171,7 @@ class EditableTextBlock extends StatelessWidget {
     }
 
     if (attrs[Attribute.list.key] == Attribute.ul) {
-      return _BulletPoint(
+      return QuillBulletPoint(
         style:
             defaultStyles!.leading!.style.copyWith(fontWeight: FontWeight.bold),
         width: 32,
@@ -186,7 +186,7 @@ class EditableTextBlock extends StatelessWidget {
     }
 
     if (attrs[Attribute.list.key] == Attribute.checked) {
-      return _Checkbox(
+      return QuillCheckbox(
         key: UniqueKey(),
         style: defaultStyles!.leading!.style,
         width: 32,
@@ -196,11 +196,12 @@ class EditableTextBlock extends StatelessWidget {
         customizeCheckbox: defaultStyles.customizeCheckbox,
         checkedCheckbox: defaultStyles.checkedCheckbox,
         unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
+        uiBuilder: defaultStyles.lists!.checkboxUIBuilder,
       );
     }
 
     if (attrs[Attribute.list.key] == Attribute.unchecked) {
-      return _Checkbox(
+      return QuillCheckbox(
         key: UniqueKey(),
         style: defaultStyles!.leading!.style,
         width: 32,
@@ -209,11 +210,12 @@ class EditableTextBlock extends StatelessWidget {
         customizeCheckbox: defaultStyles.customizeCheckbox,
         checkedCheckbox: defaultStyles.checkedCheckbox,
         unCheckedCheckbox: defaultStyles.unCheckedCheckbox,
+        uiBuilder: defaultStyles.lists!.checkboxUIBuilder,
       );
     }
 
     if (attrs.containsKey(Attribute.codeBlock.key)) {
-      return _NumberPoint(
+      return QuillNumberPoint(
         index: index,
         indentLevelCounts: indentLevelCounts,
         count: count,

@@ -193,6 +193,8 @@ class TextLine extends StatelessWidget {
     final style = textNode.style;
     var res = const TextStyle(); // This is inline text style
     final color = textNode.style.attributes[Attribute.color.key];
+    var hasLink = false;
+
     <String, TextStyle?>{
       Attribute.bold.key: defaultStyles.bold,
       Attribute.italic.key: defaultStyles.italic,
@@ -213,6 +215,9 @@ class TextLine extends StatelessWidget {
           res = _merge(res.copyWith(decorationColor: textColor),
               s!.copyWith(decorationColor: textColor));
         } else {
+          if (k == Attribute.link.key) {
+            hasLink = true;
+          }
           res = _merge(res, s!);
         }
       }
@@ -236,7 +241,14 @@ class TextLine extends StatelessWidget {
           res = res.merge(defaultStyles.sizeHuge);
           break;
         default:
-          final fontSize = double.tryParse(size.value);
+          double? fontSize;
+          if (size.value is double) {
+            fontSize = size.value;
+          } else if (size.value is int) {
+            fontSize = size.value.toDouble();
+          } else if (size.value is String) {
+            fontSize = double.tryParse(size.value);
+          }
           if (fontSize != null) {
             res = res.merge(TextStyle(fontSize: fontSize));
           } else {
@@ -269,6 +281,13 @@ class TextLine extends StatelessWidget {
     ///Apply style for checked item
 
     res = _applyCustomAttributes(res, textNode.style.attributes);
+    if (hasLink && readOnly) {
+      return TextSpan(
+        text: textNode.value,
+        style: res,
+        mouseCursor: SystemMouseCursors.click,
+      );
+    }
     return TextSpan(text: textNode.value, style: res);
   }
 
