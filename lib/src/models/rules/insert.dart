@@ -5,6 +5,7 @@ import '../documents/style.dart';
 import '../quill_delta.dart';
 import 'rule.dart';
 
+/// A heuristic rule for insert operations.
 abstract class InsertRule extends Rule {
   const InsertRule();
 
@@ -18,6 +19,10 @@ abstract class InsertRule extends Rule {
   }
 }
 
+/// Preserves line format when user splits the line into two.
+///
+/// This rule ignores scenarios when the line is split on its edge, meaning
+/// a newline is inserted at the beginning or the end of a line.
 class PreserveLineStyleOnSplitRule extends InsertRule {
   const PreserveLineStyleOnSplitRule();
 
@@ -87,12 +92,12 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
       return null;
     }
 
-    Map<String, dynamic>? resetStyle;
+    final resetStyle = <String, dynamic>{};
     // If current line had heading style applied to it we'll need to move this
     // style to the newly inserted line before it and reset style of the
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
-      resetStyle = Attribute.header.toJson();
+      resetStyle.addAll(Attribute.header.toJson());
     }
 
     // Go over each inserted line and ensure block style is applied.
@@ -113,7 +118,7 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     }
 
     // Reset style of the original newline character if needed.
-    if (resetStyle != null) {
+    if (resetStyle.isNotEmpty) {
       delta
         ..retain(nextNewLine.item2!)
         ..retain((nextNewLine.item1!.data as String).indexOf('\n'))
@@ -198,6 +203,11 @@ class AutoExitBlockRule extends InsertRule {
   }
 }
 
+/// Resets format for a newly inserted line when insert occurred at the end
+/// of a line (right before a newline).
+///
+/// This handles scenarios when a new line is added when at the end of a
+/// heading line. The newly added line should be a regular paragraph.
 class ResetLineFormatOnNewLineRule extends InsertRule {
   const ResetLineFormatOnNewLineRule();
 
@@ -227,6 +237,7 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
   }
 }
 
+/// Handles all format operations which manipulate embeds.
 class InsertEmbedsRule extends InsertRule {
   const InsertEmbedsRule();
 
@@ -275,6 +286,8 @@ class InsertEmbedsRule extends InsertRule {
   }
 }
 
+/// Applies link format to text segment (which looks like a link) when user
+/// inserts space character after it.
 class AutoFormatLinksRule extends InsertRule {
   const AutoFormatLinksRule();
 
@@ -314,6 +327,7 @@ class AutoFormatLinksRule extends InsertRule {
   }
 }
 
+/// Preserves inline styles when user inserts text inside formatted segment.
 class PreserveInlineStylesRule extends InsertRule {
   const PreserveInlineStylesRule();
 
@@ -359,6 +373,7 @@ class PreserveInlineStylesRule extends InsertRule {
   }
 }
 
+/// Fallback rule which simply inserts text as-is without any special handling.
 class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();
 

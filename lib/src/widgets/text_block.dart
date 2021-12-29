@@ -1,17 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:tuple/tuple.dart';
 
-import '../models/documents/attribute.dart';
+import '../../flutter_quill.dart';
 import '../models/documents/nodes/block.dart';
 import '../models/documents/nodes/line.dart';
-import '../widgets/style_widgets/style_widgets.dart';
 import 'box.dart';
 import 'cursor.dart';
-import 'default_styles.dart';
 import 'delegate.dart';
-import 'editor.dart';
+import 'link.dart';
 import 'text_line.dart';
 import 'text_selection.dart';
 
@@ -50,6 +47,7 @@ const List<String> romanNumbers = [
 class EditableTextBlock extends StatelessWidget {
   const EditableTextBlock(
       {required this.block,
+      required this.controller,
       required this.textDirection,
       required this.scrollBottomInset,
       required this.verticalSpacing,
@@ -60,14 +58,17 @@ class EditableTextBlock extends StatelessWidget {
       required this.hasFocus,
       required this.contentPadding,
       required this.embedBuilder,
+      required this.linkActionPicker,
       required this.cursorCont,
       required this.indentLevelCounts,
       required this.onCheckboxTap,
       required this.readOnly,
+      this.onLaunchUrl,
       this.customStyleBuilder,
       Key? key});
 
   final Block block;
+  final QuillController controller;
   final TextDirection textDirection;
   final double scrollBottomInset;
   final Tuple2 verticalSpacing;
@@ -78,6 +79,8 @@ class EditableTextBlock extends StatelessWidget {
   final bool hasFocus;
   final EdgeInsets? contentPadding;
   final EmbedBuilder embedBuilder;
+  final LinkActionPicker linkActionPicker;
+  final ValueChanged<String>? onLaunchUrl;
   final CustomStyleBuilder? customStyleBuilder;
   final CursorCont cursorCont;
   final Map<int, int> indentLevelCounts;
@@ -129,6 +132,9 @@ class EditableTextBlock extends StatelessWidget {
             customStyleBuilder: customStyleBuilder,
             styles: styles!,
             readOnly: readOnly,
+            controller: controller,
+            linkActionPicker: linkActionPicker,
+            onLaunchUrl: onLaunchUrl,
           ),
           _getIndentWidth(),
           _getSpacingForLine(line, index, count, defaultStyles),
@@ -169,25 +175,20 @@ class EditableTextBlock extends StatelessWidget {
     }
 
     if (attrs[Attribute.list.key] == Attribute.checked) {
-      return QuillCheckbox(
-        key: UniqueKey(),
-        style: defaultStyles!.leading!.style,
-        width: 32,
-        isChecked: true,
-        offset: block.offset + line.offset,
-        onTap: onCheckboxTap,
-        uiBuilder: defaultStyles.lists!.checkboxUIBuilder,
+      return CheckboxPoint(
+        size: 14,
+        value: true,
+        enabled: !readOnly,
+        onChanged: (checked) => onCheckboxTap(line.documentOffset, checked),
       );
     }
 
     if (attrs[Attribute.list.key] == Attribute.unchecked) {
-      return QuillCheckbox(
-        key: UniqueKey(),
-        style: defaultStyles!.leading!.style,
-        width: 32,
-        offset: block.offset + line.offset,
-        onTap: onCheckboxTap,
-        uiBuilder: defaultStyles.lists!.checkboxUIBuilder,
+      return CheckboxPoint(
+        size: 14,
+        value: false,
+        enabled: !readOnly,
+        onChanged: (checked) => onCheckboxTap(line.documentOffset, checked),
       );
     }
 
@@ -560,6 +561,16 @@ class RenderEditableTextBlock extends RenderEditableContainerBox
       offset: position.offset - getContainer().documentOffset,
       affinity: position.affinity,
     );
+  }
+
+  @override
+  Rect getCaretPrototype(TextPosition position) {
+    final child = childAtPosition(position);
+    final localPosition = TextPosition(
+      offset: position.offset - child.getContainer().offset,
+      affinity: position.affinity,
+    );
+    return child.getCaretPrototype(localPosition);
   }
 }
 
