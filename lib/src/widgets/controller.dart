@@ -297,7 +297,10 @@ class QuillController extends ChangeNotifier {
             entryDelta = Delta()..insert(text);
           }
 
-          operations.addAll(entryDelta.toJson());
+          if (entryDelta != null) {
+            operations.addAll(entryDelta.toJson());
+
+          }
         }
       });
     }
