@@ -10,23 +10,19 @@ enum AttributeScope {
 }
 
 class Attribute<T> {
-  Attribute(
-    this.key,
-    this.scope,
-    this.value,
-  );
+  Attribute(this.key, this.scope, this.value);
 
   final String key;
   final AttributeScope scope;
   final T value;
 
-  // int? createdDate = DateTime.now().millisecondsSinceEpoch;
-
   static final Map<String, Attribute> _registry = LinkedHashMap.of({
     Attribute.bold.key: Attribute.bold,
     Attribute.italic.key: Attribute.italic,
+    Attribute.small.key: Attribute.small,
     Attribute.underline.key: Attribute.underline,
     Attribute.strikeThrough.key: Attribute.strikeThrough,
+    Attribute.inlineCode.key: Attribute.inlineCode,
     Attribute.font.key: Attribute.font,
     Attribute.size.key: Attribute.size,
     Attribute.link.key: Attribute.link,
@@ -47,15 +43,20 @@ class Attribute<T> {
     Attribute.hashtag.key: Attribute.hashtag,
     Attribute.date.key: Attribute.date,
     Attribute.mentionBlock.key: Attribute.mentionBlock,
+    Attribute.title.key: Attribute.title,
   });
 
   static final BoldAttribute bold = BoldAttribute();
 
   static final ItalicAttribute italic = ItalicAttribute();
 
+  static final SmallAttribute small = SmallAttribute();
+
   static final UnderlineAttribute underline = UnderlineAttribute();
 
   static final StrikeThroughAttribute strikeThrough = StrikeThroughAttribute();
+
+  static final InlineCodeAttribute inlineCode = InlineCodeAttribute();
 
   static final FontAttribute font = FontAttribute(null);
 
@@ -91,10 +92,12 @@ class Attribute<T> {
 
   static final MentionAttribute mention = MentionAttribute(null);
   static final HashTagAttribute hashtag = HashTagAttribute(null);
+  static final TitleAttribute title = TitleAttribute();
 
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
     Attribute.italic.key,
+    Attribute.small.key,
     Attribute.underline.key,
     Attribute.strikeThrough.key,
     Attribute.link.key,
@@ -114,6 +117,7 @@ class Attribute<T> {
     Attribute.indent.key,
     Attribute.date.key,
     Attribute.mentionBlock.key,
+    Attribute.title.key,
   });
 
   static final Set<String> blockKeysExceptHeader = LinkedHashSet.of({
@@ -129,6 +133,14 @@ class Attribute<T> {
   static final DateAttribute date = DateAttribute(null);
 
   static final MentionBlockAttribute mentionBlock = MentionBlockAttribute(null);
+
+  static final Set<String> exclusiveBlockKeys = LinkedHashSet.of({
+    Attribute.header.key,
+    Attribute.list.key,
+    Attribute.codeBlock.key,
+    Attribute.blockQuote.key,
+    Attribute.title.key,
+  });
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
 
@@ -171,6 +183,8 @@ class Attribute<T> {
 
   // "attributes":{"indent":3"}
   static Attribute<int?> get indentL3 => IndentAttribute(level: 3);
+
+
 
   static Attribute<int?> getIndentLevel(int? level) {
     if (level == 1) {
@@ -219,7 +233,7 @@ class Attribute<T> {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! Attribute<T>) return false;
+    if (other is! Attribute) return false;
     final typedOther = other;
     return key == typedOther.key &&
         scope == typedOther.scope &&
@@ -243,12 +257,20 @@ class ItalicAttribute extends Attribute<bool> {
   ItalicAttribute() : super('italic', AttributeScope.INLINE, true);
 }
 
+class SmallAttribute extends Attribute<bool> {
+  SmallAttribute() : super('small', AttributeScope.INLINE, true);
+}
+
 class UnderlineAttribute extends Attribute<bool> {
   UnderlineAttribute() : super('underline', AttributeScope.INLINE, true);
 }
 
 class StrikeThroughAttribute extends Attribute<bool> {
   StrikeThroughAttribute() : super('strike', AttributeScope.INLINE, true);
+}
+
+class InlineCodeAttribute extends Attribute<bool> {
+  InlineCodeAttribute() : super('code', AttributeScope.INLINE, true);
 }
 
 class FontAttribute extends Attribute<String?> {
@@ -332,4 +354,8 @@ class DateAttribute extends Attribute<String?> {
 class MentionBlockAttribute extends Attribute<String?> {
   MentionBlockAttribute(String? val)
       : super('mention-block', AttributeScope.BLOCK, val);
+}
+
+class TitleAttribute extends Attribute<bool?> {
+  TitleAttribute({bool? val}) : super('title', AttributeScope.BLOCK, val);
 }

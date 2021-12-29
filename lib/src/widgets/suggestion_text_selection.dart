@@ -213,7 +213,7 @@ class EditorSuggestionsTextSelectionOverlay {
   }
 
   /*selectionCtrls.buildToolbar(
-  context,
+  context,a
   editingRegion,
   baseLineHeight,
   midpoint,
@@ -297,8 +297,8 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
     switch (position) {
       case _TextSelectionHandlePosition.START:
         return renderObject!.selectionStartInViewport;
-      // case _TextSelectionHandlePosition.END:
-      //   return renderObject!.selectionEndInViewport;
+      case _TextSelectionHandlePosition.END:
+        return renderObject!.selectionEndInViewport;
       default:
         return ValueNotifier(false);
     }
@@ -434,8 +434,7 @@ class _TextSelectionHandleOverlayState
     );
 
     final interactiveRect = handleRect.expandToInclude(
-      Rect.fromCircle(
-          center: handleRect.center, radius: kMinInteractiveDimension / 2),
+      Rect.fromCircle(center: handleRect.center, radius: widget.maxWidth / 2),
     );
     final padding = RelativeRect.fromLTRB(
       math.max((interactiveRect.width - handleRect.width) / 2, 0),
@@ -443,21 +442,46 @@ class _TextSelectionHandleOverlayState
       math.max((interactiveRect.width - handleRect.width) / 2, 0),
       math.max((interactiveRect.height - handleRect.height) / 2, 0),
     );
+
+    final objectBounds = widget.renderObject!.size;
+    final objectOffset = widget.renderObject!.globalToLocal(handleRect.center);
+    final positionCursor = layerLink.leader!.offset;
+    // print(positionCursor);
+    // print(objectBounds);
+    // print(objectOffset);
+    // print(interactiveRect.width);
+    // print(interactiveRect.height);
+    final overlapsOffsetX = objectBounds.width - positionCursor.dx;
+    final overlapsOffsetY = objectBounds.height - positionCursor.dy;
+    var offset = interactiveRect.topLeft;
+    //
+    // print('overlapsOffsetX: $overlapsOffsetX');
+    // print('overlapsOffsetY: $overlapsOffsetY');
+    if (overlapsOffsetX < interactiveRect.width) {
+      offset = Offset(
+          -(interactiveRect.width + (interactiveRect.width - overlapsOffsetX)),
+          interactiveRect.topLeft.dy);
+    }
+    // if (overlapsOffsetY < interactiveRect.height) {
+    //   offset = Offset(offset.dx, -(interactiveRect.height + overlapsOffsetY));
+    // }
+    print(offset);
+
     //TODO render view
     return CompositedTransformFollower(
       link: layerLink,
-      offset: interactiveRect.topLeft,
+      offset: offset,
       showWhenUnlinked: false,
       child: FadeTransition(
         opacity: _opacity,
         child: Container(
           alignment: Alignment.topLeft,
-          constraints: BoxConstraints(
-            maxWidth: widget.maxWidth,
-            maxHeight: widget.maxHeight,
-          ),
+          // constraints: BoxConstraints(
+          //   maxWidth: widget.maxWidth,
+          //   maxHeight: widget.maxHeight,
+          // ),
           margin: EdgeInsets.only(
-            left: padding.left,
+            left: padding.left + 20,
             top: padding.top + lineHeight + 10,
             right: padding.right,
             bottom: padding.bottom,

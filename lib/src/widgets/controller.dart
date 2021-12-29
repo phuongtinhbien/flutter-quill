@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_quill/models/documents/nodes/line.dart';
+import 'package:flutter_quill/src/utils/clipboard_utils.dart';
 import 'package:tuple/tuple.dart';
 
 import '../models/documents/attribute.dart';
@@ -14,7 +19,9 @@ class QuillController extends ChangeNotifier {
   QuillController({
     required this.document,
     required TextSelection selection,
-  }) : _selection = selection;
+    bool keepStyleOnNewLine = false,
+  })  : _selection = selection,
+        _keepStyleOnNewLine = keepStyleOnNewLine;
 
   factory QuillController.basic() {
     return QuillController(
@@ -25,6 +32,10 @@ class QuillController extends ChangeNotifier {
 
   /// Document managed by this controller.
   final Document document;
+
+  /// Tells whether to keep or reset the [toggledStyle]
+  /// when user adds a new line.
+  final bool _keepStyleOnNewLine;
 
   /// Currently selected text within the [document].
   TextSelection get selection => _selection;
@@ -79,7 +90,7 @@ class QuillController extends ChangeNotifier {
   }
 
   void _handleHistoryChange(int? len) {
-    if (len! > 0) {
+    if (len! != 0) {
       // if (this.selection.extentOffset >= document.length) {
       // // cursor exceeds the length of document, position it in the end
       // updateSelection(
@@ -135,7 +146,14 @@ class QuillController extends ChangeNotifier {
       }
     }
 
-    toggledStyle = Style();
+    if (_keepStyleOnNewLine) {
+      final style = getSelectionStyle();
+      final notInlineStyle = style.attributes.values.where((s) => !s.isInline);
+      toggledStyle = style.removeAll(notInlineStyle.toSet());
+    } else {
+      toggledStyle = Style();
+    }
+
     if (textSelection != null) {
       if (delta == null || delta.isEmpty) {
         _updateSelection(textSelection, ChangeSource.LOCAL);
@@ -238,5 +256,60 @@ class QuillController extends ChangeNotifier {
     _selection = selection.copyWith(
         baseOffset: math.min(selection.baseOffset, end),
         extentOffset: math.min(selection.extentOffset, end));
+  }
+
+  Future<void> paste() async {
+    final data = await ClipboardUtils.getClipboardDelta(selection);
+    if (data != null) {
+      compose(data.item1, selection, ChangeSource.LOCAL);
+      updateSelection(
+          TextSelection.collapsed(offset: selection.start + data.item2),
+          ChangeSource.LOCAL);
+    }
+  }
+
+  void copy() {
+    final node = document.queryChild(selection.baseOffset).node;
+    final operations = <dynamic>[];
+    if (node != null) {
+      node.list?.forEach((entry) {
+        final entryOffset = entry.documentOffset;
+        final entryOffsetLength = entryOffset + entry.length;
+        if (entryOffset >= selection.baseOffset &&
+                entryOffsetLength <= selection.extentOffset ||
+            entry.containsOffset(selection.baseOffset) ||
+            entry.containsOffset(selection.extentOffset)) {
+          final start = max(selection.baseOffset - entry.documentOffset, 0);
+          final end = min(
+              selection.extentOffset - entry.documentOffset + 1, entry.length);
+          final text = entry.toPlainText().substring(start, end);
+          print(text);
+          var entryDelta;
+          if (entry is Line) {
+            final attributes = <String, dynamic>{};
+            final style = entry.collectStyle(start, end);
+            style.values.forEach((element) {
+              attributes.addAll(element.toJson());
+            });
+            if (style.isInline)
+            entryDelta = Delta()..insert(text, attributes);
+          } else {
+            entryDelta = Delta()..insert(text);
+          }
+
+          if (entryDelta != null) {
+            operations.addAll(entryDelta.toJson());
+
+          }
+        }
+      });
+    }
+    print(operations);
+    ClipboardUtils.copy(jsonEncode(operations));
+
+    // if (!selection.isCollapsed) {
+    //   Clipboard.setData(ClipboardData(
+    //       text: selection.textInside(plainTextEditingValue.text)));
+    // }
   }
 }

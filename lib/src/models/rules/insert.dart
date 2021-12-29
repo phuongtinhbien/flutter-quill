@@ -1,3 +1,4 @@
+import 'package:flutter_quill/models/documents/attribute.dart';
 import 'package:tuple/tuple.dart';
 
 import '../documents/attribute.dart';
@@ -93,6 +94,8 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    } else if (lineStyle.containsKey(Attribute.title.key)) {
+      resetStyle = Attribute.title.toJson();
     } else if (lineStyle.containsKey(Attribute.checked.key) &&
         lineStyle.attributes[Attribute.checked.key]! == Attribute.checked) {
       resetStyle = Attribute.unchecked.toJson();
@@ -222,7 +225,9 @@ class AutoExitBlockRule extends InsertRule {
     }
 
     // retain(1) should be '\n', set it with no attribute
-    return Delta()..retain(index + (len ?? 0))..retain(1, attributes);
+    return Delta()
+      ..retain(index + (len ?? 0))
+      ..retain(1, attributes);
   }
 }
 
@@ -246,6 +251,9 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    }else if (cur.attributes != null &&
+        cur.attributes!.containsKey(Attribute.title.key)) {
+      resetStyle = Attribute.title.toJson();
     }
     return Delta()
       ..retain(index + (len ?? 0))
@@ -476,71 +484,28 @@ class AutoListNumberRule extends InsertRule {
     }
 
     final itr = DeltaIterator(document);
-
-    final prev = itr.skip(index), cur = itr.next();
-
+    final prev = itr.skip(index);
     if (prev == null || prev.data is! String) {
       return null;
     }
 
-    final textBefore = prev.data is String ? prev.data as String : '';
-    final textAfter = cur.data is String ? cur.data as String : '';
+    try {
+      final cand = (prev.data as String).split('\n').last.split(' ').last;
+      final matches = RegExp(r'\d\.$');
+      final isNumberList = matches.allMatches(cand);
 
-    // print('textAfter: $textAfter');
-    print('textBefore: $textBefore');
+      if (isNumberList.isEmpty) {
+        return null;
+      }
 
-    final matches = RegExp(r'.*\n\d\.$');
-    var textMatched = matches.stringMatch(textBefore) ?? '';
-
-    if (textMatched.isEmpty) {
-      textMatched =  RegExp(r'.*\d\.$').stringMatch(textBefore) ??'';
-    }
-    if (textMatched.isEmpty) {
+      final attributes = <String, dynamic>{}..addAll(Attribute.ol.toJson());
+      return Delta()
+        ..retain(index + (len ?? 0) - cand.length)
+        ..delete(cand.length)
+        ..retain(1, attributes)..trim();
+    } on FormatException {
       return null;
     }
-
-    print(textMatched);
-
-    final isNewlineBefore =
-        textBefore.endsWith(textMatched) || (textBefore == textMatched);
-    final isNewlineAfter = textAfter.startsWith('\n');
-    // print('isNewlineBefore: $isNewlineBefore');
-    // print('isNewlineAfter: $isNewlineAfter');
-    if (isNewlineBefore && isNewlineAfter) {
-      final copyDocument = Delta.fromJson(document.toJson());
-      final before = copyDocument.slice(0, index).toList();
-      final after = copyDocument.slice(index);
-      final text = before.last.data.toString().trimRight();
-      var newText = text.substring(0, text.length - textMatched.length );
-      final attributes = before.last.attributes;
-      if (textMatched.length >2) {
-        newText += '\n ';
-      } else  {
-        newText += ' \n ';
-      }
-      final newOperation = Operation.insert(newText, attributes);
-      before
-        ..removeLast()
-        ..add(newOperation)
-        // ..add(Operation.insert(''))
-        ..add(Operation.insert('\n', Attribute.ol.toJson()))
-        ..addAll(after.toList());
-
-      final newData = Delta.fromJson(before.map((e) => e.toJson()).toList());
-      final diff = document.diff(newData);
-      return diff..delete(1);
-    }
-    // if (isNewlineBefore) {
-    //   delta.retain(1, Attribute.dash.toJson());
-    // }
-    // if (!isNewlineAfter) {
-    //   delta.insert('\n');
-    // }
-    // final deltaLast = document.compose(delta);
-    //
-    // print(document.diff(deltaLast));
-
-    return null;
   }
 }
 

@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:characters/characters.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/src/utils/clipboard_utils.dart';
+import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 import '../../models/documents/document.dart';
 import '../../utils/diff_delta.dart';
@@ -76,6 +81,18 @@ mixin RawEditorStateKeyboardMixin on EditorState {
       }
       return;
     }
+    if (shortcut == InputShortcut.UNDO) {
+      if (widget.controller.hasUndo) {
+        widget.controller.undo();
+      }
+      return;
+    }
+    if (shortcut == InputShortcut.REDO) {
+      if (widget.controller.hasRedo) {
+        widget.controller.redo();
+      }
+      return;
+    }
     if (shortcut == InputShortcut.CUT && !widget.readOnly) {
       if (!selection.isCollapsed) {
         final data = selection.textInside(plainText);
@@ -97,15 +114,17 @@ mixin RawEditorStateKeyboardMixin on EditorState {
       return;
     }
     if (shortcut == InputShortcut.PASTE && !widget.readOnly) {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      //TODO format clipboard
+      final data = await ClipboardUtils.getClipboardDelta(selection);
       if (data != null) {
-        widget.controller.replaceText(
-          selection.start,
-          selection.end - selection.start,
-          data.text,
-          TextSelection.collapsed(offset: selection.start + data.text!.length),
-        );
+        // print(delta);
+        widget.controller
+            .compose(data.item1, selection, ChangeSource.LOCAL);
+        widget.controller.updateSelection(
+            TextSelection.collapsed(offset: selection.start + data.item2),
+            ChangeSource.LOCAL);
       }
+
       return;
     }
     if (shortcut == InputShortcut.SELECT_ALL &&

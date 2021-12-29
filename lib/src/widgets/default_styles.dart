@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/src/widgets/delegate.dart';
 import 'package:tuple/tuple.dart';
 
@@ -44,16 +45,30 @@ class DefaultTextBlockStyle {
   final BoxDecoration? decoration;
 }
 
+class DefaultListBlockStyle extends DefaultTextBlockStyle {
+  DefaultListBlockStyle(
+    TextStyle style,
+    Tuple2<double, double> verticalSpacing,
+    Tuple2<double, double> lineSpacing,
+    BoxDecoration? decoration,
+    this.checkboxUIBuilder,
+  ) : super(style, verticalSpacing, lineSpacing, decoration);
+
+  final quill.QuillCheckboxBuilder? checkboxUIBuilder;
+}
+
 class DefaultStyles {
-  DefaultStyles( {
+  DefaultStyles({
     this.h1,
     this.h2,
     this.h3,
     this.paragraph,
     this.bold,
     this.italic,
+    this.small,
     this.underline,
     this.strikeThrough,
+    this.inlineCode,
     this.link,
     this.color,
     this.placeHolder,
@@ -78,8 +93,11 @@ class DefaultStyles {
     this.suggestionHeight = 200,
     this.hashtagStyle,
     this.date,
-    this.mentionBlock
+    this.mentionBlock,
+    this.title
   });
+
+  final DefaultTextBlockStyle? title;
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -87,15 +105,17 @@ class DefaultStyles {
   final DefaultTextBlockStyle? paragraph;
   final TextStyle? bold;
   final TextStyle? italic;
+  final TextStyle? small;
   final TextStyle? underline;
   final TextStyle? strikeThrough;
+  final TextStyle? inlineCode;
   final TextStyle? sizeSmall; // 'small'
   final TextStyle? sizeLarge; // 'large'
   final TextStyle? sizeHuge; // 'huge'
   final TextStyle? link;
   final Color? color;
   final DefaultTextBlockStyle? placeHolder;
-  final DefaultTextBlockStyle? lists;
+  final DefaultListBlockStyle? lists;
   final DefaultTextBlockStyle? quote;
   final DefaultTextBlockStyle? code;
   final DefaultTextBlockStyle? indent;
@@ -173,28 +193,20 @@ class DefaultStyles {
             const Tuple2(8, 0),
             const Tuple2(0, 0),
             null),
-        tag: DefaultTextBlockStyle(
-            defaultTextStyle.style.copyWith(
-              fontSize: 20,
-              color: defaultTextStyle.style.color!.withOpacity(0.70),
-              height: 1.25,
-              fontWeight: FontWeight.w500,
-            ),
-            const Tuple2(8, 0),
-            const Tuple2(0, 0),
-            null),
         paragraph: DefaultTextBlockStyle(
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         bold: const TextStyle(fontWeight: FontWeight.bold),
-        mentionStyle:
-            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-        hashtagStyle:
-            const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
         italic: const TextStyle(fontStyle: FontStyle.italic),
+        small: const TextStyle(fontSize: 12, color: Colors.black45),
         underline: const TextStyle(decoration: TextDecoration.underline),
         strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
+        inlineCode: TextStyle(
+          color: Colors.blue.shade900.withOpacity(0.9),
+          fontFamily: fontFamily,
+          fontSize: 13,
+        ),
         link: TextStyle(
-          color: themeData.accentColor,
+          color: themeData.colorScheme.secondary,
           decoration: TextDecoration.underline,
         ),
         placeHolder: DefaultTextBlockStyle(
@@ -206,12 +218,8 @@ class DefaultStyles {
             const Tuple2(0, 0),
             const Tuple2(0, 0),
             null),
-        lists: DefaultTextBlockStyle(
-            baseStyle, baseSpacing, const Tuple2(0, 6), null),
-      date: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
-      mentionBlock: DefaultTextBlockStyle(
-            baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+        lists: DefaultListBlockStyle(
+            baseStyle, baseSpacing, const Tuple2(0, 6), null, null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color!.withOpacity(0.6)),
             baseSpacing,
@@ -243,55 +251,86 @@ class DefaultStyles {
         sizeSmall: const TextStyle(fontSize: 10),
         sizeLarge: const TextStyle(fontSize: 18),
         sizeHuge: const TextStyle(fontSize: 22),
-        tagBuilder: (tags) {
-          return Row(
-            children: [
-              Expanded(
-                child: Wrap(
-                  runSpacing: 10,
-                  spacing: 10,
-                  children: tags
-                      .map((e) => IntrinsicWidth(
-                            child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                height: 19,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: Colors.amber,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: Colors.amber)),
-                                child: Text(
-                                  e,
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.black),
-                                )),
-                          ))
-                      .toList(),
-                ),
+      title: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 34,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.15,
+            fontWeight: FontWeight.w300,
+          ),
+          const Tuple2(16, 0),
+          const Tuple2(0, 0),
+          null),
+      tag: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 20,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+          ),
+          const Tuple2(8, 0),
+          const Tuple2(0, 0),
+          null),
+      mentionStyle:
+      const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      hashtagStyle:
+      const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      date: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      mentionBlock: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      tagBuilder: (tags) {
+        return Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                runSpacing: 10,
+                spacing: 10,
+                children: tags
+                    .map((e) => IntrinsicWidth(
+                  child: Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8),
+                      height: 19,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.amber)),
+                      child: Text(
+                        e,
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black),
+                      )),
+                ))
+                    .toList(),
               ),
-              InkWell(
-                  onTap: () {},
-                  child: const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.amber,
-                  ))
-            ],
-          );
-        },
-    );
+            ),
+            InkWell(
+                onTap: () {},
+                child: const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.amber,
+                ))
+          ],
+        );
+      },);
+
   }
 
   DefaultStyles merge(DefaultStyles other) {
     return DefaultStyles(
+        title: other.title ?? title,
         h1: other.h1 ?? h1,
         h2: other.h2 ?? h2,
         h3: other.h3 ?? h3,
         paragraph: other.paragraph ?? paragraph,
         bold: other.bold ?? bold,
         italic: other.italic ?? italic,
+        small: other.small ?? small,
         underline: other.underline ?? underline,
         strikeThrough: other.strikeThrough ?? strikeThrough,
+        inlineCode: other.inlineCode ?? inlineCode,
         link: other.link ?? link,
         color: other.color ?? color,
         placeHolder: other.placeHolder ?? placeHolder,
@@ -314,7 +353,7 @@ class DefaultStyles {
         hashtagStyle: other.hashtagStyle ?? hashtagStyle,
         suggestionHeight: other.suggestionHeight,
         date: other.date ?? date,
-      mentionBlock: other.mentionBlock ?? mentionBlock,
+        mentionBlock: other.mentionBlock ?? mentionBlock,
         suggestionWidth: other.suggestionWidth);
   }
 }

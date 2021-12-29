@@ -1,3 +1,75 @@
+## [2.0.22]
+* Fix attribute compare and fix font size parsing.
+
+## [2.0.21]
+* Handle click on embed object.
+
+## [2.0.20]
+* Improved UX/UI of Image widget.
+
+## [2.0.19]
+* When uploading a video, applying indicator.
+
+## [2.0.18]
+* Make toolbar dividers optional.
+
+## [2.0.17]
+* Allow alignment of the toolbar icons to match WrapAlignment.
+
+## [2.0.16]
+* Add hide / show alignment buttons.
+
+## [2.0.15]
+* Implement change cursor to SystemMouseCursors.click when hovering a link styled text.
+
+## [2.0.14]
+* Enable customize the checkbox widget using DefaultListBlockStyle style.
+
+## [2.0.13]
+* Improve the scrolling performance by reducing the repaint areas.
+
+## [2.0.12]
+* Fix the selection effect can't be seen as the textLine with background color.
+
+## [2.0.11]
+* Fix visibility of text selection handlers on scroll.
+
+## [2.0.10]
+* cursorConnt.color notify the text_line to repaint if it was disposed.
+
+## [2.0.9]
+* Improve UX when trying to add a link.
+
+## [2.0.8]
+* Adding translations to the toolbar.
+
+## [2.0.7]
+* Added theming options for toolbar icons and LinkDialog.
+
+## [2.0.6]
+* Avoid runtime error when placed inside TabBarView.
+
+## [2.0.5]
+* Support inline code formatting.
+
+## [2.0.4]
+* Enable history shortcuts for desktop.
+
+## [2.0.3]
+* Fix cursor when line contains image.
+
+## [2.0.2]
+* Address KeyboardListener class name conflict.
+
+## [2.0.1]
+* Upgrade flutter_colorpicker to 0.5.0.
+
+## [2.0.0]
+* Text Alignment functions + Block Format standards.
+
+## [1.9.6]
+* Support putting QuillEditor inside a Scrollable view.
+
 ## [1.9.5]
 * Skip image when pasting.
 

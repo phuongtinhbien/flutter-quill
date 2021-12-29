@@ -38,9 +38,9 @@ class Rules {
   static final Rules _instance = Rules([
     const FormatLinkAtCaretPositionRule(),
     // const FormatMentionAtCaretPositionRule(),
-    const AutoListDashRule(),
-    const AutoListBulletRule(),
-    const AutoListNumberRule(),
+    // const AutoListDashRule(),
+    // const AutoListBulletRule(),
+    // const AutoListNumberRule(),
 
     const FormatHashtagAtCaretPositionRule(),
     const ResolveLineFormatRule(),
