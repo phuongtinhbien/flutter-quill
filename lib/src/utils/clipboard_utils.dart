@@ -75,7 +75,7 @@ class ClipboardUtils {
   static void copy(String delta){
     final data = deltaToMarkdown(delta);
     final htmlData = markdownToHtml(data);
-    print (data);
+    print (htmlData);
     Clipboard.setData(ClipboardData(text: htmlData));
   }
 }

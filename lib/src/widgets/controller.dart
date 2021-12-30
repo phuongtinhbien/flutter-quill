@@ -271,6 +271,7 @@ class QuillController extends ChangeNotifier {
   void copy() {
     final node = document.queryChild(selection.baseOffset).node;
     final operations = <dynamic>[];
+    print(node);
     if (node != null) {
       node.list?.forEach((entry) {
         final entryOffset = entry.documentOffset;
@@ -291,10 +292,9 @@ class QuillController extends ChangeNotifier {
             style.values.forEach((element) {
               attributes.addAll(element.toJson());
             });
-            if (style.isInline)
             entryDelta = Delta()..insert(text, attributes);
           } else {
-            entryDelta = Delta()..insert(text);
+            entryDelta = Delta()..insert(text, entry.style.attributes);
           }
 
           if (entryDelta != null) {
@@ -304,7 +304,7 @@ class QuillController extends ChangeNotifier {
         }
       });
     }
-    print(operations);
+    // print(operations);
     ClipboardUtils.copy(jsonEncode(operations));
 
     // if (!selection.isCollapsed) {
