@@ -8,8 +8,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
+import 'package:flutter_quill/src/widgets/float_cursor.dart';
+import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
+import 'package:flutter_quill/src/widgets/text_block.dart';
 import 'package:string_validator/string_validator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../models/documents/attribute.dart';
 import '../models/documents/document.dart';
 import '../models/documents/nodes/container.dart' as container_node;
 import '../models/documents/nodes/embed.dart';
@@ -21,7 +27,6 @@ import 'controller.dart';
 import 'cursor.dart';
 import 'default_styles.dart';
 import 'delegate.dart';
-import 'float_cursor.dart';
 import 'image.dart';
 import 'link.dart';
 import 'raw_editor.dart';
@@ -43,7 +48,8 @@ const linkPrefixes = [
   'skype:',
   'sip:', // Lync
   'whatsapp:',
-  'http'
+  'http',
+  'https'
 ];
 
 /// Base interface for the editor state which defines contract used by
@@ -55,6 +61,8 @@ abstract class EditorState extends State<RawEditor>
   RenderEditor? getRenderEditor();
 
   EditorTextSelectionOverlay? getSelectionOverlay();
+
+  EditorSuggestionsTextSelectionOverlay? getSuggestionSelectionOverlay();
 
   /// Controls the floating cursor animation when it is released.
   /// The floating cursor is animated to merge with the regular cursor.
@@ -219,6 +227,20 @@ Widget defaultEmbedBuilder(
   }
 }
 
+Widget defaultDateBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
+Widget defaultMentionBlockBuilder(
+    Node node, String date, bool readOnly, bool hasFocus) {
+  return Chip(
+    label: Text(date),
+  );
+}
+
 class QuillEditor extends StatefulWidget {
   const QuillEditor(
       {required this.controller,
@@ -250,7 +272,15 @@ class QuillEditor extends StatefulWidget {
       this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
       this.customStyleBuilder,
       this.floatingCursorDisabled = false,
-      Key? key});
+      this.mentionKeys,
+      this.mentionStrings,
+      this.onMentionTap,
+      this.onHashtagTap,
+      this.showSuggestions = true,
+      this.suggestionWidget,
+      Key? key,
+      this.dateBuilder = defaultDateBuilder,
+      this.mentionBuilder = defaultMentionBlockBuilder});
 
   factory QuillEditor.basic({
     required QuillController controller,
@@ -290,6 +320,15 @@ class QuillEditor extends StatefulWidget {
   final Brightness keyboardAppearance;
   final ScrollPhysics? scrollPhysics;
   final ValueChanged<String>? onLaunchUrl;
+  final ValueChanged<String>? onMentionTap;
+  final ValueChanged<String>? onHashtagTap;
+  final bool showSuggestions;
+  final Widget? suggestionWidget;
+
+  ///Mentions
+  final List<String>? mentionKeys;
+  final List<String>? mentionStrings;
+
   // Returns whether gesture is handled
   final bool Function(
       TapDownDetails details, TextPosition Function(Offset offset))? onTapDown;
@@ -306,12 +345,15 @@ class QuillEditor extends StatefulWidget {
   // Returns whether gesture is handled
   final bool Function(LongPressMoveUpdateDetails details,
       TextPosition Function(Offset offset))? onSingleLongTapMoveUpdate;
+
   // Returns whether gesture is handled
   final bool Function(
           LongPressEndDetails details, TextPosition Function(Offset offset))?
       onSingleLongTapEnd;
 
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
   final CustomStyleBuilder? customStyleBuilder;
 
   /// Delegate function responsible for showing menu with link actions on
@@ -392,50 +434,55 @@ class _QuillEditorState extends State<QuillEditor>
     }
 
     final child = RawEditor(
-      key: _editorKey,
-      controller: widget.controller,
-      focusNode: widget.focusNode,
-      scrollController: widget.scrollController,
-      scrollable: widget.scrollable,
-      scrollBottomInset: widget.scrollBottomInset,
-      padding: widget.padding,
-      readOnly: widget.readOnly,
-      placeholder: widget.placeholder,
-      onLaunchUrl: widget.onLaunchUrl,
-      toolbarOptions: ToolbarOptions(
-        copy: widget.enableInteractiveSelection,
-        cut: widget.enableInteractiveSelection,
-        paste: widget.enableInteractiveSelection,
-        selectAll: widget.enableInteractiveSelection,
-      ),
-      showSelectionHandles: theme.platform == TargetPlatform.iOS ||
-          theme.platform == TargetPlatform.android,
-      showCursor: widget.showCursor,
-      cursorStyle: CursorStyle(
-        color: cursorColor,
-        backgroundColor: Colors.grey,
-        width: 2,
-        radius: cursorRadius,
-        offset: cursorOffset,
-        paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
-        opacityAnimates: cursorOpacityAnimates,
-      ),
-      textCapitalization: widget.textCapitalization,
-      minHeight: widget.minHeight,
-      maxHeight: widget.maxHeight,
-      customStyles: widget.customStyles,
-      expands: widget.expands,
-      autoFocus: widget.autoFocus,
-      selectionColor: selectionColor,
-      selectionCtrls: textSelectionControls,
-      keyboardAppearance: widget.keyboardAppearance,
-      enableInteractiveSelection: widget.enableInteractiveSelection,
-      scrollPhysics: widget.scrollPhysics,
-      embedBuilder: widget.embedBuilder,
-      linkActionPickerDelegate: widget.linkActionPickerDelegate,
-      customStyleBuilder: widget.customStyleBuilder,
-      floatingCursorDisabled: widget.floatingCursorDisabled,
-    );
+        key: _editorKey,
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        scrollController: widget.scrollController,
+        scrollable: widget.scrollable,
+        scrollBottomInset: widget.scrollBottomInset,
+        padding: widget.padding,
+        readOnly: widget.readOnly,
+        placeholder: widget.placeholder,
+        onLaunchUrl: widget.onLaunchUrl,
+        toolbarOptions: ToolbarOptions(
+          copy: widget.enableInteractiveSelection,
+          cut: widget.enableInteractiveSelection,
+          paste: widget.enableInteractiveSelection,
+          selectAll: widget.enableInteractiveSelection,
+        ),
+        showSelectionHandles: theme.platform == TargetPlatform.iOS ||
+            theme.platform == TargetPlatform.android,
+        showCursor: widget.showCursor,
+        cursorStyle: CursorStyle(
+          color: cursorColor,
+          backgroundColor: Colors.grey,
+          width: 2,
+          radius: cursorRadius,
+          offset: cursorOffset,
+          paintAboveText: widget.paintCursorAboveText ?? paintCursorAboveText,
+          opacityAnimates: cursorOpacityAnimates,
+        ),
+        textCapitalization: widget.textCapitalization,
+        minHeight: widget.minHeight,
+        maxHeight: widget.maxHeight,
+        customStyles: widget.customStyles,
+        expands: widget.expands,
+        autoFocus: widget.autoFocus,
+        selectionColor: selectionColor,
+        selectionCtrls: textSelectionControls,
+        keyboardAppearance: widget.keyboardAppearance,
+        enableInteractiveSelection: widget.enableInteractiveSelection,
+        scrollPhysics: widget.scrollPhysics,
+        embedBuilder: widget.embedBuilder,
+        linkActionPickerDelegate: widget.linkActionPickerDelegate,
+        customStyleBuilder: widget.customStyleBuilder,
+        floatingCursorDisabled: widget.floatingCursorDisabled,
+        showSuggestions: widget.showSuggestions,
+        onMentionTap: widget.onMentionTap,
+        onHashtagTap: widget.onHashtagTap,
+        suggestionWidget: widget.suggestionWidget,
+        dateBuilder: widget.dateBuilder,
+        mentionBuilder: widget.mentionBuilder);
 
     return _selectionGestureDetectorBuilder.build(
       behavior: HitTestBehavior.translucent,

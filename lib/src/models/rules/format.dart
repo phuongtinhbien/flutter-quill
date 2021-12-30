@@ -136,8 +136,66 @@ class FormatLinkAtCaretPositionRule extends FormatRule {
   }
 }
 
-/// Produces Delta with inline-level attributes applied too all characters
-/// except newlines.
+class FormatMentionAtCaretPositionRule extends FormatRule {
+  const FormatMentionAtCaretPositionRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (attribute!.key != Attribute.mention.key || len! > 0) {
+      return null;
+    }
+
+    final delta = Delta();
+    final itr = DeltaIterator(document);
+    final before = itr.skip(index), after = itr.next();
+    int? beg = index, retain = 0;
+    if (before != null && before.hasAttribute(attribute.key)) {
+      beg -= before.length!;
+      retain = before.length;
+    }
+    if (after.hasAttribute(attribute.key)) {
+      if (retain != null) retain += after.length!;
+    }
+    if (retain == 0) {
+      return null;
+    }
+
+    delta..retain(beg)..retain(retain!, attribute.toJson());
+    return delta;
+  }
+}
+
+class FormatHashtagAtCaretPositionRule extends FormatRule {
+  const FormatHashtagAtCaretPositionRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (attribute!.key != Attribute.hashtag.key || len! > 0) {
+      return null;
+    }
+
+    final delta = Delta();
+    final itr = DeltaIterator(document);
+    final before = itr.skip(index), after = itr.next();
+    int? beg = index, retain = 0;
+    if (before != null && before.hasAttribute(attribute.key)) {
+      beg -= before.length!;
+      retain = before.length;
+    }
+    if (after.hasAttribute(attribute.key)) {
+      if (retain != null) retain += after.length!;
+    }
+    if (retain == 0) {
+      return null;
+    }
+
+    delta..retain(beg)..retain(retain!, attribute.toJson());
+    return delta;
+  }
+}
+
 class ResolveInlineFormatRule extends FormatRule {
   const ResolveInlineFormatRule();
 

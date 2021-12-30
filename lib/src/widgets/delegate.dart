@@ -1,12 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_quill/models/documents/nodes/node.dart';
 
 import '../../flutter_quill.dart';
+import '../models/documents/nodes/leaf.dart';
+import 'editor.dart';
 import 'text_selection.dart';
 
 typedef EmbedBuilder = Widget Function(
     BuildContext context, Embed node, bool readOnly);
+
+typedef DateBuilder = Widget Function(
+    Node line, String date, bool readOnly, bool hasFocus);
+typedef MentionBlockBuilder = Widget Function(
+    Node line, String mention, bool readOnly, bool hasFocus);
 
 typedef CustomStyleBuilder = TextStyle Function(Attribute attribute);
 

@@ -98,7 +98,24 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     // original line.
     if (lineStyle.containsKey(Attribute.header.key)) {
       resetStyle.addAll(Attribute.header.toJson());
+    } else if (lineStyle.containsKey(Attribute.title.key)) {
+      resetStyle.addAll(Attribute.title.toJson());
+    } else if (lineStyle.containsKey(Attribute.checked.key) &&
+        lineStyle.attributes[Attribute.checked.key]! == Attribute.checked) {
+      resetStyle.addAll(Attribute.unchecked.toJson());
     }
+    if (lineStyle.containsKey(Attribute.checked.key) &&
+        (lineStyle.attributes[Attribute.checked.key]! == Attribute.checked ||
+            lineStyle.attributes[Attribute.checked.key]! ==
+                Attribute.unchecked)) {
+
+      if (lineStyle.containsKey(Attribute.date.key)) {
+        resetStyle.addAll(DateAttribute('new').toJson());
+      }
+      if (lineStyle.containsKey(Attribute.mentionBlock.key)) {
+        resetStyle.addAll(MentionBlockAttribute('new').toJson());
+      }
+    } else {}
 
     // Go over each inserted line and ensure block style is applied.
     final lines = data.split('\n');
@@ -193,9 +210,23 @@ class AutoExitBlockRule extends InsertRule {
     // Here we now know that the line after `cur` is not in the same block
     // therefore we can exit this block.
     final attributes = cur.attributes ?? <String, dynamic>{};
-    final k =
-        attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
-    attributes[k] = null;
+
+    if (attributes.containsKey(Attribute.checked.key) &&
+        (attributes[Attribute.checked.key] == Attribute.checked.value ||
+            attributes[Attribute.checked.key] == Attribute.unchecked.value)) {
+      if (attributes.containsKey(Attribute.date.key)) {
+        attributes[Attribute.date.key] = null;
+      }
+      if (attributes.containsKey(Attribute.mentionBlock.key)) {
+        attributes[Attribute.mentionBlock.key] = null;
+      }
+      attributes[Attribute.checked.key] = null;
+    } else {
+      final k =
+          attributes.keys.firstWhere(Attribute.blockKeysExceptHeader.contains);
+      attributes[k] = null;
+    }
+
     // retain(1) should be '\n', set it with no attribute
     return Delta()
       ..retain(index + (len ?? 0))
@@ -228,6 +259,9 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
     if (cur.attributes != null &&
         cur.attributes!.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
+    }else if (cur.attributes != null &&
+        cur.attributes!.containsKey(Attribute.title.key)) {
+      resetStyle = Attribute.title.toJson();
     }
     return Delta()
       ..retain(index + (len ?? 0))
@@ -327,7 +361,221 @@ class AutoFormatLinksRule extends InsertRule {
   }
 }
 
-/// Preserves inline styles when user inserts text inside formatted segment.
+class AutoListDashRule extends InsertRule {
+  const AutoListDashRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index), cur = itr.next();
+
+    if (prev == null || prev.data is! String) {
+      return null;
+    }
+
+    final textBefore = prev.data is String ? prev.data as String : '';
+    final textAfter = cur.data is String ? cur.data as String : '';
+
+    // print('textBefore: $textBefore');
+    // print('textAfter: $textAfter');
+    final isNewlineBefore = textBefore.endsWith('\n-') || (textBefore == '-');
+    final isNewlineAfter = textAfter.startsWith('\n');
+    //
+    //
+    // print('isNewlineBefore: $isNewlineBefore');
+    // print('isNewlineAfter: $isNewlineAfter');
+    if (isNewlineBefore && isNewlineAfter) {
+      final copyDocument = Delta.fromJson(document.toJson());
+      final before = copyDocument.slice(0, index).toList();
+      final after = copyDocument.slice(index);
+      final text = before.last.data.toString().trimRight();
+      final newText = text.substring(0, text.length - 1);
+      final attributes = before.last.attributes;
+      final newOperation = Operation.insert('$newText\n ', attributes);
+      before
+        ..removeLast()
+        ..add(newOperation)
+        // ..add(Operation.insert(''))
+        ..add(Operation.insert('\n', Attribute.dash.toJson()))
+        ..addAll(after.toList());
+
+      final newData = Delta.fromJson(before.map((e) => e.toJson()).toList());
+      final diff = document.diff(newData);
+      return diff..delete(1);
+    }
+    // if (isNewlineBefore) {
+    //   delta.retain(1, Attribute.dash.toJson());
+    // }
+    // if (!isNewlineAfter) {
+    //   delta.insert('\n');
+    // }
+    // final deltaLast = document.compose(delta);
+    //
+    // print(document.diff(deltaLast));
+
+    return null;
+  }
+}
+
+class AutoListBulletRule extends InsertRule {
+  const AutoListBulletRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+
+    final prev = itr.skip(index), cur = itr.next();
+
+    if (prev == null || prev.data is! String) {
+      return null;
+    }
+
+    final textBefore = prev.data is String ? prev.data as String : '';
+    final textAfter = cur.data is String ? cur.data as String : '';
+
+    // print('textAfter: $textAfter');
+
+    final isNewlineBefore = textBefore.endsWith('\n*') || (textBefore == '*');
+    final isNewlineAfter = textAfter.startsWith('\n');
+    //
+    //
+    // print('isNewlineBefore: $isNewlineBefore');
+    // print('isNewlineAfter: $isNewlineAfter');
+    if (isNewlineBefore && isNewlineAfter) {
+      final copyDocument = Delta.fromJson(document.toJson());
+      final before = copyDocument.slice(0, index).toList();
+      final after = copyDocument.slice(index);
+      final text = before.last.data.toString().trimRight();
+      final newText = text.substring(0, text.length - 1);
+      final attributes = before.last.attributes;
+      final newOperation = Operation.insert('$newText\n ', attributes);
+      before
+        ..removeLast()
+        ..add(newOperation)
+        // ..add(Operation.insert(''))
+        ..add(Operation.insert('\n', Attribute.ul.toJson()))
+        ..addAll(after.toList());
+
+      final newData = Delta.fromJson(before.map((e) => e.toJson()).toList());
+      final diff = document.diff(newData);
+      return diff..delete(1);
+    }
+    // if (isNewlineBefore) {
+    //   delta.retain(1, Attribute.dash.toJson());
+    // }
+    // if (!isNewlineAfter) {
+    //   delta.insert('\n');
+    // }
+    // final deltaLast = document.compose(delta);
+    //
+    // print(document.diff(deltaLast));
+
+    return null;
+  }
+}
+
+class AutoListNumberRule extends InsertRule {
+  const AutoListNumberRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null || prev.data is! String) {
+      return null;
+    }
+
+    try {
+      final cand = (prev.data as String).split('\n').last.split(' ').last;
+      final matches = RegExp(r'\d\.$');
+      final isNumberList = matches.allMatches(cand);
+
+      if (isNumberList.isEmpty) {
+        return null;
+      }
+
+      final attributes = <String, dynamic>{}..addAll(Attribute.ol.toJson());
+      return Delta()
+        ..retain(index + (len ?? 0) - cand.length)
+        ..delete(cand.length)
+        ..retain(1, attributes)..trim();
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
+class AutoFormatMentionRule extends InsertRule {
+  final Map<String, String> mentions;
+
+  // ignore: sort_constructors_first
+  const AutoFormatMentionRule(this.mentions);
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data != ' ') {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null || prev.data is! String || prev.data == ' ') {
+      return null;
+    }
+
+    try {
+      final cand = (prev.data as String).split('\n').last.split(' ').last;
+      final exp = RegExp(r'(@|#)[a-zA-Z0-9]+');
+      final allMatches = exp.allMatches(cand).toList();
+      var tag = '';
+      if (allMatches.isEmpty) {
+        return null;
+      } else {
+        tag = allMatches.first.group(0)!;
+      }
+
+      final attributes = prev.attributes ?? <String, dynamic>{};
+      if (attributes.containsKey(Attribute.mention.key)) {
+        return null;
+      }
+      var value = '';
+      var temp = tag.replaceAll('@', '');
+      // print (tag);
+      if (mentions.containsKey(temp)) {
+        value = mentions[temp]!;
+      } else {
+        return null;
+      }
+
+      // print(value);
+      attributes.addAll(MentionAttribute(value).toJson());
+      return Delta()
+        ..retain(index + (len ?? 0) - cand.length)
+        ..retain(tag.length, attributes)
+        ..insert(data, prev.attributes);
+      // print (delta.toString());
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
 class PreserveInlineStylesRule extends InsertRule {
   const PreserveInlineStylesRule();
 
@@ -373,7 +621,96 @@ class PreserveInlineStylesRule extends InsertRule {
   }
 }
 
-/// Fallback rule which simply inserts text as-is without any special handling.
+class PreserveInlineMentionStylesRule extends InsertRule {
+  const PreserveInlineMentionStylesRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data.contains('\n')) {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null ||
+        prev.data is! String ||
+        (prev.data as String).contains('\n')) {
+      return null;
+    }
+    final attributes = prev.attributes;
+    final text = data;
+    if (attributes == null || !attributes.containsKey(Attribute.mention.key)) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    attributes.remove(Attribute.mention.key);
+    final delta = Delta()
+      ..retain(index + (len ?? 0))
+      ..insert(text, attributes.isEmpty ? null : attributes);
+    final next = itr.next();
+
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+
+    if (!nextAttributes.containsKey(Attribute.mention.key)) {
+      return delta;
+    }
+    if (attributes[Attribute.mention.key] ==
+        nextAttributes[Attribute.mention.key]) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    return delta;
+  }
+}
+
+class PreserveInlineHashStylesRule extends InsertRule {
+  const PreserveInlineHashStylesRule();
+
+  @override
+  Delta? applyRule(Delta document, int index,
+      {int? len, Object? data, Attribute? attribute}) {
+    if (data is! String || data.contains('\n')) {
+      return null;
+    }
+
+    final itr = DeltaIterator(document);
+    final prev = itr.skip(index);
+    if (prev == null ||
+        prev.data is! String ||
+        (prev.data as String).contains('\n')) {
+      return null;
+    }
+    final attributes = prev.attributes;
+    final text = data;
+    if (attributes == null || !attributes.containsKey(Attribute.hashtag.key)) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    attributes.remove(Attribute.hashtag.key);
+    final delta = Delta()
+      ..retain(index + (len ?? 0))
+      ..insert(text, attributes.isEmpty ? null : attributes);
+    final next = itr.next();
+
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+
+    if (!nextAttributes.containsKey(Attribute.hashtag.key)) {
+      return delta;
+    }
+    if (attributes[Attribute.hashtag.key] ==
+        nextAttributes[Attribute.hashtag.key]) {
+      return Delta()
+        ..retain(index + (len ?? 0))
+        ..insert(text, attributes);
+    }
+    return delta;
+  }
+}
+
 class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();
 

@@ -3,6 +3,7 @@ import 'package:tuple/tuple.dart';
 
 import '../../flutter_quill.dart';
 import '../../models/documents/style.dart';
+import 'delegate.dart';
 
 class QuillStyles extends InheritedWidget {
   const QuillStyles({
@@ -156,7 +157,23 @@ class DefaultStyles {
     this.sizeSmall,
     this.sizeLarge,
     this.sizeHuge,
+    this.customizeCheckbox = false,
+    this.showDateCheckbox = false,
+    this.checkedCheckbox,
+    this.unCheckedCheckbox,
+    this.tag,
+    this.tagBuilder,
+    this.mentionStyle,
+    this.dateBuilder,
+    this.suggestionWidth = 200,
+    this.suggestionHeight = 200,
+    this.hashtagStyle,
+    this.date,
+    this.mentionBlock,
+    this.title
   });
+
+  final DefaultTextBlockStyle? title;
 
   final DefaultTextBlockStyle? h1;
   final DefaultTextBlockStyle? h2;
@@ -182,6 +199,22 @@ class DefaultStyles {
   final DefaultTextBlockStyle? indent;
   final DefaultTextBlockStyle? align;
   final DefaultTextBlockStyle? leading;
+  final DefaultTextBlockStyle? tag;
+  final DefaultTextBlockStyle? date;
+  final DefaultTextBlockStyle? mentionBlock;
+  final TextStyle? mentionStyle;
+  final TextStyle? hashtagStyle;
+
+  final bool customizeCheckbox;
+  final bool showDateCheckbox;
+  final Widget? checkedCheckbox;
+  final Widget? unCheckedCheckbox;
+  final Widget Function(List<String>)? tagBuilder;
+  final DateBuilder? dateBuilder;
+
+  // final Widget Function(BuildContext, dynamic)? suggestionItemBuilder;
+  final double suggestionWidth;
+  final double suggestionHeight;
 
   static DefaultStyles getInstance(BuildContext context) {
     final themeData = Theme.of(context);
@@ -310,11 +343,76 @@ class DefaultStyles {
             baseStyle, const Tuple2(0, 0), const Tuple2(0, 0), null),
         sizeSmall: const TextStyle(fontSize: 10),
         sizeLarge: const TextStyle(fontSize: 18),
-        sizeHuge: const TextStyle(fontSize: 22));
+        sizeHuge: const TextStyle(fontSize: 22),
+      title: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 34,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.15,
+            fontWeight: FontWeight.w300,
+          ),
+          const Tuple2(16, 0),
+          const Tuple2(0, 0),
+          null),
+      tag: DefaultTextBlockStyle(
+          defaultTextStyle.style.copyWith(
+            fontSize: 20,
+            color: defaultTextStyle.style.color!.withOpacity(0.70),
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+          ),
+          const Tuple2(8, 0),
+          const Tuple2(0, 0),
+          null),
+      mentionStyle:
+      const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      hashtagStyle:
+      const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      date: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      mentionBlock: DefaultTextBlockStyle(
+          baseStyle, const Tuple2(0, 30), const Tuple2(0, 20), null),
+      tagBuilder: (tags) {
+        return Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                runSpacing: 10,
+                spacing: 10,
+                children: tags
+                    .map((e) => IntrinsicWidth(
+                  child: Container(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8),
+                      height: 19,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.amber)),
+                      child: RichText(
+                        text: TextSpan(text: e,  style: const TextStyle(
+                            fontSize: 14, color: Colors.black)),
+                      )),
+                ))
+                    .toList(),
+              ),
+            ),
+            InkWell(
+                onTap: () {},
+                child: const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.amber,
+                ))
+          ],
+        );
+      },);
+
   }
 
   DefaultStyles merge(DefaultStyles other) {
     return DefaultStyles(
+        title: other.title ?? title,
         h1: other.h1 ?? h1,
         h2: other.h2 ?? h2,
         h3: other.h3 ?? h3,
@@ -336,6 +434,18 @@ class DefaultStyles {
         leading: other.leading ?? leading,
         sizeSmall: other.sizeSmall ?? sizeSmall,
         sizeLarge: other.sizeLarge ?? sizeLarge,
-        sizeHuge: other.sizeHuge ?? sizeHuge);
+        sizeHuge: other.sizeHuge ?? sizeHuge,
+        customizeCheckbox: other.customizeCheckbox,
+        checkedCheckbox: other.checkedCheckbox ?? checkedCheckbox,
+        unCheckedCheckbox: other.unCheckedCheckbox ?? unCheckedCheckbox,
+        tag: other.tag ?? tag,
+        tagBuilder: other.tagBuilder ?? tagBuilder,
+        dateBuilder: other.dateBuilder ?? dateBuilder,
+        mentionStyle: other.mentionStyle ?? mentionStyle,
+        hashtagStyle: other.hashtagStyle ?? hashtagStyle,
+        suggestionHeight: other.suggestionHeight,
+        date: other.date ?? date,
+        mentionBlock: other.mentionBlock ?? mentionBlock,
+        suggestionWidth: other.suggestionWidth);
   }
 }

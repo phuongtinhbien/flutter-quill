@@ -103,6 +103,9 @@ mixin RawEditorStateSelectionDelegateMixin on EditorState
     if (getSelectionOverlay()?.toolbar != null) {
       getSelectionOverlay()?.hideToolbar();
     }
+    if (getSuggestionSelectionOverlay()?.toolbar != null){
+      getSuggestionSelectionOverlay()?.hideToolbar();
+    }
   }
 
   @override

@@ -66,7 +66,15 @@ class RawEditor extends StatefulWidget {
       this.embedBuilder = defaultEmbedBuilder,
       this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
       this.customStyleBuilder,
-      this.floatingCursorDisabled = false})
+      this.floatingCursorDisabled = false,
+        this.showSuggestions,
+        this.onMentionTap,
+        this.onHashtagTap,
+        this.suggestionWidget,
+        this.customStyleBuilder,
+        this.dateBuilder,
+        this.mentionBuilder,
+      })
       : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
@@ -208,6 +216,10 @@ class RawEditor extends StatefulWidget {
   final LinkActionPickerDelegate linkActionPickerDelegate;
   final CustomStyleBuilder? customStyleBuilder;
   final bool floatingCursorDisabled;
+  final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
+  final bool showSuggestions;
+  final Widget? suggestionWidget;
 
   @override
   State<StatefulWidget> createState() => RawEditorState();
@@ -231,6 +243,7 @@ class RawEditorState extends EditorState
   @override
   EditorTextSelectionOverlay? getSelectionOverlay() => _selectionOverlay;
   EditorTextSelectionOverlay? _selectionOverlay;
+  EditorSuggestionsTextSelectionOverlay? _suggestionOverlay;
 
   @override
   ScrollController get scrollController => _scrollController;
@@ -242,6 +255,7 @@ class RawEditorState extends EditorState
   // Focus
   bool _didAutoFocus = false;
   FocusAttachment? _focusAttachment;
+
   bool get _hasFocus => widget.focusNode.hasFocus;
 
   // Theme
@@ -249,6 +263,7 @@ class RawEditorState extends EditorState
 
   final ClipboardStatusNotifier _clipboardStatus = ClipboardStatusNotifier();
   final LayerLink _toolbarLayerLink = LayerLink();
+  final LayerLink _suggestionLayerLink = LayerLink();
   final LayerLink _startHandleLayerLink = LayerLink();
   final LayerLink _endHandleLayerLink = LayerLink();
 
@@ -268,7 +283,9 @@ class RawEditorState extends EditorState
 
     Widget child = CompositedTransformTarget(
       link: _toolbarLayerLink,
-      child: Semantics(
+      child: CompositedTransformTarget(
+        link: _suggestionLayerLink,
+        child: Semantics(
         child: _Editor(
           key: _editorKey,
           document: _doc,
@@ -284,7 +301,7 @@ class RawEditorState extends EditorState
           floatingCursorDisabled: widget.floatingCursorDisabled,
           children: _buildChildren(_doc, context),
         ),
-      ),
+      )),
     );
 
     if (widget.scrollable) {
@@ -346,6 +363,10 @@ class RawEditorState extends EditorState
 
     _selectionOverlay?.handlesVisible = _shouldShowSelectionHandles();
 
+    //TODO add handle enable/disable suggestion
+
+    _suggestionOverlay?.handlesVisible = _shouldShowSuggestionHandles();
+
     if (!_keyboardVisible) {
       // This will show the keyboard for all selection changes on the
       // editor, not just changes triggered by user gestures.
@@ -402,7 +423,9 @@ class RawEditorState extends EditorState
             indentLevelCounts: indentLevelCounts,
             onCheckboxTap: _handleCheckboxTap,
             readOnly: widget.readOnly,
-            customStyleBuilder: widget.customStyleBuilder);
+            customStyleBuilder: widget.customStyleBuilder,
+          dateBuilder: widget.dateBuilder,
+          mentionBuilder: widget.mentionBuilder,);
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -455,6 +478,8 @@ class RawEditorState extends EditorState
         default:
           throw 'Invalid level $level';
       }
+    } else if (attrs.containsKey(Attribute.title.key)) {
+      return defaultStyles!.title!.verticalSpacing;
     }
 
     return defaultStyles!.paragraph!.verticalSpacing;
@@ -488,7 +513,8 @@ class RawEditorState extends EditorState
     });
 
     _scrollController = widget.scrollController;
-    _scrollController.addListener(_updateSelectionOverlayForScroll);
+    _scrollController..addListener(_updateSelectionOverlayForScroll)..
+    ..addListener(_updateSuggestionOverlayForScroll);
 
     _cursorCont = CursorCont(
       show: ValueNotifier<bool>(widget.showCursor),
@@ -555,8 +581,10 @@ class RawEditorState extends EditorState
 
     if (widget.scrollController != _scrollController) {
       _scrollController.removeListener(_updateSelectionOverlayForScroll);
+      _scrollController.removeListener(_updateSuggestionOverlayForScroll);
       _scrollController = widget.scrollController;
       _scrollController.addListener(_updateSelectionOverlayForScroll);
+      _scrollController.addListener(_updateSuggestionOverlayForScroll);
     }
 
     if (widget.focusNode != oldWidget.focusNode) {
@@ -569,9 +597,11 @@ class RawEditorState extends EditorState
 
     if (widget.controller.selection != oldWidget.controller.selection) {
       _selectionOverlay?.update(textEditingValue);
+      _suggestionOverlay?.update(textEditingValue);
     }
 
     _selectionOverlay?.handlesVisible = _shouldShowSelectionHandles();
+    _suggestionOverlay?.handlesVisible = _shouldShowSuggestionHandles();
     if (!shouldCreateInputConnection) {
       closeConnectionIfNeeded();
     } else {
@@ -586,13 +616,22 @@ class RawEditorState extends EditorState
         !widget.controller.selection.isCollapsed;
   }
 
+  bool _shouldShowSuggestionHandles() {
+    // print(widget.showSuggestions);
+    return widget.showSuggestions && !_shouldShowSelectionHandles();
+  }
+
   @override
   void dispose() {
     closeConnectionIfNeeded();
     _keyboardVisibilitySubscription?.cancel();
     assert(!hasConnection);
     _selectionOverlay?.dispose();
+    _suggestionOverlay?.dispose();
+
+    _suggestionOverlay = null;
     _selectionOverlay = null;
+
     widget.controller.removeListener(_didChangeTextEditingValue);
     widget.focusNode.removeListener(_handleFocusChanged);
     _focusAttachment!.detach();
@@ -605,6 +644,10 @@ class RawEditorState extends EditorState
 
   void _updateSelectionOverlayForScroll() {
     _selectionOverlay?.updateForScroll();
+  }
+
+  void _updateSuggestionOverlayForScroll() {
+    _suggestionOverlay?.markNeedsBuild();
   }
 
   void _didChangeTextEditingValue([bool ignoreFocus = false]) {
@@ -666,30 +709,68 @@ class RawEditorState extends EditorState
   }
 
   void _updateOrDisposeSelectionOverlayIfNeeded() {
-    if (_selectionOverlay != null) {
-      if (_hasFocus && !textEditingValue.selection.isCollapsed) {
-        _selectionOverlay!.update(textEditingValue);
-      } else {
-        _selectionOverlay!.dispose();
-        _selectionOverlay = null;
+    // print('_updateOrDisposeSelectionOverlayIfNeeded');
+    final update = _selectionOverlay != null || _suggestionOverlay != null;
+    if (update) {
+      if (_selectionOverlay != null || _suggestionOverlay != null) {
+        if (_hasFocus) {
+          _selectionOverlay!.update(textEditingValue);
+        } else {
+          _selectionOverlay!.dispose();
+          _selectionOverlay = null;
+        }
+        // print('_updateOrDisposeSelectionOverlayIfNeeded - _selectionOverlay');
+      }
+      if (_suggestionOverlay != null) {
+        if (_hasFocus) {
+          _suggestionOverlay!.update(textEditingValue);
+        } else {
+          _suggestionOverlay!.dispose();
+          _suggestionOverlay = null;
+        }
+        // print('_updateOrDisposeSelectionOverlayIfNeeded - _suggestionOverlay');
       }
     } else if (_hasFocus) {
       _selectionOverlay?.hide();
-
+      _suggestionOverlay?.hide();
       _selectionOverlay = EditorTextSelectionOverlay(
-        value: textEditingValue,
-        context: context,
-        debugRequiredFor: widget,
-        toolbarLayerLink: _toolbarLayerLink,
-        startHandleLayerLink: _startHandleLayerLink,
-        endHandleLayerLink: _endHandleLayerLink,
-        renderObject: getRenderEditor(),
-        selectionCtrls: widget.selectionCtrls,
-        selectionDelegate: this,
-        clipboardStatus: _clipboardStatus,
+        textEditingValue,
+        false,
+        context,
+        widget,
+        _toolbarLayerLink,
+        _startHandleLayerLink,
+        _endHandleLayerLink,
+        getRenderEditor(),
+        widget.selectionCtrls,
+        this,
+        DragStartBehavior.start,
+        null,
+        _clipboardStatus,
       );
+
+      _suggestionOverlay = EditorSuggestionsTextSelectionOverlay(
+          textEditingValue,
+          false,
+          context,
+          widget,
+          _suggestionLayerLink,
+          _startHandleLayerLink,
+          _endHandleLayerLink,
+          getRenderEditor(),
+          widget.selectionCtrls,
+          this,
+          DragStartBehavior.start,
+          null,
+          _clipboardStatus,
+          maxWidth: _styles!.suggestionWidth,
+          maxHeight: _styles!.suggestionHeight,
+          suggestionWidget: widget.suggestionWidget);
       _selectionOverlay!.handlesVisible = _shouldShowSelectionHandles();
       _selectionOverlay!.showHandles();
+
+      _suggestionOverlay!.handlesVisible = _shouldShowSuggestionHandles();
+      _suggestionOverlay!.showHandles();
     }
   }
 
@@ -890,6 +971,9 @@ class RawEditorState extends EditorState
       _floatingCursorResetController;
 
   late AnimationController _floatingCursorResetController;
+  @override
+  EditorSuggestionsTextSelectionOverlay? getSuggestionSelectionOverlay() =>
+      _suggestionOverlay;
 }
 
 class _Editor extends MultiChildRenderObjectWidget {

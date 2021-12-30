@@ -28,6 +28,7 @@ class TextLine extends StatefulWidget {
   const TextLine({
     required this.line,
     required this.embedBuilder,
+    required this.dateBuilder,
     required this.styles,
     required this.readOnly,
     required this.controller,
@@ -41,6 +42,7 @@ class TextLine extends StatefulWidget {
   final Line line;
   final TextDirection? textDirection;
   final EmbedBuilder embedBuilder;
+  final DateBuilder dateBuilder;
   final DefaultStyles styles;
   final bool readOnly;
   final QuillController controller;
@@ -222,6 +224,7 @@ class _TextLineState extends State<TextLine> {
 
     if (widget.line.style.containsKey(Attribute.placeholder.key)) {
       return defaultStyles.placeHolder!.style;
+
     }
 
     final header = widget.line.style.attributes[Attribute.header.key];
@@ -300,6 +303,8 @@ class _TextLineState extends State<TextLine> {
       Attribute.link.key: defaultStyles.link,
       Attribute.underline.key: defaultStyles.underline,
       Attribute.strikeThrough.key: defaultStyles.strikeThrough,
+      Attribute.mention.key: defaultStyles.mentionStyle,
+      Attribute.hashtag.key: defaultStyles.hashtagStyle,
     }.forEach((k, s) {
       if (nodeStyle.values.any((v) => v.key == k)) {
         if (k == Attribute.underline.key || k == Attribute.strikeThrough.key) {
@@ -371,6 +376,13 @@ class _TextLineState extends State<TextLine> {
       final backgroundColor = stringToColor(background.value);
       res = res.merge(TextStyle(backgroundColor: backgroundColor));
     }
+
+    ///Apply style for checked item
+    final checked = widget.line.style.attributes[Attribute.checked.key];
+    if (checked != null && checked.value == Attribute.checked.value) {
+      res = res.merge(const TextStyle(decoration: TextDecoration.lineThrough));
+    }
+    ///Apply style for checked item
 
     res = _applyCustomAttributes(res, textNode.style.attributes);
     return res;
@@ -483,6 +495,7 @@ class EditableTextLine extends RenderObjectWidget {
   const EditableTextLine(
     this.line,
     this.leading,
+    this.trailing,
     this.body,
     this.indentWidth,
     this.verticalSpacing,
@@ -496,7 +509,9 @@ class EditableTextLine extends RenderObjectWidget {
   );
 
   final Line line;
+
   final Widget? leading;
+  final Widget? trailing;
   final Widget body;
   final double indentWidth;
   final Tuple2 verticalSpacing;
@@ -554,7 +569,7 @@ class EditableTextLine extends RenderObjectWidget {
   }
 }
 
-enum TextLineSlot { LEADING, BODY }
+enum TextLineSlot { LEADING, BODY, BOTTOM }
 
 class RenderEditableTextLine extends RenderEditableBox {
   /// Creates new editable paragraph render box.
@@ -571,6 +586,7 @@ class RenderEditableTextLine extends RenderEditableBox {
       this.inlineCodeStyle);
 
   RenderBox? _leading;
+  RenderBox? _trailing;
   RenderContentProxyBox? _body;
   Line line;
   TextDirection textDirection;
@@ -594,6 +610,9 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
     if (_body != null) {
       yield _body!;
+    }
+    if (_trailing != null) {
+      yield _trailing!;
     }
   }
 
@@ -693,6 +712,11 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   void setBody(RenderContentProxyBox? b) {
     _body = _updateChild(_body, b, TextLineSlot.BODY) as RenderContentProxyBox?;
+  }
+
+
+  void setTrailing(RenderBox? l) {
+    _trailing = _updateChild(_trailing, l, TextLineSlot.BOTTOM);
   }
 
   void setInlineCodeStyle(InlineCodeStyle newStyle) {
@@ -940,6 +964,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     add(_leading, 'leading');
     add(_body, 'body');
+    add(_trailing, 'trailing');
     return value;
   }
 
@@ -983,10 +1008,10 @@ class RenderEditableTextLine extends RenderEditableBox {
     _resolvePadding();
     final horizontalPadding = _resolvedPadding!.left + _resolvedPadding!.right;
     final verticalPadding = _resolvedPadding!.top + _resolvedPadding!.bottom;
+    var height = verticalPadding;
     if (_body != null) {
-      return _body!
-              .getMinIntrinsicHeight(math.max(0, width - horizontalPadding)) +
-          verticalPadding;
+      height +=
+          _body!.getMinIntrinsicHeight(math.max(0, width - horizontalPadding));
     }
     return verticalPadding;
   }
@@ -996,12 +1021,17 @@ class RenderEditableTextLine extends RenderEditableBox {
     _resolvePadding();
     final horizontalPadding = _resolvedPadding!.left + _resolvedPadding!.right;
     final verticalPadding = _resolvedPadding!.top + _resolvedPadding!.bottom;
+
+    var height = verticalPadding;
     if (_body != null) {
-      return _body!
-              .getMaxIntrinsicHeight(math.max(0, width - horizontalPadding)) +
-          verticalPadding;
+      height +=
+          _body!.getMaxIntrinsicHeight(math.max(0, width - horizontalPadding));
     }
-    return verticalPadding;
+    // if (_trailing != null) {
+    //   height += _trailing!
+    //       .getMaxIntrinsicHeight(math.max(0, width - horizontalPadding));
+    // }
+    return height;
   }
 
   @override
@@ -1018,7 +1048,6 @@ class RenderEditableTextLine extends RenderEditableBox {
 
     _resolvePadding();
     assert(_resolvedPadding != null);
-
     if (_body == null && _leading == null) {
       size = constraints.constrain(Size(
         _resolvedPadding!.left + _resolvedPadding!.right,
@@ -1046,9 +1075,25 @@ class RenderEditableTextLine extends RenderEditableBox {
           Offset(0, _resolvedPadding!.top);
     }
 
+    if (_trailing != null) {
+      _trailing!.layout(innerConstraints, parentUsesSize: true);
+      final trailingConstraints = innerConstraints.copyWith(
+          minWidth: _trailing!.size.width,
+          maxWidth: _trailing!.size.width,
+          minHeight: _trailing!.size.height,
+          maxHeight: _trailing!.size.height);
+      _trailing!.layout(trailingConstraints, parentUsesSize: true);
+
+      (_trailing!.parentData as BoxParentData).offset = Offset(
+          _resolvedPadding!.left, _resolvedPadding!.top + _body!.size.height);
+    }
+
     size = constraints.constrain(Size(
       _resolvedPadding!.left + _body!.size.width + _resolvedPadding!.right,
-      _resolvedPadding!.top + _body!.size.height + _resolvedPadding!.bottom,
+      _resolvedPadding!.top +
+          _body!.size.height +
+          _resolvedPadding!.bottom +
+          (_trailing != null ? _trailing!.size.height : 0),
     ));
 
     _computeCaretPrototype();
@@ -1128,6 +1173,14 @@ class RenderEditableTextLine extends RenderEditableBox {
         _paintSelection(context, effectiveOffset);
       }
     }
+
+    if (_trailing != null) {
+      final parentData = _trailing!.parentData as BoxParentData;
+      final effectiveOffset = offset + parentData.offset;
+      // print ('offset: $offset');
+      // print ('parent_offset: ${parentData.offset}');
+      context.paintChild(_trailing!, effectiveOffset);
+    }
   }
 
   void _paintSelection(PaintingContext context, Offset effectiveOffset) {
@@ -1154,25 +1207,26 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    if (_leading != null) {
-      final childParentData = _leading!.parentData as BoxParentData;
+    final sliverResult = BoxHitTestResult.wrap(result);
+    for (final child in _children) {
+      final transform = Matrix4.identity();
+      applyPaintTransform(child, transform); // must be invertible
       final isHit = result.addWithPaintOffset(
-          offset: childParentData.offset,
-          position: position,
-          hitTest: (result, transformed) {
-            assert(transformed == position - childParentData.offset);
-            return _leading!.hitTest(result, position: transformed);
-          });
-      if (isHit) return true;
-    }
-    if (_body == null) return false;
-    final parentData = _body!.parentData as BoxParentData;
-    return result.addWithPaintOffset(
-        offset: parentData.offset,
+        offset: (child.parentData as BoxParentData).offset,
         position: position,
-        hitTest: (result, position) {
-          return _body!.hitTest(result, position: position);
-        });
+        hitTest: (result, offset) {
+          return child.hitTest(
+            sliverResult,
+            position: offset,
+          );
+        },
+      );
+
+      if (isHit) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -1239,6 +1293,7 @@ class _TextLineElement extends RenderObjectElement {
     super.mount(parent, newSlot);
     _mountChild(widget.leading, TextLineSlot.LEADING);
     _mountChild(widget.body, TextLineSlot.BODY);
+    _mountChild(widget.trailing, TextLineSlot.BOTTOM);
   }
 
   @override
@@ -1247,6 +1302,7 @@ class _TextLineElement extends RenderObjectElement {
     assert(widget == newWidget);
     _updateChild(widget.leading, TextLineSlot.LEADING);
     _updateChild(widget.body, TextLineSlot.BODY);
+    _updateChild(widget.trailing, TextLineSlot.BOTTOM);
   }
 
   @override
@@ -1288,6 +1344,9 @@ class _TextLineElement extends RenderObjectElement {
         break;
       case TextLineSlot.BODY:
         renderObject.setBody(child as RenderContentProxyBox?);
+        break;
+      case TextLineSlot.BOTTOM:
+        renderObject.setTrailing(child);
         break;
       default:
         throw UnimplementedError();

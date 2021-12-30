@@ -40,6 +40,11 @@ class Attribute<T> {
     Attribute.style.key: Attribute.style,
     Attribute.token.key: Attribute.token,
     Attribute.script.key: Attribute.script,
+    Attribute.mention.key: Attribute.mention,
+    Attribute.hashtag.key: Attribute.hashtag,
+    Attribute.date.key: Attribute.date,
+    Attribute.mentionBlock.key: Attribute.mentionBlock,
+    Attribute.title.key: Attribute.title,
   });
 
   static final BoldAttribute bold = BoldAttribute();
@@ -87,6 +92,9 @@ class Attribute<T> {
   static final TokenAttribute token = TokenAttribute('');
 
   static final ScriptAttribute script = ScriptAttribute('');
+  static final MentionAttribute mention = MentionAttribute(null);
+  static final HashTagAttribute hashtag = HashTagAttribute(null);
+  static final TitleAttribute title = TitleAttribute();
 
   static final Set<String> inlineKeys = {
     Attribute.bold.key,
@@ -98,6 +106,8 @@ class Attribute<T> {
     Attribute.color.key,
     Attribute.background.key,
     Attribute.placeholder.key,
+    Attribute.mention.key,
+    Attribute.hashtag.key,
   };
 
   static final Set<String> blockKeys = LinkedHashSet.of({
@@ -107,6 +117,9 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.date.key,
+    Attribute.mentionBlock.key,
+    Attribute.title.key,
   });
 
   static final Set<String> blockKeysExceptHeader = LinkedHashSet.of({
@@ -115,13 +128,20 @@ class Attribute<T> {
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
     Attribute.indent.key,
+    Attribute.date.key,
+    Attribute.mentionBlock.key,
   });
+
+  static final DateAttribute date = DateAttribute(null);
+
+  static final MentionBlockAttribute mentionBlock = MentionBlockAttribute(null);
 
   static final Set<String> exclusiveBlockKeys = LinkedHashSet.of({
     Attribute.header.key,
     Attribute.list.key,
     Attribute.codeBlock.key,
     Attribute.blockQuote.key,
+    Attribute.title.key,
   });
 
   static Attribute<int?> get h1 => HeaderAttribute(level: 1);
@@ -145,6 +165,9 @@ class Attribute<T> {
   // "attributes":{"list":"bullet"}
   static Attribute<String?> get ul => ListAttribute('bullet');
 
+  // "attributes":{"list":"dash"}
+  static Attribute<String?> get dash => ListAttribute('dash');
+
   // "attributes":{"list":"ordered"}
   static Attribute<String?> get ol => ListAttribute('ordered');
 
@@ -162,6 +185,8 @@ class Attribute<T> {
 
   // "attributes":{"indent":3"}
   static Attribute<int?> get indentL3 => IndentAttribute(level: 3);
+
+
 
   static Attribute<int?> getIndentLevel(int? level) {
     if (level == 1) {
@@ -319,4 +344,24 @@ class TokenAttribute extends Attribute<String> {
 // `script` is supposed to be inline attribute but it is not supported yet
 class ScriptAttribute extends Attribute<String> {
   ScriptAttribute(String val) : super('script', AttributeScope.IGNORE, val);
+}
+class MentionAttribute extends Attribute<String?> {
+  MentionAttribute(String? val) : super('mention', AttributeScope.INLINE, val);
+}
+
+class HashTagAttribute extends Attribute<String?> {
+  HashTagAttribute(String? val) : super('hashtag', AttributeScope.INLINE, val);
+}
+
+class DateAttribute extends Attribute<String?> {
+  DateAttribute(String? val) : super('date', AttributeScope.BLOCK, val);
+}
+
+class MentionBlockAttribute extends Attribute<String?> {
+  MentionBlockAttribute(String? val)
+      : super('mention-block', AttributeScope.BLOCK, val);
+}
+
+class TitleAttribute extends Attribute<bool?> {
+  TitleAttribute({bool? val}) : super('title', AttributeScope.BLOCK, val);
 }

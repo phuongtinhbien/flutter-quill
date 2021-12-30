@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../flutter_quill.dart';
@@ -65,6 +66,8 @@ class EditableTextBlock extends StatelessWidget {
       required this.readOnly,
       this.onLaunchUrl,
       this.customStyleBuilder,
+      required this.dateBuilder,
+      required this.mentionBuilder,
       Key? key});
 
   final Block block;
@@ -86,6 +89,8 @@ class EditableTextBlock extends StatelessWidget {
   final Map<int, int> indentLevelCounts;
   final Function(int, bool) onCheckboxTap;
   final bool readOnly;
+  final DateBuilder dateBuilder;
+  final MentionBlockBuilder mentionBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -122,9 +127,12 @@ class EditableTextBlock extends StatelessWidget {
     var index = 0;
     for (final line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;
+
       final editableTextLine = EditableTextLine(
           line,
           _buildLeading(context, line, index, indentLevelCounts, count),
+          _buildTrailing(
+              context, line, index, indentLevelCounts, count, hasFocus),
           TextLine(
             line: line,
             textDirection: textDirection,
@@ -135,6 +143,7 @@ class EditableTextBlock extends StatelessWidget {
             controller: controller,
             linkActionPicker: linkActionPicker,
             onLaunchUrl: onLaunchUrl,
+            dateBuilder: dateBuilder,
           ),
           _getIndentWidth(),
           _getSpacingForLine(line, index, count, defaultStyles),
@@ -174,6 +183,13 @@ class EditableTextBlock extends StatelessWidget {
       );
     }
 
+    if (attrs[Attribute.list.key] == Attribute.dash) {
+      return _DashLeading(
+        style: defaultStyles!.leading!.style,
+        width: 32,
+      );
+    }
+
     if (attrs[Attribute.list.key] == Attribute.checked) {
       return CheckboxPoint(
         size: 14,
@@ -208,6 +224,68 @@ class EditableTextBlock extends StatelessWidget {
     return null;
   }
 
+  bool hasDate(BuildContext context, Line line, int index,
+      Map<int, int> indentLevelCounts, int count) {
+    final defaultStyles = QuillStyles.getStyles(context, false);
+    final attrs = line.style.attributes;
+    if (attrs.containsKey(Attribute.date.key)) {
+      var text = attrs[Attribute.date.key]!.value.toString();
+
+      if (attrs[Attribute.list.key] == Attribute.checked) {
+        return true;
+      }
+
+      if (attrs[Attribute.list.key] == Attribute.unchecked) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  Widget? _buildTrailing(BuildContext context, Line line, int index,
+      Map<int, int> indentLevelCounts, int count, bool hasFocus) {
+    final defaultStyles = QuillStyles.getStyles(context, false);
+    final attrs = line.style.attributes;
+    final children = <Widget>[];
+    if (attrs[Attribute.list.key] == Attribute.checked ||
+        attrs[Attribute.list.key] == Attribute.unchecked) {
+      if (attrs.containsKey(Attribute.date.key)) {
+        final text = attrs[Attribute.date.key]!.value.toString();
+        children.add(_DateTrailing(
+          date: text,
+          line: line,
+          readOnly: readOnly,
+          builder: dateBuilder,
+          hasFocus: hasFocus,
+          key: UniqueKey(),
+        ));
+      }
+      if (attrs.containsKey(Attribute.mentionBlock.key)) {
+        final text = attrs[Attribute.mentionBlock.key]!.value.toString();
+
+        children.add(_MentionBlockTrailing(
+          mention: text,
+          line: line,
+          readOnly: readOnly,
+          hasFocus: hasFocus,
+          builder: mentionBuilder,
+          key: UniqueKey(),
+        ));
+      }
+    }
+
+    if (children.isNotEmpty) {
+      return Wrap(
+        spacing: 12,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runAlignment: WrapAlignment.center,
+        children: children,
+      );
+    }
+    return null;
+  }
+
   double _getIndentWidth() {
     final attrs = block.style.attributes;
 
@@ -236,39 +314,50 @@ class EditableTextBlock extends StatelessWidget {
     var top = 0.0, bottom = 0.0;
 
     final attrs = block.style.attributes;
-    if (attrs.containsKey(Attribute.header.key)) {
-      final level = attrs[Attribute.header.key]!.value;
-      switch (level) {
-        case 1:
-          top = defaultStyles!.h1!.verticalSpacing.item1;
-          bottom = defaultStyles.h1!.verticalSpacing.item2;
-          break;
-        case 2:
-          top = defaultStyles!.h2!.verticalSpacing.item1;
-          bottom = defaultStyles.h2!.verticalSpacing.item2;
-          break;
-        case 3:
-          top = defaultStyles!.h3!.verticalSpacing.item1;
-          bottom = defaultStyles.h3!.verticalSpacing.item2;
-          break;
-        default:
-          throw 'Invalid level $level';
+    if (attrs.isNotEmpty) {
+      if (attrs.containsKey(Attribute.header.key)) {
+        final level = attrs[Attribute.header.key]!.value;
+        switch (level) {
+          case 1:
+            top = defaultStyles!.h1!.verticalSpacing.item1;
+            bottom = defaultStyles.h1!.verticalSpacing.item2;
+            break;
+          case 2:
+            top = defaultStyles!.h2!.verticalSpacing.item1;
+            bottom = defaultStyles.h2!.verticalSpacing.item2;
+            break;
+          case 3:
+            top = defaultStyles!.h3!.verticalSpacing.item1;
+            bottom = defaultStyles.h3!.verticalSpacing.item2;
+            break;
+          default:
+            throw 'Invalid level $level';
+        }
+      } else if (attrs.containsKey(Attribute.title.key)) {
+        top = defaultStyles!.title!.verticalSpacing.item1;
+        bottom = defaultStyles.title!.verticalSpacing.item2;
+      } else {
+        late Tuple2 lineSpacing;
+        if (attrs.containsKey(Attribute.blockQuote.key)) {
+          lineSpacing = defaultStyles!.quote!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.indent.key)) {
+          lineSpacing = defaultStyles!.indent!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.list.key)) {
+          lineSpacing = defaultStyles!.lists!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.codeBlock.key)) {
+          lineSpacing = defaultStyles!.code!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.align.key)) {
+          lineSpacing = defaultStyles!.align!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.date.key)) {
+          lineSpacing = defaultStyles!.date!.lineSpacing;
+        } else if (attrs.containsKey(Attribute.mentionBlock.key)) {
+          lineSpacing = defaultStyles!.mentionBlock!.lineSpacing;
+        } else {
+          lineSpacing = Tuple2(0.0, 0.0);
+        }
+        top = lineSpacing.item1;
+        bottom = lineSpacing.item2;
       }
-    } else {
-      late Tuple2 lineSpacing;
-      if (attrs.containsKey(Attribute.blockQuote.key)) {
-        lineSpacing = defaultStyles!.quote!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.indent.key)) {
-        lineSpacing = defaultStyles!.indent!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.list.key)) {
-        lineSpacing = defaultStyles!.lists!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.codeBlock.key)) {
-        lineSpacing = defaultStyles!.code!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.align.key)) {
-        lineSpacing = defaultStyles!.align!.lineSpacing;
-      }
-      top = lineSpacing.item1;
-      bottom = lineSpacing.item2;
     }
 
     if (index == 1) {
@@ -619,5 +708,128 @@ class _EditableBlock extends MultiChildRenderObjectWidget {
       ..setPadding(_padding)
       ..decoration = decoration
       ..contentPadding = _contentPadding;
+  }
+}
+
+class _DashLeading extends StatelessWidget {
+  const _DashLeading({
+    required this.style,
+    required this.width,
+    Key? key,
+  }) : super(key: key);
+
+  final TextStyle style;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: AlignmentDirectional.topEnd,
+      width: width,
+      padding: const EdgeInsetsDirectional.only(end: 13),
+      child: RichText(
+        text: TextSpan(text: '-', style: style),
+      ),
+    );
+  }
+}
+
+class _DateTrailing extends StatefulWidget {
+  const _DateTrailing({
+    required this.date,
+    required this.readOnly,
+    required this.line,
+    required this.hasFocus,
+    Key? key,
+    this.style,
+    this.width,
+    this.offset,
+    this.builder,
+  }) : super(key: key);
+  final TextStyle? style;
+  final double? width;
+  final String date;
+  final Node line;
+  final int? offset;
+  final bool readOnly;
+  final DateBuilder? builder;
+  final bool hasFocus;
+
+  @override
+  _DateTrailingState createState() => _DateTrailingState();
+}
+
+class _DateTrailingState extends State<_DateTrailing> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.builder != null) {
+      return widget.builder!(
+          widget.line, widget.date, widget.readOnly, widget.hasFocus);
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        print('date tap');
+      },
+      child: Container(
+        alignment: AlignmentDirectional.topEnd,
+        width: widget.width,
+        height: widget.width,
+        padding: const EdgeInsetsDirectional.only(end: 13),
+        child: RichText(
+          text: TextSpan(text: widget.date),
+        ),
+      ),
+    );
+  }
+}
+
+class _MentionBlockTrailing extends StatefulWidget {
+  const _MentionBlockTrailing(
+      {required this.readOnly,
+      required this.mention,
+      required this.line,
+      required this.hasFocus,
+      Key? key,
+      this.style,
+      this.width,
+      this.offset,
+      this.builder})
+      : super(key: key);
+  final TextStyle? style;
+  final double? width;
+  final String mention;
+  final Node line;
+  final int? offset;
+  final bool readOnly;
+  final DateBuilder? builder;
+  final bool hasFocus;
+
+  @override
+  _MentionBlockTrailingState createState() => _MentionBlockTrailingState();
+}
+
+class _MentionBlockTrailingState extends State<_MentionBlockTrailing> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.builder != null) {
+      return widget.builder!(
+          widget.line, widget.mention, widget.readOnly, widget.hasFocus);
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        print('date tap');
+      },
+      child: Container(
+        alignment: AlignmentDirectional.topEnd,
+        width: widget.width,
+        height: widget.width,
+        padding: const EdgeInsetsDirectional.only(end: 13),
+        child: RichText(
+          text: TextSpan(text: widget.mention),
+        ),
+      ),
+    );
   }
 }
