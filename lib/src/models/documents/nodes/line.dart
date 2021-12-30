@@ -411,4 +411,28 @@ class Line extends Container<Leaf?> {
 
     return result;
   }
+
+  /// Returns all styles for any character within the specified text range.
+  List<Node> collectAllNode(int offset, int len) {
+    final local = math.min(length - offset, len);
+    final result = <Node>[];
+
+    final data = queryChild(offset, true);
+    var node = data.node as Leaf?;
+    if (node != null) {
+      result.add(node);
+    }
+    // if (parent is Block) {
+    //   final block = parent as Block;
+    //   result.add(block);
+    // }
+
+    final remaining = len - local;
+    if (remaining > 0) {
+      final rest = nextLine!.collectAllNode(0, remaining);
+      result.addAll(rest);
+    }
+
+    return result;
+  }
 }

@@ -445,7 +445,7 @@ class _TextSelectionHandleOverlayState
 
     final objectBounds = widget.renderObject!.size;
     final objectOffset = widget.renderObject!.globalToLocal(handleRect.center);
-    final positionCursor = layerLink.leader!.offset;
+    final positionCursor = layerLink.leader?.offset ?? Offset(0,0);
     // print(positionCursor);
     // print(objectBounds);
     // print(objectOffset);
@@ -465,7 +465,6 @@ class _TextSelectionHandleOverlayState
     // if (overlapsOffsetY < interactiveRect.height) {
     //   offset = Offset(offset.dx, -(interactiveRect.height + overlapsOffsetY));
     // }
-    print(offset);
 
     //TODO render view
     return CompositedTransformFollower(

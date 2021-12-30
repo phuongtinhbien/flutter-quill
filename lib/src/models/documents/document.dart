@@ -127,6 +127,11 @@ class Document {
     return (res.node as Line).collectAllStyles(res.offset, len);
   }
 
+  List<Node> collectAllNode(int index, int len) {
+    final res = queryChild(index);
+    return (res.node as Line).collectAllNode(res.offset, len);
+  }
+
   ChildQuery queryChild(int offset) {
     final res = _root.queryChild(offset, true);
     if (res.node is Line) {
