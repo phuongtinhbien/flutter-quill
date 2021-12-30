@@ -1013,7 +1013,13 @@ class RenderEditableTextLine extends RenderEditableBox {
       height +=
           _body!.getMinIntrinsicHeight(math.max(0, width - horizontalPadding));
     }
-    return verticalPadding;
+    if (_trailing != null) {
+      height += _trailing!
+          .getMinIntrinsicHeight(math.max(0, width - horizontalPadding));
+    }
+    print(height);
+
+    return height;
   }
 
   @override
@@ -1027,10 +1033,10 @@ class RenderEditableTextLine extends RenderEditableBox {
       height +=
           _body!.getMaxIntrinsicHeight(math.max(0, width - horizontalPadding));
     }
-    // if (_trailing != null) {
-    //   height += _trailing!
-    //       .getMaxIntrinsicHeight(math.max(0, width - horizontalPadding));
-    // }
+    if (_trailing != null) {
+      height += _trailing!
+          .getMaxIntrinsicHeight(math.max(0, width - horizontalPadding));
+    }
     return height;
   }
 
