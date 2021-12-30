@@ -4,11 +4,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../models/documents/nodes/node.dart';
@@ -32,50 +34,48 @@ import 'text_line.dart';
 import 'text_selection.dart';
 
 class RawEditor extends StatefulWidget {
-  const RawEditor(
-      {required this.controller,
-      required this.focusNode,
-      required this.scrollController,
-      required this.scrollBottomInset,
-      required this.cursorStyle,
-      required this.selectionColor,
-      required this.selectionCtrls,
-      Key? key,
-      this.scrollable = true,
-      this.padding = EdgeInsets.zero,
-      this.readOnly = false,
-      this.placeholder,
-      this.onLaunchUrl,
-      this.toolbarOptions = const ToolbarOptions(
-        copy: true,
-        cut: true,
-        paste: true,
-        selectAll: true,
-      ),
-      this.showSelectionHandles = false,
-      bool? showCursor,
-      this.textCapitalization = TextCapitalization.none,
-      this.maxHeight,
-      this.minHeight,
-      this.customStyles,
-      this.expands = false,
-      this.autoFocus = false,
-      this.keyboardAppearance = Brightness.light,
-      this.enableInteractiveSelection = true,
-      this.scrollPhysics,
-      this.embedBuilder = defaultEmbedBuilder,
-      this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
-      this.customStyleBuilder,
-      this.floatingCursorDisabled = false,
-        this.showSuggestions,
-        this.onMentionTap,
-        this.onHashtagTap,
-        this.suggestionWidget,
-        this.customStyleBuilder,
-        this.dateBuilder,
-        this.mentionBuilder,
-      })
-      : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
+  const RawEditor({
+    required this.controller,
+    required this.focusNode,
+    required this.scrollController,
+    required this.scrollBottomInset,
+    required this.cursorStyle,
+    required this.selectionColor,
+    required this.selectionCtrls,
+    Key? key,
+    this.scrollable = true,
+    this.padding = EdgeInsets.zero,
+    this.readOnly = false,
+    this.placeholder,
+    this.onLaunchUrl,
+    this.toolbarOptions = const ToolbarOptions(
+      copy: true,
+      cut: true,
+      paste: true,
+      selectAll: true,
+    ),
+    this.showSelectionHandles = false,
+    bool? showCursor,
+    this.textCapitalization = TextCapitalization.none,
+    this.maxHeight,
+    this.minHeight,
+    this.customStyles,
+    this.expands = false,
+    this.autoFocus = false,
+    this.keyboardAppearance = Brightness.light,
+    this.enableInteractiveSelection = true,
+    this.scrollPhysics,
+    this.embedBuilder = defaultEmbedBuilder,
+    this.linkActionPickerDelegate = defaultLinkActionPickerDelegate,
+    this.customStyleBuilder,
+    this.floatingCursorDisabled = false,
+    this.showSuggestions = false,
+    this.suggestionWidget,
+    this.dateBuilder = defaultDateBuilder,
+    this.mentionBuilder = defaultMentionBlockBuilder,
+    this.onMentionTap,
+    this.onHashtagTap,
+  })  : assert(maxHeight == null || maxHeight > 0, 'maxHeight cannot be null'),
         assert(minHeight == null || minHeight >= 0, 'minHeight cannot be null'),
         assert(maxHeight == null || minHeight == null || maxHeight >= minHeight,
             'maxHeight cannot be null'),
@@ -220,6 +220,8 @@ class RawEditor extends StatefulWidget {
   final MentionBlockBuilder mentionBuilder;
   final bool showSuggestions;
   final Widget? suggestionWidget;
+  final ValueChanged<String>? onMentionTap;
+  final ValueChanged<String>? onHashtagTap;
 
   @override
   State<StatefulWidget> createState() => RawEditorState();
@@ -284,24 +286,24 @@ class RawEditorState extends EditorState
     Widget child = CompositedTransformTarget(
       link: _toolbarLayerLink,
       child: CompositedTransformTarget(
-        link: _suggestionLayerLink,
-        child: Semantics(
-        child: _Editor(
-          key: _editorKey,
-          document: _doc,
-          selection: widget.controller.selection,
-          hasFocus: _hasFocus,
-          cursorController: _cursorCont,
-          textDirection: _textDirection,
-          startHandleLayerLink: _startHandleLayerLink,
-          endHandleLayerLink: _endHandleLayerLink,
-          onSelectionChanged: _handleSelectionChanged,
-          scrollBottomInset: widget.scrollBottomInset,
-          padding: widget.padding,
-          floatingCursorDisabled: widget.floatingCursorDisabled,
-          children: _buildChildren(_doc, context),
-        ),
-      )),
+          link: _suggestionLayerLink,
+          child: Semantics(
+            child: _Editor(
+              key: _editorKey,
+              document: _doc,
+              selection: widget.controller.selection,
+              hasFocus: _hasFocus,
+              cursorController: _cursorCont,
+              textDirection: _textDirection,
+              startHandleLayerLink: _startHandleLayerLink,
+              endHandleLayerLink: _endHandleLayerLink,
+              onSelectionChanged: _handleSelectionChanged,
+              scrollBottomInset: widget.scrollBottomInset,
+              padding: widget.padding,
+              floatingCursorDisabled: widget.floatingCursorDisabled,
+              children: _buildChildren(_doc, context),
+            ),
+          )),
     );
 
     if (widget.scrollable) {
@@ -403,29 +405,30 @@ class RawEditorState extends EditorState
       } else if (node is Block) {
         final attrs = node.style.attributes;
         final editableTextBlock = EditableTextBlock(
-            block: node,
-            controller: widget.controller,
-            textDirection: _textDirection,
-            scrollBottomInset: widget.scrollBottomInset,
-            verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
-            textSelection: widget.controller.selection,
-            color: widget.selectionColor,
-            styles: _styles,
-            enableInteractiveSelection: widget.enableInteractiveSelection,
-            hasFocus: _hasFocus,
-            contentPadding: attrs.containsKey(Attribute.codeBlock.key)
-                ? const EdgeInsets.all(16)
-                : null,
-            embedBuilder: widget.embedBuilder,
-            linkActionPicker: _linkActionPicker,
-            onLaunchUrl: widget.onLaunchUrl,
-            cursorCont: _cursorCont,
-            indentLevelCounts: indentLevelCounts,
-            onCheckboxTap: _handleCheckboxTap,
-            readOnly: widget.readOnly,
-            customStyleBuilder: widget.customStyleBuilder,
+          block: node,
+          controller: widget.controller,
+          textDirection: _textDirection,
+          scrollBottomInset: widget.scrollBottomInset,
+          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          textSelection: widget.controller.selection,
+          color: widget.selectionColor,
+          styles: _styles,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          hasFocus: _hasFocus,
+          contentPadding: attrs.containsKey(Attribute.codeBlock.key)
+              ? const EdgeInsets.all(16)
+              : null,
+          embedBuilder: widget.embedBuilder,
+          linkActionPicker: _linkActionPicker,
+          onLaunchUrl: widget.onLaunchUrl,
+          cursorCont: _cursorCont,
+          indentLevelCounts: indentLevelCounts,
+          onCheckboxTap: _handleCheckboxTap,
+          readOnly: widget.readOnly,
+          customStyleBuilder: widget.customStyleBuilder,
           dateBuilder: widget.dateBuilder,
-          mentionBuilder: widget.mentionBuilder,);
+          mentionBuilder: widget.mentionBuilder,
+        );
         result.add(editableTextBlock);
       } else {
         throw StateError('Unreachable.');
@@ -446,11 +449,13 @@ class RawEditorState extends EditorState
       controller: widget.controller,
       linkActionPicker: _linkActionPicker,
       onLaunchUrl: widget.onLaunchUrl,
+      dateBuilder: widget.dateBuilder,
     );
     final editableTextLine = EditableTextLine(
         node,
         null,
         textLine,
+        null,
         0,
         _getVerticalSpacingForLine(node, _styles),
         _textDirection,
@@ -513,8 +518,9 @@ class RawEditorState extends EditorState
     });
 
     _scrollController = widget.scrollController;
-    _scrollController..addListener(_updateSelectionOverlayForScroll)..
-    ..addListener(_updateSuggestionOverlayForScroll);
+    _scrollController
+      ..addListener(_updateSelectionOverlayForScroll)
+      ..addListener(_updateSuggestionOverlayForScroll);
 
     _cursorCont = CursorCont(
       show: ValueNotifier<bool>(widget.showCursor),
@@ -734,19 +740,16 @@ class RawEditorState extends EditorState
       _selectionOverlay?.hide();
       _suggestionOverlay?.hide();
       _selectionOverlay = EditorTextSelectionOverlay(
-        textEditingValue,
-        false,
-        context,
-        widget,
-        _toolbarLayerLink,
-        _startHandleLayerLink,
-        _endHandleLayerLink,
-        getRenderEditor(),
-        widget.selectionCtrls,
-        this,
-        DragStartBehavior.start,
-        null,
-        _clipboardStatus,
+        value: textEditingValue,
+        context: context,
+        debugRequiredFor: widget,
+        toolbarLayerLink: _toolbarLayerLink,
+        startHandleLayerLink: _startHandleLayerLink,
+        endHandleLayerLink: _endHandleLayerLink,
+        renderObject: getRenderEditor(),
+        selectionCtrls: widget.selectionCtrls,
+        selectionDelegate: this,
+        clipboardStatus: _clipboardStatus,
       );
 
       _suggestionOverlay = EditorSuggestionsTextSelectionOverlay(
@@ -971,6 +974,7 @@ class RawEditorState extends EditorState
       _floatingCursorResetController;
 
   late AnimationController _floatingCursorResetController;
+
   @override
   EditorSuggestionsTextSelectionOverlay? getSuggestionSelectionOverlay() =>
       _suggestionOverlay;

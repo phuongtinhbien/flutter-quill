@@ -131,8 +131,6 @@ class EditableTextBlock extends StatelessWidget {
       final editableTextLine = EditableTextLine(
           line,
           _buildLeading(context, line, index, indentLevelCounts, count),
-          _buildTrailing(
-              context, line, index, indentLevelCounts, count, hasFocus),
           TextLine(
             line: line,
             textDirection: textDirection,
@@ -145,6 +143,8 @@ class EditableTextBlock extends StatelessWidget {
             onLaunchUrl: onLaunchUrl,
             dateBuilder: dateBuilder,
           ),
+          _buildTrailing(
+              context, line, index, indentLevelCounts, count, hasFocus),
           _getIndentWidth(),
           _getSpacingForLine(line, index, count, defaultStyles),
           textDirection,
@@ -224,25 +224,6 @@ class EditableTextBlock extends StatelessWidget {
     return null;
   }
 
-  bool hasDate(BuildContext context, Line line, int index,
-      Map<int, int> indentLevelCounts, int count) {
-    final defaultStyles = QuillStyles.getStyles(context, false);
-    final attrs = line.style.attributes;
-    if (attrs.containsKey(Attribute.date.key)) {
-      var text = attrs[Attribute.date.key]!.value.toString();
-
-      if (attrs[Attribute.list.key] == Attribute.checked) {
-        return true;
-      }
-
-      if (attrs[Attribute.list.key] == Attribute.unchecked) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   Widget? _buildTrailing(BuildContext context, Line line, int index,
       Map<int, int> indentLevelCounts, int count, bool hasFocus) {
     final defaultStyles = QuillStyles.getStyles(context, false);
@@ -284,6 +265,25 @@ class EditableTextBlock extends StatelessWidget {
       );
     }
     return null;
+  }
+
+  bool hasDate(BuildContext context, Line line, int index,
+      Map<int, int> indentLevelCounts, int count) {
+    final defaultStyles = QuillStyles.getStyles(context, false);
+    final attrs = line.style.attributes;
+    if (attrs.containsKey(Attribute.date.key)) {
+      var text = attrs[Attribute.date.key]!.value.toString();
+
+      if (attrs[Attribute.list.key] == Attribute.checked) {
+        return true;
+      }
+
+      if (attrs[Attribute.list.key] == Attribute.unchecked) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   double _getIndentWidth() {

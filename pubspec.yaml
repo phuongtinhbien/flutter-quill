@@ -27,6 +27,9 @@ dependencies:
   youtube_player_flutter: ^8.0.0
   diff_match_patch: ^0.4.1
   i18n_extension: ^4.1.3
+  rxdart: ^0.27.3
+  html: ^0.15.0
+  html2md: ^1.2.5
 
 dev_dependencies:
   flutter_test:

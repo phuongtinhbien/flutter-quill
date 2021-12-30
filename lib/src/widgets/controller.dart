@@ -320,8 +320,8 @@ class QuillController extends ChangeNotifier {
                 entryOffsetLength <= selection.extentOffset ||
             entry.containsOffset(selection.baseOffset) ||
             entry.containsOffset(selection.extentOffset)) {
-          final start = max(selection.baseOffset - entry.documentOffset, 0);
-          final end = min(
+          final start = math.max(selection.baseOffset - entry.documentOffset, 0);
+          final end = math.min(
               selection.extentOffset - entry.documentOffset + 1, entry.length);
           final text = entry.toPlainText().substring(start, end);
           print(text);

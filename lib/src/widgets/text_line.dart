@@ -495,8 +495,8 @@ class EditableTextLine extends RenderObjectWidget {
   const EditableTextLine(
     this.line,
     this.leading,
-    this.trailing,
     this.body,
+      this.trailing,
     this.indentWidth,
     this.verticalSpacing,
     this.textDirection,
