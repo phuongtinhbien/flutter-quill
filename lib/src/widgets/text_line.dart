@@ -652,6 +652,8 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
   }
 
+
+
   void setTextSelection(TextSelection t) {
     if (textSelection == t) {
       return;
@@ -1017,7 +1019,7 @@ class RenderEditableTextLine extends RenderEditableBox {
       height += _trailing!
           .getMinIntrinsicHeight(math.max(0, width - horizontalPadding));
     }
-    print(height);
+    // print(height);
 
     return height;
   }
@@ -1117,6 +1119,7 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
+
     if (_leading != null) {
       final parentData = _leading!.parentData as BoxParentData;
       final effectiveOffset = offset + parentData.offset;
@@ -1181,6 +1184,7 @@ class RenderEditableTextLine extends RenderEditableBox {
     }
 
     if (_trailing != null) {
+      // print (offset);
       final parentData = _trailing!.parentData as BoxParentData;
       final effectiveOffset = offset + parentData.offset;
       // print ('offset: $offset');
@@ -1358,6 +1362,8 @@ class _TextLineElement extends RenderObjectElement {
         throw UnimplementedError();
     }
   }
+
+
 
   void _updateChild(Widget? widget, TextLineSlot slot) {
     final oldChild = _slotToChildren[slot];
