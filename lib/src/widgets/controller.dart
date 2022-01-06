@@ -24,6 +24,7 @@ class QuillController extends ChangeNotifier {
     bool keepStyleOnNewLine = false,
     this.onReplaceText,
     this.onDelete,
+    this.onSelectionCompleted,
   })  : _selection = selection,
         _keepStyleOnNewLine = keepStyleOnNewLine;
 
@@ -51,6 +52,8 @@ class QuillController extends ChangeNotifier {
 
   /// Custom delete handler
   DeleteCallback? onDelete;
+
+  void Function()? onSelectionCompleted;
 
   /// Store any styles attribute that got toggled by the tap of a button
   /// and that has not been applied yet.

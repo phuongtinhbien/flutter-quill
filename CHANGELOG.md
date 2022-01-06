@@ -1,3 +1,12 @@
+# [3.1.1]
+* Add selection completed callback.
+
+# [3.1.0]
+* Fixed image ontap functionality.
+
+# [3.0.4]
+* Add maxContentWidth constraint to editor.
+
 # [3.0.3]
 * Do not show caret on screen when the editor is not focused.
 

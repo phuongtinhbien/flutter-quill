@@ -197,6 +197,7 @@ class EditableTextBlock extends StatelessWidget {
         enabled: !readOnly,
         uiBuilder: defaultStyles?.lists?.checkboxUIBuilder,
         onChanged: (checked) => onCheckboxTap(line.documentOffset, checked),
+        uiBuilder: defaultStyles?.lists?.checkboxUIBuilder,
       );
     }
 
@@ -207,6 +208,7 @@ class EditableTextBlock extends StatelessWidget {
         enabled: !readOnly,
         uiBuilder: defaultStyles?.lists?.checkboxUIBuilder,
         onChanged: (checked) => onCheckboxTap(line.documentOffset, checked),
+        uiBuilder: defaultStyles?.lists?.checkboxUIBuilder,
       );
     }
 
