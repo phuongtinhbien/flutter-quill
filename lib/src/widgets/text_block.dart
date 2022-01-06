@@ -261,6 +261,7 @@ class EditableTextBlock extends StatelessWidget {
     if (children.isNotEmpty) {
       return Wrap(
         spacing: 12,
+        key: UniqueKey(),
         crossAxisAlignment: WrapCrossAlignment.center,
         runAlignment: WrapAlignment.center,
         children: children,
