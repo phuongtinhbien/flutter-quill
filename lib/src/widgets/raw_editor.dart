@@ -777,7 +777,7 @@ class RawEditorState extends EditorState
           _suggestionLayerLink,
           _startHandleLayerLink,
           _endHandleLayerLink,
-          getRenderEditor(),
+          renderEditor,
           widget.selectionCtrls,
           this,
           DragStartBehavior.start,
