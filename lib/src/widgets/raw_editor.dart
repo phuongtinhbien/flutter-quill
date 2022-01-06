@@ -57,6 +57,7 @@ class RawEditor extends StatefulWidget {
       this.textCapitalization = TextCapitalization.none,
       this.maxHeight,
       this.minHeight,
+      this.maxContentWidth,
       this.customStyles,
       this.expands = false,
       this.autoFocus = false,
@@ -152,6 +153,14 @@ class RawEditor extends StatefulWidget {
 
   /// The minimum height this editor can have.
   final double? minHeight;
+
+  /// The maximum width to be occupied by the content of this editor.
+  ///
+  /// If this is not null and and this editor's width is larger than this value
+  /// then the contents will be constrained to the provided maximum width and
+  /// horizontally centered. This is mostly useful on devices with wide screens.
+  final double? maxContentWidth;
+
   final DefaultStyles? customStyles;
 
   /// Whether this widget's height will be sized to fill its parent.
@@ -229,7 +238,7 @@ class RawEditorState extends EditorState
 
   // Selection overlay
   @override
-  EditorTextSelectionOverlay? getSelectionOverlay() => _selectionOverlay;
+  EditorTextSelectionOverlay? get selectionOverlay => _selectionOverlay;
   EditorTextSelectionOverlay? _selectionOverlay;
 
   @override
@@ -279,8 +288,10 @@ class RawEditorState extends EditorState
           startHandleLayerLink: _startHandleLayerLink,
           endHandleLayerLink: _endHandleLayerLink,
           onSelectionChanged: _handleSelectionChanged,
+          onSelectionCompleted: _handleSelectionCompleted,
           scrollBottomInset: widget.scrollBottomInset,
           padding: widget.padding,
+          maxContentWidth: widget.maxContentWidth,
           floatingCursorDisabled: widget.floatingCursorDisabled,
           children: _buildChildren(_doc, context),
         ),
@@ -308,8 +319,10 @@ class RawEditorState extends EditorState
               startHandleLayerLink: _startHandleLayerLink,
               endHandleLayerLink: _endHandleLayerLink,
               onSelectionChanged: _handleSelectionChanged,
+              onSelectionCompleted: _handleSelectionCompleted,
               scrollBottomInset: widget.scrollBottomInset,
               padding: widget.padding,
+              maxContentWidth: widget.maxContentWidth,
               cursorController: _cursorCont,
               floatingCursorDisabled: widget.floatingCursorDisabled,
               children: _buildChildren(_doc, context),
@@ -361,6 +374,10 @@ class RawEditorState extends EditorState
         bringIntoView(selection.extent);
       }
     }
+  }
+
+  void _handleSelectionCompleted() {
+    widget.controller.onSelectionCompleted?.call();
   }
 
   /// Updates the checkbox positioned at [offset] in document
@@ -683,7 +700,7 @@ class RawEditorState extends EditorState
         toolbarLayerLink: _toolbarLayerLink,
         startHandleLayerLink: _startHandleLayerLink,
         endHandleLayerLink: _endHandleLayerLink,
-        renderObject: getRenderEditor(),
+        renderObject: renderEditor,
         selectionCtrls: widget.selectionCtrls,
         selectionDelegate: this,
         clipboardStatus: _clipboardStatus,
@@ -732,8 +749,7 @@ class RawEditorState extends EditorState
       if (widget.scrollable || _scrollController.hasClients) {
         _showCaretOnScreenScheduled = false;
 
-        final renderEditor = getRenderEditor();
-        if (renderEditor == null) {
+        if (!mounted) {
           return;
         }
 
@@ -759,10 +775,12 @@ class RawEditorState extends EditorState
     });
   }
 
+  /// The renderer for this widget's editor descendant.
+  ///
+  /// This property is typically used to notify the renderer of input gestures.
   @override
-  RenderEditor? getRenderEditor() {
-    return _editorKey.currentContext?.findRenderObject() as RenderEditor?;
-  }
+  RenderEditor get renderEditor =>
+      _editorKey.currentContext?.findRenderObject() as RenderEditor;
 
   @override
   void requestKeyboard() {
@@ -782,11 +800,14 @@ class RawEditorState extends EditorState
     }
     textEditingValue = value;
     userUpdateTextEditingValue(value, cause);
+
+    // keyboard and text input force a selection completion
+    _handleSelectionCompleted();
   }
 
   @override
   void debugAssertLayoutUpToDate() {
-    getRenderEditor()!.debugAssertLayoutUpToDate();
+    renderEditor.debugAssertLayoutUpToDate();
   }
 
   /// Shows the selection toolbar at the location of the current cursor.
@@ -883,7 +904,7 @@ class RawEditorState extends EditorState
   bool get readOnly => widget.readOnly;
 
   @override
-  TextLayoutMetrics get textLayoutMetrics => getRenderEditor()!;
+  TextLayoutMetrics get textLayoutMetrics => renderEditor;
 
   @override
   AnimationController get floatingCursorResetController =>
@@ -903,10 +924,12 @@ class _Editor extends MultiChildRenderObjectWidget {
     required this.startHandleLayerLink,
     required this.endHandleLayerLink,
     required this.onSelectionChanged,
+    required this.onSelectionCompleted,
     required this.scrollBottomInset,
     required this.cursorController,
     required this.floatingCursorDisabled,
     this.padding = EdgeInsets.zero,
+    this.maxContentWidth,
     this.offset,
   }) : super(key: key, children: children);
 
@@ -918,8 +941,10 @@ class _Editor extends MultiChildRenderObjectWidget {
   final LayerLink startHandleLayerLink;
   final LayerLink endHandleLayerLink;
   final TextSelectionChangedHandler onSelectionChanged;
+  final TextSelectionCompletedHandler onSelectionCompleted;
   final double scrollBottomInset;
   final EdgeInsetsGeometry padding;
+  final double? maxContentWidth;
   final CursorCont cursorController;
   final bool floatingCursorDisabled;
 
@@ -934,8 +959,10 @@ class _Editor extends MultiChildRenderObjectWidget {
         startHandleLayerLink: startHandleLayerLink,
         endHandleLayerLink: endHandleLayerLink,
         onSelectionChanged: onSelectionChanged,
+        onSelectionCompleted: onSelectionCompleted,
         cursorController: cursorController,
         padding: padding,
+        maxContentWidth: maxContentWidth,
         scrollBottomInset: scrollBottomInset,
         floatingCursorDisabled: floatingCursorDisabled);
   }
@@ -954,6 +981,7 @@ class _Editor extends MultiChildRenderObjectWidget {
       ..setEndHandleLayerLink(endHandleLayerLink)
       ..onSelectionChanged = onSelectionChanged
       ..setScrollBottomInset(scrollBottomInset)
-      ..setPadding(padding);
+      ..setPadding(padding)
+      ..maxContentWidth = maxContentWidth;
   }
 }
