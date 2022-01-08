@@ -271,14 +271,12 @@ class QuillController extends ChangeNotifier {
   void copy() {
     if (!selection.isCollapsed) {
       final tempDocument = Document.fromDelta(document.toDelta());
-      final index = selection.start;
-      final len = selection.end - selection.start;
 
       final copiedData =
-          tempDocument.toDelta().slice(index, selection.end + 1).toJson();
+          (tempDocument.toDelta().slice(selection.start, selection.end + 1)..trim());
 
       print(copiedData);
-      ClipboardUtils.copy(jsonEncode(copiedData));
+      ClipboardUtils.copy(copiedData..insert('\n'));
     }
 
     // if (!selection.isCollapsed) {

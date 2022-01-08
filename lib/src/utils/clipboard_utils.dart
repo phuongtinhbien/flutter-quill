@@ -4,18 +4,25 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/src/utils/delta_to_markdown/src/html_renderer.dart';
+import 'package:flutter_quill/src/utils/markdown_quill/markdown_quill.dart';
 import 'package:html2md/html2md.dart' as html2md;
 import 'package:tuple/tuple.dart';
-
+import 'package:markdown/markdown.dart' as md;
 import 'delta_to_markdown/delta_markdown.dart';
 
 class ClipboardUtils {
-   static final clipboardChannel = MethodChannel('clipboard/data');
+  static final clipboardChannel = MethodChannel('clipboard/data');
+
+  static final mdDocument = md.Document(
+    encodeHtml: false,
+    extensionSet: md.ExtensionSet.gitHubFlavored,
+    // you can add custom syntax.
+    blockSyntaxes: [const EmbeddableTableSyntax()],
+  );
 
   static Future<String> getClipboardData() async {
     try {
-      final result = await clipboardChannel
-          .invokeMethod('getClipboardData');
+      final result = await clipboardChannel.invokeMethod('getClipboardData');
 
       if (result != null) {
         final data = Uint8List.fromList(result);
@@ -32,9 +39,9 @@ class ClipboardUtils {
         }
       }
 
-
       // callback(prov);
-    } on PlatformException {} catch (e) {
+    } on PlatformException {
+    } catch (e) {
       // print("error in getting clipboard image");
       print(e);
     }
@@ -44,7 +51,9 @@ class ClipboardUtils {
   static Future<Tuple2<Delta, int>?> getClipboardDelta(
       TextSelection selection) async {
     final data = await ClipboardUtils.getClipboardData();
+    final plaintText = await Clipboard.getData(Clipboard.kTextPlain);
     print('ClipboardData: ${data.toString()}');
+    print('ClipboardData: ${plaintText}');
 
     final markdown = html2md.convert(data, ignore: [
       'style'
@@ -56,10 +65,9 @@ class ClipboardUtils {
         if (node.className.contains('s1') || node.className.contains('s2')) {
           final hLevel = int.parse(node.className.substring(1));
           final underline =
-          List.filled(content.length, hLevel == 1 ? '=' : '-').join();
+              List.filled(content.length, hLevel == 1 ? '=' : '-').join();
           return '\n\n$content\n$underline\n\n';
-        }
-        else if (node.className.contains('s4')) {
+        } else if (node.className.contains('s4')) {
           return '**$content**';
         }
         if (node.isBlock) {
@@ -71,24 +79,26 @@ class ClipboardUtils {
     ]);
 
     if (markdown.isNotEmpty) {
-      final operationString = markdownToDelta(markdown);
-      final deltaData = Delta.fromJson(jsonDecode(operationString)).toJson();
+      final deltaData =
+          MarkdownToDelta(markdownDocument: mdDocument).convert(markdown);
       final retainOperation = Operation.retain(selection.start).toJson();
-
-      return Tuple2(
-          Delta.fromJson([retainOperation, ...deltaData]), data.length);
+      return Tuple2(Delta.fromJson([retainOperation, ...deltaData.toJson()]),
+          data.length);
     }
   }
 
-  static void copy(String delta) {
-  try{
-    final data = deltaToMarkdown(delta);
-    print (data);
-    final htmlData = markdownToHtml(data);
-    print(htmlData);
-    Clipboard.setData(ClipboardData(text: htmlData));
-  } catch(e) {
-    print (e);
-  }
+  static void copy(Delta delta) {
+    try {
+      final data = DeltaToMarkdown().convert(delta);
+      print(data);
+
+      final htmlData = markdownToHtml(data);
+      print(htmlData);
+
+
+      Clipboard.setData(ClipboardData(text: htmlData));
+    } catch (e) {
+      print(e);
+    }
   }
 }
