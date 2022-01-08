@@ -10,28 +10,33 @@ import 'package:tuple/tuple.dart';
 import 'delta_to_markdown/delta_markdown.dart';
 
 class ClipboardUtils {
+   static final clipboardChannel = MethodChannel('clipboard/data');
+
   static Future<String> getClipboardData() async {
     try {
-      final result = await MethodChannel('clipboard/data')
+      final result = await clipboardChannel
           .invokeMethod('getClipboardData');
-      final data = Uint8List.fromList(result);
 
-      try {
-        final decodeData = utf8.decode(data);
-        // Clipboard.setData(ClipboardData(text: decodeData));
-        return decodeData;
-      } on FormatException {
-        return '<img src="data:image/jpeg;base64,${base64.encode(data)}"/>';
-      } catch (e) {
-        // print("error in getting clipboard image");
-        // print(e);
+      if (result != null) {
+        final data = Uint8List.fromList(result);
+
+        try {
+          final decodeData = utf8.decode(data);
+          // Clipboard.setData(ClipboardData(text: decodeData));
+          return decodeData;
+        } on FormatException {
+          return '<img src="data:image/jpeg;base64,${base64.encode(data)}"/>';
+        } catch (e) {
+          // print("error in getting clipboard image");
+          print(e);
+        }
       }
 
+
       // callback(prov);
-    } on PlatformException {
-    } catch (e) {
+    } on PlatformException {} catch (e) {
       // print("error in getting clipboard image");
-      // print(e);
+      print(e);
     }
     return '';
   }
@@ -39,6 +44,7 @@ class ClipboardUtils {
   static Future<Tuple2<Delta, int>?> getClipboardDelta(
       TextSelection selection) async {
     final data = await ClipboardUtils.getClipboardData();
+    print('ClipboardData: ${data.toString()}');
 
     final markdown = html2md.convert(data, ignore: [
       'style'
@@ -50,9 +56,10 @@ class ClipboardUtils {
         if (node.className.contains('s1') || node.className.contains('s2')) {
           final hLevel = int.parse(node.className.substring(1));
           final underline =
-              List.filled(content.length, hLevel == 1 ? '=' : '-').join();
+          List.filled(content.length, hLevel == 1 ? '=' : '-').join();
           return '\n\n$content\n$underline\n\n';
-        } else if (node.className.contains('s4')) {
+        }
+        else if (node.className.contains('s4')) {
           return '**$content**';
         }
         if (node.isBlock) {
@@ -62,6 +69,7 @@ class ClipboardUtils {
         }
       })
     ]);
+
     if (markdown.isNotEmpty) {
       final operationString = markdownToDelta(markdown);
       final deltaData = Delta.fromJson(jsonDecode(operationString)).toJson();
@@ -72,10 +80,15 @@ class ClipboardUtils {
     }
   }
 
-  static void copy(String delta){
+  static void copy(String delta) {
+  try{
     final data = deltaToMarkdown(delta);
+    print (data);
     final htmlData = markdownToHtml(data);
-    print (htmlData);
+    print(htmlData);
     Clipboard.setData(ClipboardData(text: htmlData));
+  } catch(e) {
+    print (e);
+  }
   }
 }

@@ -76,8 +76,9 @@ mixin RawEditorStateKeyboardMixin on EditorState {
     final plainText = getTextEditingValue().text;
     if (shortcut == InputShortcut.COPY) {
       if (!selection.isCollapsed) {
-        await Clipboard.setData(
-            ClipboardData(text: selection.textInside(plainText)));
+        // await Clipboard.setData(
+        //     ClipboardData(text: selection.textInside(plainText)));
+        widget.controller.copy();
       }
       return;
     }
@@ -96,7 +97,9 @@ mixin RawEditorStateKeyboardMixin on EditorState {
     if (shortcut == InputShortcut.CUT && !widget.readOnly) {
       if (!selection.isCollapsed) {
         final data = selection.textInside(plainText);
-        await Clipboard.setData(ClipboardData(text: data));
+        // await Clipboard.setData(ClipboardData(text: data));
+
+        widget.controller.copy();
 
         widget.controller.replaceText(
           selection.start,

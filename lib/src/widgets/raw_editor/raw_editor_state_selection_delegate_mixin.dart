@@ -14,6 +14,7 @@ mixin RawEditorStateSelectionDelegateMixin on EditorState
 
   @override
   set textEditingValue(TextEditingValue value) {
+    print ('copy');
     setTextEditingValue(value);
   }
 
@@ -89,6 +90,8 @@ mixin RawEditorStateSelectionDelegateMixin on EditorState
   ) {
     setTextEditingValue(value);
   }
+
+
 
   @override
   bool get cutEnabled => widget.toolbarOptions.cut && !widget.readOnly;

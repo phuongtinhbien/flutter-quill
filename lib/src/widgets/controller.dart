@@ -269,69 +269,22 @@ class QuillController extends ChangeNotifier {
   }
 
   void copy() {
-    // final tempDocument = Document.fromDelta(document.toDelta());
-    // var index = selection.start;
-    // print ('index: $index');
-    // var len = selection.end - selection.start;
-    // print ('len: $len');
-    //
-    // final nodes = tempDocument.collectAllNode(index, len);
-    // print(nodes.map((e) => e.toPlainText()));
-    // final sourceText = selection.textInside(plainTextEditingValue.text);
-    // final operations = <dynamic>[];
-    // nodes.forEach((element) {
-    //   final leaf = element as Leaf;
-    //   var start = index;
-    //   var end = math.min(len, leaf.length);
-    //   print ('leaf.length: ${leaf.length}');
-    //   print ('leaf.documentOffset: ${leaf.documentOffset}');
-    //   print ('start:$start');
-    //   print ('end:$end');
-    //   final leafnew = leaf.cutAt(start)!
-    //     ..retain(start, end, null)
-    //     ..delete(end, leaf.length - end);
-    //   print(leafnew.toPlainText());
-    //   len -=end;
-    //   index+=end;
-    // });
-
-    // if (node != null) {
-    //   node.list?.forEach((entry) {
-    //     final entryOffset = entry.documentOffset;
-    //     final entryOffsetLength = entryOffset + entry.length;
-    //     if (entryOffset >= selection.baseOffset &&
-    //             entryOffsetLength <= selection.extentOffset ||
-    //         entry.containsOffset(selection.baseOffset) ||
-    //         entry.containsOffset(selection.extentOffset)) {
-    //       final start = max(selection.baseOffset - entry.documentOffset, 0);
-    //       final end = min(
-    //           selection.extentOffset - entry.documentOffset + 1, entry.length);
-    //       final text = entry.toPlainText().substring(start, end);
-    //       var entryDelta;
-    //       if (entry is Line) {
-    //         final attributes = <String, dynamic>{};
-    //         final style = entry.collectStyle(start, end);
-    //         style.values.forEach((element) {
-    //           attributes.addAll(element.toJson());
-    //         });
-    //         entryDelta = Delta()..insert(text, attributes);
-    //       } else {
-    //         entryDelta = Delta()..insert(text, entry.style.attributes);
-    //       }
-    //
-    //       if (entryDelta != null) {
-    //         operations.addAll(entryDelta.toJson());
-    //
-    //       }
-    //     }
-    //   });
-    // }
-    // // print(operations);
-    // ClipboardUtils.copy(jsonEncode(operations));
-
     if (!selection.isCollapsed) {
-      Clipboard.setData(ClipboardData(
-          text: selection.textInside(plainTextEditingValue.text)));
+      final tempDocument = Document.fromDelta(document.toDelta());
+      final index = selection.start;
+      final len = selection.end - selection.start;
+
+      final copiedData =
+          tempDocument.toDelta().slice(index, selection.end + 1).toJson();
+
+      print(copiedData);
+      ClipboardUtils.copy(jsonEncode(copiedData));
     }
+
+    // if (!selection.isCollapsed) {
+    //
+    //   Clipboard.setData(ClipboardData(
+    //       text: selection.textInside(plainTextEditingValue.text)));
+    // }
   }
 }

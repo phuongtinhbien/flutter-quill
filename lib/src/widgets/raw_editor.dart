@@ -742,6 +742,7 @@ class RawEditorState extends EditorState
   // set editing value from clipboard for mobile
   Future<void> _setEditingValue(TextEditingValue value) async {
     if (await _isItCut(value)) {
+      widget.controller.copy();
       widget.controller.replaceText(
         textEditingValue.selection.start,
         textEditingValue.text.length - value.text.length,
@@ -764,29 +765,6 @@ class RawEditorState extends EditorState
             TextSelection.collapsed(offset: value.selection.start),
             ChangeSource.LOCAL);
       }
-      // var str = data.text!;
-      // final codes = data.text!.codeUnits;
-      // // For clip from editor, it may contain image, a.k.a 65532.
-      // // For clip from browser, image is directly ignore.
-      // // Here we skip image when pasting.
-      // if (codes.contains(65532)) {
-      //   final sb = StringBuffer();
-      //   for (var i = 0; i < str.length; i++) {
-      //     if (str.codeUnitAt(i) == 65532) {
-      //       continue;
-      //     }
-      //     sb.write(str[i]);
-      //   }
-      //   str = sb.toString();
-      // }
-      // widget.controller.replaceText(
-      //   value.selection.start,
-      //   length,
-      //   str,
-      //   value.selection,
-      // );
-      // move cursor to the end of pasted text selection
-
     }
   }
 

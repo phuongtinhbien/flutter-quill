@@ -42,11 +42,16 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
       if (operation.data is String) {
         final operationData = operation.data as String;
 
-        if (!operationData.contains('\n')) {
-          _handleInline(lineBuffer, operationData, operation.attributes);
-        } else {
-          _handleLine(operationData, operation.attributes);
+        if (operation.attributes != null && operation.attributes!.isNotEmpty) {
+          if (!operationData.contains('\n')) {
+            _handleInline(lineBuffer, operationData, operation.attributes);
+          } else {
+            _handleLine(operationData, operation.attributes);
+          }
+        } else  {
+          markdownBuffer.write(operationData);
         }
+
       } else if (operation.data is Map<String, dynamic>) {
         _handleEmbed(operation.data as Map<String, dynamic>);
       } else {
