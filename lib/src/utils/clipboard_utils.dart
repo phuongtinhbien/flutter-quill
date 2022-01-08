@@ -25,6 +25,9 @@ class ClipboardUtils {
       final result = await clipboardChannel.invokeMethod('getClipboardData');
 
       if (result != null) {
+        if (result is String) {
+          return result;
+        }
         final data = Uint8List.fromList(result);
 
         try {
