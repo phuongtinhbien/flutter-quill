@@ -438,8 +438,7 @@ class _QuillEditorState extends State<QuillEditor>
             paste: widget.enableInteractiveSelection,
             selectAll: widget.enableInteractiveSelection,
           ),
-          theme.platform == TargetPlatform.iOS ||
-              theme.platform == TargetPlatform.android,
+          true,
           widget.showCursor,
           CursorStyle(
             color: cursorColor,

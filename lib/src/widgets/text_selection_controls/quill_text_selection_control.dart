@@ -7,6 +7,7 @@ class QuillTextSelectionControl extends CupertinoTextSelectionControls {
 
   final QuillController controller;
 
+
   @override
   void handleCopy(TextSelectionDelegate delegate,
       ClipboardStatusNotifier? clipboardStatus) {
