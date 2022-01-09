@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_quill/src/models/documents/nodes/node.dart';
 import 'package:flutter_quill/src/widgets/suggestion_text_selection.dart';
 import 'package:flutter_quill/src/widgets/text_block.dart';
+import 'package:flutter_quill/src/widgets/text_selection_controls/quill_text_selection_control.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -403,7 +404,7 @@ class _QuillEditorState extends State<QuillEditor>
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         final cupertinoTheme = CupertinoTheme.of(context);
-        textSelectionControls = cupertinoTextSelectionControls;
+        textSelectionControls = QuillTextSelectionControl(widget.controller);
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor ??=

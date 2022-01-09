@@ -20,7 +20,8 @@ class QuillController extends ChangeNotifier {
     required this.document,
     required TextSelection selection,
     bool keepStyleOnNewLine = false,
-  })  : _selection = selection,
+  })
+      : _selection = selection,
         _keepStyleOnNewLine = keepStyleOnNewLine;
 
   factory QuillController.basic() {
@@ -61,7 +62,8 @@ class QuillController extends ChangeNotifier {
   // item3: The source of this change.
   Stream<Tuple3<Delta, Delta, ChangeSource>> get changes => document.changes;
 
-  TextEditingValue get plainTextEditingValue => TextEditingValue(
+  TextEditingValue get plainTextEditingValue =>
+      TextEditingValue(
         text: document.toPlainText(),
         selection: selection,
       );
@@ -115,8 +117,8 @@ class QuillController extends ChangeNotifier {
 
   bool get hasRedo => document.hasRedo;
 
-  void replaceText(
-      int index, int len, Object? data, TextSelection? textSelection,
+  void replaceText(int index, int len, Object? data,
+      TextSelection? textSelection,
       {bool ignoreFocus = false}) {
     assert(data is String || data is Embeddable);
 
@@ -133,15 +135,15 @@ class QuillController extends ChangeNotifier {
           delta.last.data == '\n') {
         // if all attributes are inline, shouldRetainDelta should be false
         final anyAttributeNotInline =
-            toggledStyle.values.any((attr) => !attr.isInline);
+        toggledStyle.values.any((attr) => !attr.isInline);
         if (!anyAttributeNotInline) {
           shouldRetainDelta = false;
         }
       }
       if (shouldRetainDelta) {
         final retainDelta = Delta()
-          ..retain(index)
-          ..retain(data is String ? data.length : 1, toggledStyle.toJson());
+          ..retain(index)..retain(
+              data is String ? data.length : 1, toggledStyle.toJson());
         document.compose(retainDelta, ChangeSource.LOCAL);
       }
     }
@@ -214,7 +216,7 @@ class QuillController extends ChangeNotifier {
     textSelection = selection.copyWith(
         baseOffset: delta.transformPosition(selection.baseOffset, force: false),
         extentOffset:
-            delta.transformPosition(selection.extentOffset, force: false));
+        delta.transformPosition(selection.extentOffset, force: false));
     if (selection != textSelection) {
       _updateSelection(textSelection, source);
     }
@@ -268,15 +270,13 @@ class QuillController extends ChangeNotifier {
     }
   }
 
-  void copy() {
+  Future<void> copy() async {
     if (!selection.isCollapsed) {
       final tempDocument = Document.fromDelta(document.toDelta());
 
-      final copiedData =
-          (tempDocument.toDelta().slice(selection.start, selection.end + 1)..trim());
-
-      print(copiedData);
-      ClipboardUtils.copy(copiedData..insert('\n'));
+      final copiedData = tempDocument.toDelta().slice(
+          selection.start, selection.end + 1)..trim();
+        await ClipboardUtils.copy(copiedData..insert('\n'));
     }
 
     // if (!selection.isCollapsed) {

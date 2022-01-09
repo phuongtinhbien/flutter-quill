@@ -82,24 +82,24 @@ class ClipboardUtils {
     ]);
 
     if (markdown.isNotEmpty) {
-      final deltaData =
-          MarkdownToDelta(markdownDocument: mdDocument).convert(markdown);
+      final deltaData = MarkdownToDelta(markdownDocument: mdDocument)
+          .convert(markdown)
+        ..trimNewLine();
+      final document =
+          Document.fromDelta(deltaData..insert('\n')).toPlainText().trimRight();
+
       final retainOperation = Operation.retain(selection.start).toJson();
       return Tuple2(Delta.fromJson([retainOperation, ...deltaData.toJson()]),
-          data.length);
+          document.length);
     }
   }
 
-  static void copy(Delta delta) {
+  static Future<void> copy(Delta delta) async {
     try {
       final data = DeltaToMarkdown().convert(delta);
-      print(data);
-
       final htmlData = markdownToHtml(data);
-      print(htmlData);
 
-
-      Clipboard.setData(ClipboardData(text: htmlData));
+      await Clipboard.setData(ClipboardData(text: htmlData));
     } catch (e) {
       print(e);
     }

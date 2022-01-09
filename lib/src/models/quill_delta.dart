@@ -9,6 +9,7 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:diff_match_patch/diff_match_patch.dart' as dmp;
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:quiver/core.dart';
 
 const _attributeEquality = DeepCollectionEquality();
@@ -31,7 +32,7 @@ class Operation {
           return data is String ? data.length == length : length == 1;
         }(), 'Length of insert operation must be equal to the data length.'),
         _attributes =
-            attributes != null ? Map<String, dynamic>.from(attributes) : null;
+        attributes != null ? Map<String, dynamic>.from(attributes) : null;
 
   /// Creates operation which deletes [length] of characters.
   factory Operation.delete(int length) =>
@@ -162,7 +163,7 @@ class Operation {
   int get hashCode {
     if (_attributes != null && _attributes!.isNotEmpty) {
       final attrsHash =
-          hashObjects(_attributes!.entries.map((e) => hash2(e.key, e.value)));
+      hashObjects(_attributes!.entries.map((e) => hash2(e.key, e.value)));
       return hash3(key, value, attrsHash);
     }
     return hash2(key, value);
@@ -173,8 +174,8 @@ class Operation {
     final attr = attributes == null ? '' : ' + $attributes';
     final text = isInsert
         ? (data is String
-            ? (data as String).replaceAll('\n', '⏎')
-            : data.toString())
+        ? (data as String).replaceAll('\n', '⏎')
+        : data.toString())
         : '$length';
     return '$key⟨ $text ⟩$attr';
   }
@@ -200,8 +201,8 @@ class Delta {
   static final String _kNullCharacter = String.fromCharCode(0);
 
   /// Transforms two attribute sets.
-  static Map<String, dynamic>? transformAttributes(
-      Map<String, dynamic>? a, Map<String, dynamic>? b, bool priority) {
+  static Map<String, dynamic>? transformAttributes(Map<String, dynamic>? a,
+      Map<String, dynamic>? b, bool priority) {
     if (a == null) return b;
     if (b == null) return null;
 
@@ -216,13 +217,14 @@ class Delta {
   }
 
   /// Composes two attribute sets.
-  static Map<String, dynamic>? composeAttributes(
-      Map<String, dynamic>? a, Map<String, dynamic>? b,
+  static Map<String, dynamic>? composeAttributes(Map<String, dynamic>? a,
+      Map<String, dynamic>? b,
       {bool keepNull = false}) {
     a ??= const {};
     b ??= const {};
 
-    final result = Map<String, dynamic>.from(a)..addAll(b);
+    final result = Map<String, dynamic>.from(a)
+      ..addAll(b);
     final keys = result.keys.toList(growable: false);
 
     if (!keepNull) {
@@ -235,8 +237,8 @@ class Delta {
   }
 
   ///get anti-attr result base on base
-  static Map<String, dynamic> invertAttributes(
-      Map<String, dynamic>? attr, Map<String, dynamic>? base) {
+  static Map<String, dynamic> invertAttributes(Map<String, dynamic>? attr,
+      Map<String, dynamic>? base) {
     attr ??= const {};
     base ??= const {};
 
@@ -248,7 +250,7 @@ class Delta {
     });
 
     final inverted =
-        Map<String, dynamic>.from(attr.keys.fold(baseInverted, (memo, key) {
+    Map<String, dynamic>.from(attr.keys.fold(baseInverted, (memo, key) {
       if (base![key] != attr![key] && !base.containsKey(key)) {
         memo[key] = null;
       }
@@ -258,13 +260,14 @@ class Delta {
   }
 
   /// Returns diff between two attribute sets
-  static Map<String, dynamic>? diffAttributes(
-      Map<String, dynamic>? a, Map<String, dynamic>? b) {
+  static Map<String, dynamic>? diffAttributes(Map<String, dynamic>? a,
+      Map<String, dynamic>? b) {
     a ??= const {};
     b ??= const {};
 
     final attributes = <String, dynamic>{};
-    (a.keys.toList()..addAll(b.keys)).forEach((key) {
+    (a.keys.toList()
+      ..addAll(b.keys)).forEach((key) {
       if (a![key] != b![key]) {
         attributes[key] = b.containsKey(key) ? b[key] : null;
       }
@@ -418,8 +421,8 @@ class Delta {
   /// Returns new operation or `null` if operations from [thisIter] and
   /// [otherIter] nullify each other. For instance, for the pair `insert('abc')`
   /// and `delete(3)` composition result would be empty string.
-  Operation? _composeOperation(
-      DeltaIterator thisIter, DeltaIterator otherIter) {
+  Operation? _composeOperation(DeltaIterator thisIter,
+      DeltaIterator otherIter) {
     if (otherIter.isNextInsert) return otherIter.next();
     if (thisIter.isNextDelete) return thisIter.next();
 
@@ -559,10 +562,12 @@ class Delta {
   /// [thisIter].
   ///
   /// Returns `null` if both operations nullify each other.
-  Operation? _transformOperation(
-      DeltaIterator thisIter, DeltaIterator otherIter, bool priority) {
+  Operation? _transformOperation(DeltaIterator thisIter,
+      DeltaIterator otherIter, bool priority) {
     if (thisIter.isNextInsert && (priority || !otherIter.isNextInsert)) {
-      return Operation.retain(thisIter.next().length);
+      return Operation.retain(thisIter
+          .next()
+          .length);
     } else if (otherIter.isNextInsert) {
       return otherIter.next();
     }
@@ -608,9 +613,30 @@ class Delta {
     }
   }
 
+  /// Removes trailing '\n'
+  void trimNewLine() {
+    if (isNotEmpty) {
+      final lastOp = _operations.last;
+      final lastOpData = lastOp.data;
+      final isNotBlock = !(lastOp.attributes != null &&
+          lastOp.attributes!.keys.toList().any(Attribute.blockKeys.contains));
+
+      if (lastOpData is String && lastOpData.endsWith('\n') && isNotBlock) {
+        _operations.removeLast();
+        if (lastOpData.length > 1) {
+          insert(lastOpData.substring(0, lastOpData.length - 1),
+              lastOp.attributes);
+        }
+      }
+    }
+  }
+
   /// Concatenates [other] with this delta and returns the result.
-  Delta concat(Delta other) {
+  Delta concat(Delta other, {bool trimNewLine = false}) {
     final result = Delta.from(this);
+    if (trimNewLine) {
+      result.trimNewLine();
+    }
     if (other.isNotEmpty) {
       // In case first operation of other can be merged with last operation in
       // our list.
@@ -643,7 +669,7 @@ class Delta {
             inverted.push(baseOp);
           } else if (op.isRetain && op.isNotPlain) {
             final invertAttr =
-                invertAttributes(op.attributes, baseOp.attributes);
+            invertAttributes(op.attributes, baseOp.attributes);
             inverted.retain(
                 baseOp.length!, invertAttr.isEmpty ? null : invertAttr);
           }
@@ -730,7 +756,9 @@ class DeltaIterator {
 
   String? get nextOperationKey {
     if (_index < delta.length) {
-      return delta.elementAt(_index).key;
+      return delta
+          .elementAt(_index)
+          .key;
     } else {
       return null;
     }
@@ -780,10 +808,10 @@ class DeltaIterator {
       }
       final opData = op.isInsert && op.data is String
           ? (op.data as String)
-              .substring(_currentOffset, _currentOffset + actualLength)
+          .substring(_currentOffset, _currentOffset + actualLength)
           : op.data;
       final opIsNotEmpty =
-          opData is String ? opData.isNotEmpty : true; // embeds are never empty
+      opData is String ? opData.isNotEmpty : true; // embeds are never empty
       final opLength = opData is String ? opData.length : 1;
       final opActualLength = opIsNotEmpty ? opLength : actualLength;
       return Operation._(opKey, opActualLength, opData, opAttributes);
