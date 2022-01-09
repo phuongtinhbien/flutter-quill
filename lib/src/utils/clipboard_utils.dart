@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/src/utils/delta_to_markdown/src/html_renderer.dart';
-import 'package:flutter_quill/src/utils/markdown_quill/markdown_quill.dart';
 import 'package:html2md/html2md.dart' as html2md;
-import 'package:tuple/tuple.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'delta_to_markdown/delta_markdown.dart';
+import 'package:tuple/tuple.dart';
+
+import '../../flutter_quill.dart';
+import 'markdown_quill/markdown_quill.dart';
 
 class ClipboardUtils {
   static final clipboardChannel = MethodChannel('clipboard/data');
@@ -82,14 +81,16 @@ class ClipboardUtils {
     ]);
 
     if (markdown.isNotEmpty) {
-      final deltaData = MarkdownToDelta(markdownDocument: mdDocument)
-          .convert(markdown)
-        ..trimNewLine();
-      final document =
-          Document.fromDelta(deltaData..insert('\n')).toPlainText().trimRight();
+      final deltaData =
+          MarkdownToDelta(markdownDocument: mdDocument).convert(markdown);
+      final document = Document.fromDelta(deltaData).toPlainText().trimRight();
+      print(document);
+      print (deltaData);
 
       final retainOperation = Operation.retain(selection.start).toJson();
-      return Tuple2(Delta.fromJson([retainOperation, ...deltaData.toJson()]),
+      return Tuple2(
+          Delta.fromJson(
+              [retainOperation, ...(deltaData..trimNewLine()).toJson()]),
           document.length);
     }
   }
@@ -97,7 +98,7 @@ class ClipboardUtils {
   static Future<void> copy(Delta delta) async {
     try {
       final data = DeltaToMarkdown().convert(delta);
-      final htmlData = markdownToHtml(data);
+      final htmlData = md.markdownToHtml(data);
 
       await Clipboard.setData(ClipboardData(text: htmlData));
     } catch (e) {
