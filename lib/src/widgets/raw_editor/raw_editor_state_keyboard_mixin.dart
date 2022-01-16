@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:characters/characters.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/src/utils/clipboard_utils.dart';
-import 'package:flutter_quill/src/utils/delta_to_markdown/delta_markdown.dart';
-import 'package:html2md/html2md.dart' as html2md;
+import '../../../flutter_quill.dart';
+import '../../utils/clipboard_utils.dart';
 
 import '../../models/documents/document.dart';
 import '../../utils/diff_delta.dart';

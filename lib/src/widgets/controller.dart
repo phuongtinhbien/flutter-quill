@@ -268,15 +268,23 @@ class QuillController extends ChangeNotifier {
     }
   }
 
-  void copy() {
+  Future<void> copy() async {
     if (!selection.isCollapsed) {
       final tempDocument = Document.fromDelta(document.toDelta());
 
-      final copiedData =
-          (tempDocument.toDelta().slice(selection.start, selection.end + 1)..trim());
+      final copiedData = tempDocument
+          .toDelta()
+          .slice(selection.start, selection.end + 1)
+        ..trim();
+      if (copiedData.isNotEmpty) {
+        final lastOp = copiedData.last;
+        final lastOpData = lastOp.data;
 
-      print(copiedData);
-      ClipboardUtils.copy(copiedData..insert('\n'));
+        if (!(lastOpData is String && lastOpData.endsWith('\n'))) {
+          copiedData.insert('\n');
+        }
+      }
+      await ClipboardUtils.copy(copiedData);
     }
 
     // if (!selection.isCollapsed) {

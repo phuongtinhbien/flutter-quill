@@ -56,9 +56,7 @@ class DeltaToMarkdown extends Converter<Delta, String>
     final newDelta = transform(input);
 
     final quillDocument = Document.fromDelta(newDelta);
-
     final outBuffer = quillDocument.root.accept(this);
-
     return outBuffer.toString();
   }
 
