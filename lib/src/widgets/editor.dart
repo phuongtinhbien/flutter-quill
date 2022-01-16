@@ -556,7 +556,15 @@ class _QuillEditorSelectionGestureDetectorBuilder
     if (result.node == null) {
       return false;
     }
+
     final line = result.node as Line;
+    if (line.style.containsKey(Attribute.header.key)) {
+      final  launchUrl = getEditor()!.widget.onLaunchUrl;
+      if (launchUrl != null) {
+        launchUrl(jsonEncode(line.toDelta().toJson()));
+
+      }
+    }
     final segmentResult = line.queryChild(result.offset, false);
     if (segmentResult.node == null) {
       if (line.length == 1) {
@@ -566,6 +574,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
       }
       return false;
     }
+
     final segment = segmentResult.node as leaf.Leaf;
 
     if (segment.style.containsKey(Attribute.link.key)) {
