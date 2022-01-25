@@ -1,7 +1,6 @@
 import 'dart:collection';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -10,12 +9,13 @@ import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../flutter_quill.dart';
-import '../models/documents/nodes/container.dart' as container;
+import '../models/documents/nodes/container.dart' as container_node;
 import '../models/documents/nodes/leaf.dart' as leaf;
 import '../models/documents/nodes/line.dart';
 import '../models/documents/nodes/node.dart';
 import '../models/documents/style.dart';
 import '../utils/color.dart';
+import '../utils/platform.dart';
 import 'box.dart';
 import 'cursor.dart';
 import 'delegate.dart';
@@ -71,12 +71,6 @@ class _TextLineState extends State<TextLine> {
     }
   }
 
-  bool get isDesktop => {
-        TargetPlatform.macOS,
-        TargetPlatform.linux,
-        TargetPlatform.windows
-      }.contains(defaultTargetPlatform);
-
   bool get canLaunchLinks {
     // In readOnly mode users can launch links
     // by simply tapping (clicking) on them
@@ -86,7 +80,7 @@ class _TextLineState extends State<TextLine> {
 
     // Desktop platforms (macos, linux, windows):
     // only allow Meta(Control)+Click combinations
-    if (isDesktop) {
+    if (isDesktop()) {
       return _metaOrControlPressed;
     }
     // Mobile platforms (ios, android): always allow but we install a
@@ -381,7 +375,7 @@ class _TextLineState extends State<TextLine> {
       return _linkRecognizers[segment]!;
     }
 
-    if (isDesktop || widget.readOnly) {
+    if (isDesktop() || widget.readOnly) {
       _linkRecognizers[segment] = TapGestureRecognizer()
         ..onTap = () => _tapNodeLink(segment);
     } else {
@@ -402,7 +396,7 @@ class _TextLineState extends State<TextLine> {
   }
 
   void _tapLink(String? link) {
-    if (!widget.readOnly || link == null) {
+    if (link == null) {
       return;
     }
 
@@ -429,40 +423,13 @@ class _TextLineState extends State<TextLine> {
         Clipboard.setData(ClipboardData(text: link));
         break;
       case LinkMenuAction.remove:
-        final range = _getLinkRange(node);
+        final range = getLinkRange(node);
         widget.controller
             .formatText(range.start, range.end - range.start, Attribute.link);
         break;
       case LinkMenuAction.none:
         break;
     }
-  }
-
-  TextRange _getLinkRange(Node node) {
-    var start = node.documentOffset;
-    var length = node.length;
-    var prev = node.previous;
-    final linkAttr = node.style.attributes[Attribute.link.key]!;
-    while (prev != null) {
-      if (prev.style.attributes[Attribute.link.key] == linkAttr) {
-        start = prev.documentOffset;
-        length += prev.length;
-        prev = prev.previous;
-      } else {
-        break;
-      }
-    }
-
-    var next = node.next;
-    while (next != null) {
-      if (next.style.attributes[Attribute.link.key] == linkAttr) {
-        length += next.length;
-        next = next.next;
-      } else {
-        break;
-      }
-    }
-    return TextRange(start: start, end: start + length);
   }
 
   TextStyle _merge(TextStyle a, TextStyle b) {
@@ -835,13 +802,11 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   double preferredLineHeight(TextPosition position) {
-    return _body!.getPreferredLineHeight();
+    return _body!.preferredLineHeight;
   }
 
   @override
-  container.Container getContainer() {
-    return line;
-  }
+  container_node.Container get container => line;
 
   double get cursorWidth => cursorCont.style.width;
 
@@ -861,19 +826,10 @@ class RenderEditableTextLine extends RenderEditableBox {
   /// of the cursor for iOS is approximate and obtained through an eyeball
   /// comparison.
   void _computeCaretPrototype() {
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        _caretPrototype = Rect.fromLTWH(0, 0, cursorWidth, cursorHeight + 2);
-        break;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        _caretPrototype = Rect.fromLTWH(0, 2, cursorWidth, cursorHeight - 4.0);
-        break;
-      default:
-        throw 'Invalid platform';
+    if (isAppleOS()) {
+      _caretPrototype = Rect.fromLTWH(0, 0, cursorWidth, cursorHeight + 2);
+    } else {
+      _caretPrototype = Rect.fromLTWH(0, 2, cursorWidth, cursorHeight - 4.0);
     }
   }
 
@@ -1188,10 +1144,10 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   TextPosition globalToLocalPosition(TextPosition position) {
-    assert(getContainer().containsOffset(position.offset),
+    assert(container.containsOffset(position.offset),
         'The provided text position is not in the current node');
     return TextPosition(
-      offset: position.offset - getContainer().documentOffset,
+      offset: position.offset - container.documentOffset,
       affinity: position.affinity,
     );
   }

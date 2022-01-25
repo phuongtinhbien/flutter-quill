@@ -5,10 +5,10 @@ import 'package:tuple/tuple.dart';
 
 import '../models/documents/attribute.dart';
 import '../models/documents/document.dart';
-import '../models/documents/nodes/embed.dart';
+import '../models/documents/nodes/embeddable.dart';
 import '../models/documents/style.dart';
 import '../models/quill_delta.dart';
-import '../utils/diff_delta.dart';
+import '../utils/delta.dart';
 
 typedef ReplaceTextCallback = bool Function(int index, int len, Object? data);
 typedef DeleteCallback = void Function(int cursorPosition, bool forward);
@@ -82,6 +82,20 @@ class QuillController extends ChangeNotifier {
     return document
         .collectStyle(selection.start, selection.end - selection.start)
         .mergeAll(toggledStyle);
+  }
+
+  /// Returns all styles for each node within selection
+  List<Tuple2<int, Style>> getAllIndividualSelectionStyles() {
+    final styles = document.collectAllIndividualStyles(
+        selection.start, selection.end - selection.start);
+    return styles;
+  }
+
+  /// Returns plain text for each node within selection
+  String getPlainText() {
+    final text =
+        document.getPlainText(selection.start, selection.end - selection.start);
+    return text;
   }
 
   /// Returns all styles for any character within the specified text range.
@@ -208,14 +222,25 @@ class QuillController extends ChangeNotifier {
   void handleDelete(int cursorPosition, bool forward) =>
       onDelete?.call(cursorPosition, forward);
 
+  void formatTextStyle(int index, int len, Style style) {
+    style.attributes.forEach((key, attr) {
+      formatText(index, len, attr);
+    });
+  }
+
   void formatText(int index, int len, Attribute? attribute) {
     if (len == 0 &&
         attribute!.isInline &&
         attribute.key != Attribute.link.key) {
+      // Add the attribute to our toggledStyle.
+      // It will be used later upon insertion.
       toggledStyle = toggledStyle.put(attribute);
     }
 
     final change = document.format(index, len, attribute);
+    // Transform selection against the composed change and give priority to
+    // the change. This is needed in cases when format operation actually
+    // inserts data into the document (e.g. embeds).
     final adjustedSelection = selection.copyWith(
         baseOffset: change.transformPosition(selection.baseOffset),
         extentOffset: change.transformPosition(selection.extentOffset));

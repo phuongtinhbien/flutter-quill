@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../quill_delta.dart';
 import '../attribute.dart';
 import '../style.dart';
 import 'block.dart';
 import 'container.dart';
-import 'embed.dart';
+import 'embeddable.dart';
 import 'leaf.dart';
 import 'node.dart';
 
@@ -333,6 +334,8 @@ class Line extends Container<Leaf?> {
   ///   every line within this range (partially included lines are counted).
   /// - inline attribute X is included in the result only if it exists
   ///   for every character within this range (line-break characters excluded).
+  ///
+  /// In essence, it is INTERSECTION of each individual segment's styles
   Style collectStyle(int offset, int len) {
     final local = math.min(length - offset, len);
     var result = Style();
@@ -380,7 +383,44 @@ class Line extends Container<Leaf?> {
     return result;
   }
 
+  /// Returns each node segment's offset in selection
+  /// with its corresponding style as a list
+  List<Tuple2<int, Style>> collectAllIndividualStyles(int offset, int len,
+      {int beg = 0}) {
+    final local = math.min(length - offset, len);
+    final result = <Tuple2<int, Style>>[];
+
+    final data = queryChild(offset, true);
+    var node = data.node as Leaf?;
+    if (node != null) {
+      var pos = 0;
+      if (node is Text) {
+        pos = node.length - data.offset;
+        result.add(Tuple2(beg, node.style));
+      }
+      while (!node!.isLast && pos < local) {
+        node = node.next as Leaf;
+        if (node is Text) {
+          result.add(Tuple2(pos + beg, node.style));
+          pos += node.length;
+        }
+      }
+    }
+
+    // TODO: add line style and parent's block style
+
+    final remaining = len - local;
+    if (remaining > 0) {
+      final rest =
+          nextLine!.collectAllIndividualStyles(0, remaining, beg: local);
+      result.addAll(rest);
+    }
+
+    return result;
+  }
+
   /// Returns all styles for any character within the specified text range.
+  /// In essence, it is UNION of each individual segment's styles
   List<Style> collectAllStyles(int offset, int len) {
     final local = math.min(length - offset, len);
     final result = <Style>[];
@@ -406,6 +446,69 @@ class Line extends Container<Leaf?> {
     final remaining = len - local;
     if (remaining > 0) {
       final rest = nextLine!.collectAllStyles(0, remaining);
+      result.addAll(rest);
+    }
+
+    return result;
+  }
+
+  /// Returns plain text within the specified text range.
+  String getPlainText(int offset, int len) {
+    final res = _getPlainText(offset, len);
+    if (res.length == 1) {
+      final data = queryChild(offset, true);
+      final text = res.single.item2;
+      return text == Embed.kObjectReplacementCharacter
+          ? ''
+          : text.substring(data.offset, data.offset + len);
+    }
+
+    final total = <String>[];
+    // Adjust first node
+    final firstNodeLen = res[1].item1;
+    var text = res[0].item2;
+    if (text != Embed.kObjectReplacementCharacter) {
+      total.add(text.substring(text.length - firstNodeLen));
+    }
+
+    for (var i = 1; i < res.length - 1; i++) {
+      if (res[i].item2 != Embed.kObjectReplacementCharacter) {
+        total.add(res[i].item2);
+      }
+    }
+
+    // Adjust last node
+    final lastNodeLen = len - res[res.length - 1].item1;
+    text = res[res.length - 1].item2;
+    if (text != Embed.kObjectReplacementCharacter) {
+      total.add(text.substring(0, lastNodeLen));
+    }
+    return total.join();
+  }
+
+  List<Tuple2<int, String>> _getPlainText(int offset, int len, {int beg = 0}) {
+    final local = math.min(length - offset, len);
+    final result = <Tuple2<int, String>>[];
+
+    final data = queryChild(offset, true);
+    var node = data.node as Leaf?;
+    if (node != null) {
+      var pos = node.length - data.offset;
+      result.add(Tuple2(beg, node.toPlainText()));
+      while (!node!.isLast && pos < local) {
+        node = node.next as Leaf;
+        result.add(Tuple2(pos + beg, node.toPlainText()));
+        pos += node.length;
+      }
+    }
+
+    final remaining = len - local;
+    if (remaining > 0) {
+      final lastElem = result[result.length - 1];
+      result
+        ..removeLast()
+        ..add(Tuple2(lastElem.item1, '${lastElem.item2}\n'));
+      final rest = nextLine!._getPlainText(0, remaining, beg: local);
       result.addAll(rest);
     }
 
